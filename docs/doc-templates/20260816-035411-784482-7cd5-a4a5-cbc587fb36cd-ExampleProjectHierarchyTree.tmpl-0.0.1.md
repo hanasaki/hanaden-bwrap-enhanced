@@ -303,3 +303,12 @@ flowchart TD
 11. **Every node is a directory** — even leaf specs. This enables test co-location via `src/test/` mirror tree.
 12. **Semantic ordering** — sibling processing order is inferred by AI from document content each time. No ordering metadata. Ties are FATAL (ambiguous docs must be improved).
 13. **TDD co-tracking** — every document carries a `tdd:` frontmatter block and test tables include a `TDD` column for per-assertion status.
+
+---
+
+## Changelog
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 0.0.1 | 2026-08-16 | Frederick Bloom | Initial example tree — full drone warehouse hierarchy with all layer types, sub-features, sub-specs, cross-layer unlock |
+| 0.0.1 | 2026-08-16 | Frederick Bloom + AI | Update all IDs to Slug.class naming, add directory convention and TDD rules |
