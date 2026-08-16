@@ -143,6 +143,12 @@ parent:        # REQUIRED — filename-id of the DRIV this solution addresses
                #   e.g. 20260816-...-EcommTransitFatigue
 supersedes:    # OPTIONAL — filename-id of prior version
 references:    # OPTIONAL
+tdd:
+  state:          # REQUIRED — NOT_STARTED | RED | GREEN | REFACTOR
+  test-file:      # REQUIRED — relative path to test script in src/test/
+  last-run:       # OPTIONAL — ISO 8601 timestamp of last test execution
+  iterations:     # OPTIONAL — RED→GREEN cycle count (default: 0)
+  coverage-lines: # OPTIONAL — source lines this node covers
 ---
 ```
 
@@ -150,6 +156,20 @@ references:    # OPTIONAL
 > **DRIV `parent`** → Layer 0 CORP-STRAT filename-id.
 > **MOTI `parent`** → Layer 1 DRIV filename-id (NOT CORP-STRAT).
 > This is the key structural difference: MOTI is a child of DRIV.
+
+> [!NOTE]
+> **No `children` field** — children discover this node via their own `parent` pointer.
+> **No `children-order`, `depends-on`, or `order` field** — sibling ordering is determined
+> by semantic inference from document content (see SdlcHierarchyOverview).
+> **No `node-id` field** — `filename-id` is the single identity.
+
+> [!NOTE]
+> **Directory convention:** DRIVER documents live in `Slug.driv/` directories.
+> MOTIVATION documents live in `Slug.moti/` directories. No UUIDv7 on directory names.
+> File slugs drop the class prefix (e.g. `UncontainedAgentExecution.driv` not
+> `TDrivUncontainedAgentExecution.driv`).
+> `tdd.state` tracks the **test lifecycle** (RED/GREEN). `status` tracks the
+> **document lifecycle** (Draft/Active). These are independent axes.
 
 ---
 
@@ -303,6 +323,12 @@ references:    # OPTIONAL
 | `domain` | enum | ✅ | `BUSINESS` `TECHNICAL` |
 | `role` | enum | ✅ | `DRIVER` `MOTIVATION` |
 | `parent` | string | ✅ | DRIV: Layer 0 filename-id · MOTI: DRIV filename-id |
+| `supersedes` | string | ⬜ | filename-id of prior version |
+| `tdd.state` | enum | ✅ | `NOT_STARTED` `RED` `GREEN` `REFACTOR` |
+| `tdd.test-file` | string | ✅ | Relative path to test script |
+| `tdd.last-run` | string | ⬜ | ISO 8601 timestamp |
+| `tdd.iterations` | int | ⬜ | RED→GREEN cycle count |
+| `tdd.coverage-lines` | string | ⬜ | Source line range |
 
 ---
 
@@ -312,3 +338,4 @@ references:    # OPTIONAL
 |---------|------|--------|---------|
 | 0.0.1 | 2026-08-16 | Frederick Bloom | Initial template — Layer 1 Driver/Motivation |
 | 0.0.2 | 2026-08-16 | Frederick Bloom | Schema refactor: MOTI parent→DRIV, drop `node-id`/`children`/`paired-with`, all pointers use `filename-id`, separate DRIV/MOTI body templates, add definition blocks with examples and decision guide |
+| 0.0.1 | 2026-08-16 | Frederick Bloom + AI | Add tdd: frontmatter (both schemas), TDD column, test-file ref, Slug.class IDs, dir convention notes |
