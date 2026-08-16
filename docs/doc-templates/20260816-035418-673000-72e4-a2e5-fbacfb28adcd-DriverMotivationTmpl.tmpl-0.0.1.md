@@ -1,7 +1,7 @@
 <!-- (c) 2026-* Frederick Bloom -- 20260816-035418-673000-72e4-a2e5-fbacfb28adcd-DriverMotivationTmpl.tmpl-0.0.1.md -- Hanaden AI Loader -->
 ---
 tmpl-id:      20260816-035418-673000-72e4-a2e5-fbacfb28adcd-DriverMotivationTmpl
-version:      0.0.2
+version:      0.0.1
 status:       ACTIVE
 category:     TEMPLATE
 node-types-covered: [B-DRIV, B-MOTI, T-DRIV, T-MOTI]
@@ -68,14 +68,14 @@ Features (Layer 2) are children of a Motivation — they implement the solution.
 flowchart TD
     CS["👑 CORP-STRAT-YYYY<br/>(Layer 0)"]:::l0
 
-    BD["💼 B-DRIV-100<br/>Business Driver<br/><i>THE PROBLEM</i><br/>parent → CS"]:::driv
-    BM["💼 B-MOTI-101<br/>Business Motivation<br/><i>THE SOLUTION</i><br/>parent → BD"]:::moti
+    BD["💼 EcommTransitFatigue.driv<br/>Business Driver<br/><i>THE PROBLEM</i><br/>parent → CS"]:::driv
+    BM["💼 IndoorDroneFleet.moti<br/>Business Motivation<br/><i>THE SOLUTION</i><br/>parent → BD"]:::moti
 
-    TD2["🛠️ T-DRIV-200<br/>Technical Driver<br/><i>THE PROBLEM</i><br/>parent → CS"]:::driv
-    TM["🛠️ T-MOTI-201<br/>Technical Motivation<br/><i>THE SOLUTION</i><br/>parent → TD"]:::moti
+    TD2["🛠️ UncontainedAgentExecution.driv<br/>Technical Driver<br/><i>THE PROBLEM</i><br/>parent → CS"]:::driv
+    TM["🛠️ NamespaceIsolatedSandbox.moti<br/>Technical Motivation<br/><i>THE SOLUTION</i><br/>parent → TD"]:::moti
 
-    F1["🚗 FEAT-300<br/>(Layer 2)<br/>parent → BM"]:::l2
-    A1["🏗️ ARCH-501<br/>(Layer 3)<br/>parent → TM"]:::l3
+    F1["🚗 AutonomousNavigation.feat<br/>(Layer 2)<br/>parent → BM"]:::l2
+    A1["🏗️ SpatialVisionGuidance.arch<br/>(Layer 3)<br/>parent → TM"]:::l3
 
     CS --- BD
     BD --- BM
@@ -115,6 +115,12 @@ description: > # REQUIRED
 parent:        # REQUIRED — filename-id of the Layer 0 CORP-STRAT this problem serves
 supersedes:    # OPTIONAL — filename-id of prior version
 references:    # OPTIONAL
+tdd:
+  state:          # REQUIRED — NOT_STARTED | RED | GREEN | REFACTOR
+  test-file:      # REQUIRED — relative path to test script in src/test/
+  last-run:       # OPTIONAL — ISO 8601 timestamp of last test execution
+  iterations:     # OPTIONAL — RED→GREEN cycle count (default: 0)
+  coverage-lines: # OPTIONAL — source lines this node covers
 ---
 ```
 
