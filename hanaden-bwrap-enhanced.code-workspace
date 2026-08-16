@@ -1,0 +1,39 @@
+{
+    "folders": [
+        {
+            "path": ".",
+            "name": "hanaden-bwrap-enhanced"
+        }
+    ],
+    "settings": {
+        // ── Workspace sandboxing ──────────────────────────────────────────
+        // Restrict operations to current workspace directory
+        "explorer.fileNesting.enabled": true,
+        "explorer.confirmDragAndDrop": true,
+        "explorer.confirmDelete": true,
+        // Search: only search inside workspace folders
+        "search.useParentIgnoreFiles": false,
+        "search.useGlobalIgnoreFiles": false,
+        "search.followSymlinks": false,
+        "search.exclude": {
+            "**/node_modules": true,
+            "**/target": true,
+            "**/.git": true
+        },
+        // File watcher: watch inside workspace root
+        "files.watcherExclude": {
+            "**/.git/objects/**": true,
+            "**/target/**": true,
+            "**/node_modules/**": true
+        },
+        // File picker & formatting
+        "files.defaultLanguage": "",
+        "files.insertFinalNewline": true,
+        "files.trimTrailingWhitespace": true,
+        // Terminal: start inside workspace root/PROJECT_HOME
+        "terminal.integrated.cwd": "${workspaceFolder}/PROJECT_HOME",
+        "security.workspace.trust.untrustedFiles": "prompt",
+        "workbench.localHistory.enabled": true,
+        "editor.formatOnSave": true
+    }
+}

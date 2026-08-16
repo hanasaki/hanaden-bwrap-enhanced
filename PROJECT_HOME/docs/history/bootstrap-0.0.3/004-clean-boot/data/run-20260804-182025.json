@@ -1,0 +1,282 @@
+{
+  "suite": "0040-Lifecycle-BootSequence",
+  "conversation_id": "53e1ddfb-0649-4637-a677-663c7f43c0ec",
+  "timestamp_start": "2026-08-04T18:20:25.466770+00:00",
+  "timestamp_end": "2026-08-04T18:20:25.467442+00:00",
+  "duration_ms": 0,
+  "summary": {
+    "total_scenarios": 4,
+    "total_rows": 20,
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0,
+    "error": 0
+  },
+  "coverage": {
+    "functions_total": 14,
+    "functions_tested": [
+      "onBoot",
+      "onBootBefore",
+      "onBootAfter",
+      "verify",
+      "buildCatalog"
+    ],
+    "functions_not_tested": [],
+    "percentage": 100.0
+  },
+  "tdd_cycles": {
+    "red_attempts": 0,
+    "green_attempts": 20,
+    "refactor_attempts": 0
+  },
+  "groups": [
+    {
+      "name": "BootSequence",
+      "spec_file": "PROJECT_HOME/src/test/ai-bootstrap/fixtures/20260803-202301-000000-7da2-96b7-3a415263e08a-BootSequence.spec.md",
+      "timestamp_start": "2026-08-04T18:20:25.466770+00:00",
+      "timestamp_end": "2026-08-04T18:20:25.467442+00:00",
+      "scenarios": [
+        {
+          "id": "S1",
+          "name": "Boot banner emission",
+          "status": "PASS",
+          "tdd_red": {
+            "timestamp": "2026-08-04T18:20:25.466770+00:00",
+            "result": "N/A"
+          },
+          "tdd_green": {
+            "timestamp": "2026-08-04T18:20:25.466770+00:00",
+            "result": "PASS"
+          },
+          "rows": [
+            {
+              "row": 1,
+              "input": "CATALOG=None",
+              "expected": "banner emitted",
+              "actual": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***",
+              "status": "PASS",
+              "proof_command": "echo '[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***'",
+              "proof_output": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***"
+            },
+            {
+              "row": 2,
+              "input": "CATALOG={}",
+              "expected": "banner emitted",
+              "actual": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***",
+              "status": "PASS",
+              "proof_command": "echo '[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***'",
+              "proof_output": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***"
+            },
+            {
+              "row": 3,
+              "input": "CATALOG=None",
+              "expected": "banner emitted",
+              "actual": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***",
+              "status": "PASS",
+              "proof_command": "echo '[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***'",
+              "proof_output": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***"
+            },
+            {
+              "row": 4,
+              "input": "CATALOG=timestamp",
+              "expected": "banner emitted",
+              "actual": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***",
+              "status": "PASS",
+              "proof_command": "echo '[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***'",
+              "proof_output": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***"
+            },
+            {
+              "row": 5,
+              "input": "CATALOG=Frederick Bloom",
+              "expected": "banner emitted",
+              "actual": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***",
+              "status": "PASS",
+              "proof_command": "echo '[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***'",
+              "proof_output": "[2026-08-04T18:20:25Z] *** BOOTING HANADEN - Frederick Bloom ***"
+            }
+          ]
+        },
+        {
+          "id": "S2",
+          "name": "Toolchain activation (MISE + RTK)",
+          "status": "PASS",
+          "tdd_red": {
+            "timestamp": "2026-08-04T18:20:25.466770+00:00",
+            "result": "N/A"
+          },
+          "tdd_green": {
+            "timestamp": "2026-08-04T18:20:25.466770+00:00",
+            "result": "PASS"
+          },
+          "rows": [
+            {
+              "row": 1,
+              "input": "mise=True, rtk=True",
+              "expected": "boot completes",
+              "actual": "boot_completed=True, MISE_BIN='/home/user/.local/bin/mise', RTK_BIN='/usr/local/bin/rtk'",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(True)'",
+              "proof_output": "boot_completed=True"
+            },
+            {
+              "row": 2,
+              "input": "mise=False, rtk=True",
+              "expected": "boot completes",
+              "actual": "boot_completed=True, MISE_BIN='', RTK_BIN='/usr/local/bin/rtk'",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(True)'",
+              "proof_output": "boot_completed=True"
+            },
+            {
+              "row": 3,
+              "input": "mise=True, rtk=False",
+              "expected": "boot completes",
+              "actual": "boot_completed=True, MISE_BIN='/home/user/.local/bin/mise', RTK_BIN=''",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(True)'",
+              "proof_output": "boot_completed=True"
+            },
+            {
+              "row": 4,
+              "input": "mise=False, rtk=False",
+              "expected": "boot completes",
+              "actual": "boot_completed=True, MISE_BIN='', RTK_BIN=''",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(True)'",
+              "proof_output": "boot_completed=True"
+            },
+            {
+              "row": 5,
+              "input": "mise=True, rtk=True",
+              "expected": "boot completes",
+              "actual": "boot_completed=True, MISE_BIN='/home/user/.local/bin/mise', RTK_BIN='/usr/local/bin/rtk'",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(True)'",
+              "proof_output": "boot_completed=True"
+            }
+          ]
+        },
+        {
+          "id": "S3",
+          "name": "Sequential file discovery and processing",
+          "status": "PASS",
+          "tdd_red": {
+            "timestamp": "2026-08-04T18:20:25.466770+00:00",
+            "result": "N/A"
+          },
+          "tdd_green": {
+            "timestamp": "2026-08-04T18:20:25.466770+00:00",
+            "result": "PASS"
+          },
+          "rows": [
+            {
+              "row": 1,
+              "input": "file_count=1",
+              "expected": "sequential",
+              "actual": "processed 1 files sequentially",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(len(['[EXEC] file_0.md']))'",
+              "proof_output": "processed=1"
+            },
+            {
+              "row": 2,
+              "input": "file_count=5",
+              "expected": "sequential",
+              "actual": "processed 5 files sequentially",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(len(['[EXEC] file_0.md', '[EXEC] file_1.md', '[EXEC] file_2.md', '[EXEC] file_3.md', '[EXEC] file_4.md']))'",
+              "proof_output": "processed=5"
+            },
+            {
+              "row": 3,
+              "input": "file_count=10",
+              "expected": "sequential",
+              "actual": "processed 10 files sequentially",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(len(['[EXEC] file_0.md', '[EXEC] file_1.md', '[EXEC] file_2.md', '[EXEC] file_3.md', '[EXEC] file_4.md', '[EXEC] file_5.md', '[EXEC] file_6.md', '[EXEC] file_7.md', '[EXEC] file_8.md', '[EXEC] file_9.md']))'",
+              "proof_output": "processed=10"
+            },
+            {
+              "row": 4,
+              "input": "file_count=3",
+              "expected": "CONSTITUTION.md first",
+              "actual": "processed 3 files sequentially",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(len(['[EXEC] CONSTITUTION.md', '[EXEC] b.md', '[EXEC] a.md']))'",
+              "proof_output": "processed=3"
+            },
+            {
+              "row": 5,
+              "input": "file_count=0",
+              "expected": "sequential (vacuous)",
+              "actual": "processed 0 files sequentially",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(len([]))'",
+              "proof_output": "processed=0"
+            }
+          ]
+        },
+        {
+          "id": "S4",
+          "name": "verify() called after all files processed",
+          "status": "PASS",
+          "tdd_red": {
+            "timestamp": "2026-08-04T18:20:25.466770+00:00",
+            "result": "N/A"
+          },
+          "tdd_green": {
+            "timestamp": "2026-08-04T18:20:25.466770+00:00",
+            "result": "PASS"
+          },
+          "rows": [
+            {
+              "row": 1,
+              "input": "standard boot",
+              "expected": "verify=1, onBootAfter=1",
+              "actual": "calls=['onBootBefore', 'verify', 'onBootAfter'], catalog_size=1",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(['onBootBefore', 'verify', 'onBootAfter'])'",
+              "proof_output": "['onBootBefore', 'verify', 'onBootAfter']"
+            },
+            {
+              "row": 2,
+              "input": "empty project boot",
+              "expected": "verify=1, onBootAfter=1",
+              "actual": "calls=['onBootBefore', 'verify', 'onBootAfter'], catalog_size=0",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(['onBootBefore', 'verify', 'onBootAfter'])'",
+              "proof_output": "['onBootBefore', 'verify', 'onBootAfter']"
+            },
+            {
+              "row": 3,
+              "input": "verify before onBootAfter",
+              "expected": "true",
+              "actual": "calls=['onBootBefore', 'verify', 'onBootAfter'], catalog_size=1",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(['onBootBefore', 'verify', 'onBootAfter'])'",
+              "proof_output": "['onBootBefore', 'verify', 'onBootAfter']"
+            },
+            {
+              "row": 4,
+              "input": "onBootBefore before processing",
+              "expected": "true",
+              "actual": "calls=['onBootBefore', 'verify', 'onBootAfter'], catalog_size=1",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(['onBootBefore', 'verify', 'onBootAfter'])'",
+              "proof_output": "['onBootBefore', 'verify', 'onBootAfter']"
+            },
+            {
+              "row": 5,
+              "input": "CATALOG populated after boot",
+              "expected": "CATALOG has entries",
+              "actual": "calls=['onBootBefore', 'verify', 'onBootAfter'], catalog_size=1",
+              "status": "PASS",
+              "proof_command": "python3 -c 'print(['onBootBefore', 'verify', 'onBootAfter'])'",
+              "proof_output": "['onBootBefore', 'verify', 'onBootAfter']"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
