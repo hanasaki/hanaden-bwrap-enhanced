@@ -337,5 +337,5 @@ tdd:
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 0.0.1 | 2026-08-16 | Frederick Bloom | Initial template — Layer 1 Driver/Motivation |
-| 0.0.2 | 2026-08-16 | Frederick Bloom | Schema refactor: MOTI parent→DRIV, drop `node-id`/`children`/`paired-with`, all pointers use `filename-id`, separate DRIV/MOTI body templates, add definition blocks with examples and decision guide |
+| 0.0.1 | 2026-08-16 | Frederick Bloom | Schema refactor: MOTI parent→DRIV, drop `node-id`/`children`/`paired-with`, all pointers use `filename-id`, separate DRIV/MOTI body templates, add definition blocks with examples and decision guide |
 | 0.0.1 | 2026-08-16 | Frederick Bloom + AI | Add tdd: frontmatter (both schemas), TDD column, test-file ref, Slug.class IDs, dir convention notes |
