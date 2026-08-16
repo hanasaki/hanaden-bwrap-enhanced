@@ -46,14 +46,19 @@
 #    3   │ --ro-bind-try /etc/resolv.conf ...       │  RO  │ No
 #    3   │ --ro-bind-try /etc/ssl, /etc/pki ...     │  RO  │ No
 #    3   │ --ro-bind-try /etc/ld.so.cache ...       │  RO  │ No
-#    4   │ --ro-bind /homes /homes                  │  RO  │ No (visible, ro)
 #    5   │ --proc /proc                             │  RW* │ No (kernel API)
 #    5   │ --dev-bind /dev /dev                     │  RW  │ Pass-through
 #    6   │ --tmpfs /dev/shm                         │  RW  │ No (lost on exit)
 #    6   │ --tmpfs /tmp                             │  RW  │ No (lost on exit)
 #    6   │ --ro-bind-try /tmp/.X11-unix ...         │  RO  │ No (X11 socket)
 #    7   │ --bind-try /run/dbus /run/dbus           │  RW  │ Pass-through
-#    7   │ --bind-try /run/user/UID /run/user/UID   │  RW  │ Pass-through
+#    7   │ --tmpfs /run/user/UID                    │  RW  │ No (empty by default)
+#    7a  │ [conditional: --enable-wayland]          │  RO  │ wayland-0 socket
+#    7b  │ [conditional: --enable-audio]            │  RW  │ pipewire-0, pulse/
+#    7c  │ [conditional: --enable-a11y]             │  RO  │ at-spi/bus_1
+#    7d  │ [conditional: --enable-dbus]             │  RW  │ bus (⚠ portal escape)
+#    7e  │ [conditional: --enable-gnome]            │  RW  │ gvfs, dconf, keyring
+#    7f  │ [conditional: --enable-kde]              │  RW  │ kwallet5, KSMserver
 #    8   │ --tmpfs /home                            │  RW  │ No (anon layer)
 #    8   │ --dir /home/[VIRTUAL_USER_NAME]          │  —   │ No (mkdir only)
 #    9   │ --bind $HOST_REAL_HOME_DIR               │  RW  │ *** YES ***
@@ -72,7 +77,7 @@
 #     but /home/[VIRTUAL_USER_NAME] is punched through as a live RW overlay.
 #   - /tmp is a FRESH tmpfs every sandbox invocation. Nothing written to /tmp
 #     survives sandbox exit. Do NOT use /tmp for output that must be collected.
-#   - /homes is visible read-only inside the sandbox (host paths accessible).
+#   - /homes is NOT visible inside the sandbox (removed for isolation).
 #
 # ── PERSISTENCE CONTRACT ──────────────────────────────────────────────────────
 #
@@ -83,7 +88,7 @@
 #   /tmp/**                               │ NO  ❌             │ tmpfs, lost on exit
 #   /dev/**                               │ PASSTHROUGH        │ real device nodes
 #   /usr/**, /etc/**                      │ NO  ❌             │ read-only bind
-#   /homes/**                             │ NO  ❌             │ read-only bind
+#   /run/user/UID/**                       │ CONDITIONAL        │ --enable-* flags
 #
 #   COVERAGE IMPLICATION (bashcov / SimpleCov):
 #     SimpleCov reads its output directory from the env var SIMPLECOV_COVERAGE_DIR.
@@ -107,7 +112,10 @@
 #     HOME=/home/[VIRTUAL_USER_NAME]
 #     USER=[VIRTUAL_USER_NAME]
 #     PATH=/usr/bin:/bin   ← caller should override via `env PATH=... CMD`
-#     DISPLAY, TERM, XAUTHORITY  ← passed from host
+#     DISPLAY       ← passed from host if --enable-wayland or --enable-x11
+#     TERM          ← passed from host
+#     XAUTHORITY    ← passed from host if --enable-x11
+#     WAYLAND_DISPLAY ← passed from host if --enable-wayland
 #     XDG_DATA_HOME=/home/[VIRTUAL_USER_NAME]/.local/share
 #     XDG_STATE_HOME=/home/[VIRTUAL_USER_NAME]/.local/state
 #     MOZ_NO_REMOTE=1
@@ -119,6 +127,7 @@
 #   OPTIONS:
 #     --clear-env
 #         Strip host env before entering sandbox.
+#     --share-net                         Opt-in to host network (default: isolated)
 #     --virtual-user-name NAME       [default: sandbox-user]
 #         Username inside sandbox. HOME=/home/NAME, USER=NAME.
 #     --host-real-root PATH          [default: ~/virtual-roots]
@@ -126,6 +135,13 @@
 #     --host-real-home-parent PATH   [default: ~/virtual-roots/home]
 #         Host directory containing [NAME] subdirectory. Must exist.
 #         Actual home bound: HOST_REAL_HOME_PARENT/NAME -> /home/NAME
+#     --enable-wayland                    Bind Wayland display socket
+#     --enable-x11                        Pass X11 DISPLAY env var
+#     --enable-audio                      Bind PipeWire + PulseAudio sockets
+#     --enable-a11y                       Bind AT-SPI accessibility bus
+#     --enable-dbus                       Bind D-Bus session bus (⚠ portal escape)
+#     --enable-gnome                      GNOME services (implies --enable-dbus)
+#     --enable-kde                        KDE services (implies --enable-dbus)
 #     --                             Separator. Remaining args = CMD.
 #
 #   TYPICAL INVOCATION (run_tests.sh pattern):
@@ -289,14 +305,15 @@ export PATH"
         # /tmp/.X11-unix to connect to the X display server. Without this bind,
         # graphical applications will silently fail to open and exit immediately.
         --ro-bind-try /tmp/.X11-unix /tmp/.X11-unix
-        # DBUS & XDG RUNTIME PASSTHROUGH:
-        # Wayland compositors, PulseAudio, and D-Bus use /run.
-        # GUI apps depend on DBus and XDG_RUNTIME_DIR to create IPC sockets.
-        # These MUST be bound as writable (--bind-try), otherwise apps like
-        # Cursor/VSCode will crash with "EROFS: read-only file system" when
-        # trying to create their local domain sockets.
+        # DBUS SYSTEM BUS PASSTHROUGH:
+        # The system D-Bus bus (/run/dbus) is required for basic host queries
+        # (hostname, systemd, etc.) and is low-risk (no portal file picker).
         --bind-try /run/dbus /run/dbus
-        --bind-try /run/user/$(id -u) /run/user/$(id -u)
+        # GUI PASSTHROUGH: /run/user is a fresh tmpfs by default (empty).
+        # Individual sockets are selectively bound via --enable-* flags
+        # after this bwrap_args block. This prevents sandbox escape via
+        # D-Bus portal file picker, GVFS, keyring, SSH agent, etc.
+        --tmpfs /run/user/$(id -u)
         # HOME OVERLAY:
         # Use a tmpfs on /home so bwrap can mkdir the user directory without
         # needing write permission on the bound root filesystem (critical when
@@ -306,14 +323,22 @@ export PATH"
         --bind "$abs_home" "/home/$virtual_user_name"
         --ro-bind-data 9 /etc/passwd
         --ro-bind-data 10 /etc/group
-        --remount-ro /
-        # Shadow host-only mount subtrees that must never be visible inside ex:
-        #   /homes  — host autofs tree leaked via --bind / /
+        # Shadow host-only mount subtrees that must never be visible inside:
         #   /etc/profile.d — host login scripts contaminate PATH
-        #   /etc/profile — replaced with a minimal version that only sets PATH
-        --tmpfs /homes
+        #   /etc/profile   — replaced with a minimal version that only sets PATH
+        # NOTE: These MUST come BEFORE --remount-ro / because bwrap needs to
+        # create their mountpoints (file + dir) while the sandbox root is still RW.
         --ro-bind-data 11 /etc/profile
         --tmpfs /etc/profile.d
+        # GOOGLE CHROME: binary lives in /opt/google (not /usr), which is absent
+        # from virtual-roots/. Bind it before --remount-ro / so the mountpoint
+        # dir can be created while root is still RW.
+        --dir /opt
+        --ro-bind /opt/google /opt/google
+        --remount-ro /
+        # NOTE: --tmpfs /homes removed. virtual-roots/ contains no homes/ subdir,
+        # so bwrap cannot mkdir the mountpoint after --remount-ro / locks the root.
+        # When abs_root != /, there is no host autofs /homes leak to shadow anyway.
         --bind "$abs_home" "/home/$virtual_user_name"
         --setenv HOME "/home/$virtual_user_name"
         --setenv USER "$virtual_user_name"
@@ -325,10 +350,82 @@ export PATH"
         # so GTK/Qt/Electron apps find themes, icons, and .desktop files.
         # Preserve parent value if set; fall back to Debian default otherwise.
         --setenv XDG_DATA_DIRS "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-        # Wayland display passthrough (Wayland compositors use this + XDG_RUNTIME_DIR)
-        --setenv WAYLAND_DISPLAY "${WAYLAND_DISPLAY:-}"
         --chdir "/home/$virtual_user_name"
     )
+
+    # ─── GUI PASSTHROUGH: Selective /run/user socket binding ─────────
+    # Default-deny: /run/user/$UID is a tmpfs. Only explicitly requested
+    # sockets are bound in. This prevents sandbox escape via D-Bus portal
+    # file picker, GVFS, keyring, SSH agent, etc.
+    local _RU="/run/user/$(id -u)"
+
+    if [[ "$ENABLE_WAYLAND" == "true" ]]; then
+        bwrap_args+=(
+            --ro-bind-try "$_RU/wayland-0"      "$_RU/wayland-0"
+            --ro-bind-try "$_RU/wayland-0.lock"  "$_RU/wayland-0.lock"
+        )
+    fi
+
+    if [[ "$ENABLE_AUDIO" == "true" ]]; then
+        bwrap_args+=(
+            --bind-try "$_RU/pipewire-0"              "$_RU/pipewire-0"
+            --bind-try "$_RU/pipewire-0.lock"          "$_RU/pipewire-0.lock"
+            --bind-try "$_RU/pipewire-0-manager"       "$_RU/pipewire-0-manager"
+            --bind-try "$_RU/pipewire-0-manager.lock"  "$_RU/pipewire-0-manager.lock"
+            --dir "$_RU/pulse"
+            --bind-try "$_RU/pulse/native"             "$_RU/pulse/native"
+            --bind-try "$_RU/pulse/pid"                "$_RU/pulse/pid"
+        )
+    fi
+
+    if [[ "$ENABLE_A11Y" == "true" ]]; then
+        bwrap_args+=(
+            --dir "$_RU/at-spi"
+            --ro-bind-try "$_RU/at-spi/bus_1"  "$_RU/at-spi/bus_1"
+        )
+    fi
+
+    if [[ "$ENABLE_DBUS" == "true" ]]; then
+        echo "[SYS-LOG] WARNING: D-Bus session bus enabled — portal file picker can see host FS." >&2
+        bwrap_args+=(
+            --bind-try "$_RU/bus"     "$_RU/bus"
+            --dir "$_RU/dbus-1"
+            --bind-try "$_RU/dbus-1"  "$_RU/dbus-1"
+        )
+    fi
+
+    if [[ "$ENABLE_GNOME" == "true" ]]; then
+        bwrap_args+=(
+            --bind-try "$_RU/gvfs"     "$_RU/gvfs"
+            --bind-try "$_RU/gvfsd"    "$_RU/gvfsd"
+            --bind-try "$_RU/doc"      "$_RU/doc"
+            --dir "$_RU/dconf"
+            --bind-try "$_RU/dconf"    "$_RU/dconf"
+            --dir "$_RU/keyring"
+            --bind-try "$_RU/keyring"  "$_RU/keyring"
+            --dir "$_RU/gcr"
+            --bind-try "$_RU/gcr"      "$_RU/gcr"
+        )
+    fi
+
+    if [[ "$ENABLE_KDE" == "true" ]]; then
+        bwrap_args+=(
+            --bind-try "$_RU/kwallet5.socket"           "$_RU/kwallet5.socket"
+            --ro-bind-try "$_RU/KSMserver__1"           "$_RU/KSMserver__1"
+            --bind-try "$_RU/drkonqi-coredump-launcher" "$_RU/drkonqi-coredump-launcher"
+        )
+    fi
+
+    # ─── GUI PASSTHROUGH: Conditional env var injection ──────────────
+    if [[ "$ENABLE_WAYLAND" == "true" ]]; then
+        bwrap_args+=(--setenv WAYLAND_DISPLAY "${WAYLAND_DISPLAY:-}")
+    fi
+    if [[ "$ENABLE_WAYLAND" == "true" || "$ENABLE_X11" == "true" ]]; then
+        bwrap_args+=(--setenv DISPLAY "${DISPLAY:-}")
+    fi
+    if [[ "$ENABLE_X11" == "true" ]]; then
+        bwrap_args+=(--setenv XAUTHORITY "${XAUTHORITY:-}")
+    fi
 
     # Append caller-supplied passthrough args AFTER engine defaults.
     # bwrap processes flags in order — last --setenv PATH wins.
@@ -347,14 +444,14 @@ export PATH"
             "--clearenv"
             "${bwrap_args[@]}"
             --unsetenv TERM
-            --unsetenv DISPLAY
-            --unsetenv XAUTHORITY
         )
+        # With --clearenv, DISPLAY/XAUTHORITY/WAYLAND_DISPLAY are only present
+        # if injected by the --enable-* conditional block above, which is correct.
     else
+        # Inherit-env mode: TERM is always passed. DISPLAY/XAUTHORITY/WAYLAND_DISPLAY
+        # are handled by the --enable-* conditional block above.
         bwrap_args+=(
-            --setenv DISPLAY "${DISPLAY:-}"
             --setenv TERM "${TERM:-dumb}"
-            --setenv XAUTHORITY "${XAUTHORITY:-}"
         )
     fi
 
@@ -411,8 +508,12 @@ Usage: $0 [OPTIONS] [CMD...]
 OPTIONS:
   --clear-env
       Clears all environment variables from the host before passing them into
-      the sandbox. Only explicit values like HOME, USER, PATH, DISPLAY, and TERM
-      will be passed in.
+      the sandbox. Only explicit values like HOME, USER, PATH will be passed in.
+      Display variables (DISPLAY, WAYLAND_DISPLAY) are only passed when the
+      corresponding --enable-wayland or --enable-x11 flag is also set.
+
+  --share-net
+      Opts in to sharing the host network namespace. Default: network isolated.
 
   --virtual-user-name [USER_NAME]
       Sets the virtual user name inside the sandbox.
@@ -432,27 +533,87 @@ OPTIONS:
       \${HOST_REAL_HOME_PARENT}/\${VIRTUAL_USER_NAME}
       [Default: ~/virtual-roots/home]
 
+GUI PASSTHROUGH FLAGS:
+  By default, no GUI or audio sockets are bound into the sandbox (headless
+  mode). Use the flags below to selectively enable passthrough. Flags are
+  additive — combine them as needed.
+
+  --enable-wayland
+      Bind the Wayland compositor socket (/run/user/UID/wayland-0) and set
+      WAYLAND_DISPLAY inside the sandbox. Required for GUI apps on Wayland.
+
+  --enable-x11
+      Pass DISPLAY and XAUTHORITY env vars into the sandbox. The X11 Unix
+      socket (/tmp/.X11-unix) is always bound; this flag gates the env vars.
+
+  --enable-audio
+      Bind PipeWire (pipewire-0, pipewire-0-manager) and PulseAudio
+      (pulse/native) sockets into the sandbox. Required for sound playback.
+      NOTE: Also grants microphone access — PipeWire does not distinguish
+      playback vs. recording at the socket level.
+
+  --enable-a11y
+      Bind the AT-SPI accessibility bus (/run/user/UID/at-spi/bus_1).
+      Required for screen readers and accessibility tooling.
+
+  --enable-dbus
+      Bind the D-Bus session bus (/run/user/UID/bus) into the sandbox.
+      WARNING: The D-Bus session bus is the gateway to desktop portals.
+      With this flag, the portal file picker (Ctrl+O) can browse the FULL
+      HOST filesystem. Only use when portal access is required (e.g., IME,
+      notifications). Without this flag, Ctrl+O shows only the sandbox home.
+
+  --enable-gnome
+      Enable full GNOME desktop integration: dconf (themes/settings), GVFS
+      (virtual filesystem), document portal, GNOME Keyring, and GCR crypto
+      services. Implies --enable-dbus.
+      WARNING: GVFS and the document portal can access the host filesystem.
+
+  --enable-kde
+      Enable full KDE desktop integration: KWallet (secrets store), KDE
+      Session Manager, and crash handler. Implies --enable-dbus.
+      WARNING: KWallet can access stored passwords from the host session.
+
+SECURITY TIERS:
+  Tier 1 (recommended):  --enable-wayland --enable-audio
+    GUI renders, audio works, file picker confined to sandbox. No escape.
+
+  Tier 2 (accessible):   Tier 1 + --enable-a11y
+    Adds accessibility. No new escape vectors.
+
+  Tier 3 (portal):       Tier 2 + --enable-dbus
+    Adds notifications, IME, portal file picker.
+    ⚠ File picker CAN see host filesystem.
+
+  Tier 4 (full DE):      Tier 3 + --enable-gnome / --enable-kde
+    Full desktop integration, keyring, virtual filesystem.
+    ❌ No meaningful isolation remaining.
+
 CMD:
   The command and its arguments to run inside the sandbox (e.g., /bin/bash).
   Must be provided.
 
 EXAMPLES:
-  1. TEST CASE 1: Fast-exit CLI command (Verifies basic sandbox function)
-     $0 --host-real-root / --host-real-home-parent ~/virtual-roots/home /bin/echo "Works"
-     * Expected: Prints "Works" and exits immediately cleanly.
+  1. Headless CLI (no GUI, no sound):
+     $0 /bin/echo "Works"
+     * Expected: Prints "Works" and exits. No display sockets bound.
 
-  2. TEST CASE 2: Interactive Shell (Verifies TTY and Job Control)
-     $0 --host-real-root / --host-real-home-parent ~/virtual-roots/home /bin/bash
-     * Expected: Drops you into an interactive bash prompt inside the sandbox.
-       Type 'exit' to cleanly leave the sandbox.
+  2. Interactive shell with GUI + Audio (Tier 1, recommended):
+     $0 --enable-wayland --enable-audio /bin/bash
+     * Expected: Interactive prompt. Can launch GUI apps with sound.
+       Ctrl+O file picker shows only sandbox home. Host FS not visible.
 
-  3. TEST CASE 3: Foreground-Hold GUI App (Verifies daemonized orphans)
-     $0 --host-real-root / --host-real-home-parent ~/virtual-roots/home cursor
-     * Expected: The cursor GUI launches. The terminal prompt blocks. Even though
-       the cursor launcher script forks Electron to the background and exits,
-       the sandbox stays alive until you close the Cursor GUI window.
+  3. Firefox in isolated sandbox:
+     $0 --enable-wayland --enable-audio --share-net firefox
+     * Expected: Firefox launches with display and sound. File picker
+       shows only /home/sandbox-user. Host filesystem not accessible.
 
-  4. TEST CASE 4: Isolated Custom Home & Profile
+  4. Chromium with host network + D-Bus portal (Tier 3):
+     $0 --enable-wayland --enable-audio --enable-dbus --share-net chromium
+     * Expected: Full browser with portal file picker (can browse host FS).
+       Use only when portal integration is required.
+
+  5. Isolated Custom Home & Profile:
      $0 --virtual-user-name tester --host-real-root / --host-real-home-parent ~/containers /bin/bash -c "echo \$HOME"
      * Expected: Prints "/home/tester" and binds the host directory
        "~/containers/tester" isolated from your real home.
@@ -464,6 +625,14 @@ EOF
 
 CLEAR_ENV="false"
 SHARE_NETWORK="false"  # Default-Deny network posture
+# ─── GUI Passthrough: Default-Deny (matches --share-net pattern) ──────────
+ENABLE_WAYLAND="false"
+ENABLE_X11="false"
+ENABLE_AUDIO="false"
+ENABLE_A11Y="false"
+ENABLE_DBUS="false"
+ENABLE_GNOME="false"
+ENABLE_KDE="false"
 VIRTUAL_USER_NAME_DEFAULT="sandbox-user"
 HOST_REAL_ROOT_DIR_DEFAULT="$HOME/virtual-roots"
 HOST_REAL_HOME_PARENT_DEFAULT="$HOME/virtual-roots/home"
@@ -479,6 +648,14 @@ while [[ "$#" -gt 0 ]]; do
     case "$1" in
         --clear-env) CLEAR_ENV="true"; shift 1 ;;
         --share-net) SHARE_NETWORK="true"; shift 1 ;;
+        # ─── GUI Passthrough flags ──────────────────────────────────────
+        --enable-wayland) ENABLE_WAYLAND="true"; shift 1 ;;
+        --enable-x11)     ENABLE_X11="true"; shift 1 ;;
+        --enable-audio)   ENABLE_AUDIO="true"; shift 1 ;;
+        --enable-a11y)    ENABLE_A11Y="true"; shift 1 ;;
+        --enable-dbus)    ENABLE_DBUS="true"; shift 1 ;;
+        --enable-gnome)   ENABLE_GNOME="true"; ENABLE_DBUS="true"; shift 1 ;;
+        --enable-kde)     ENABLE_KDE="true"; ENABLE_DBUS="true"; shift 1 ;;
         --virtual-user-name) VIRTUAL_USER_NAME="$2"; shift 2 ;;
         --host-real-root)
             # ROBUST TILDE EXPANSION:
