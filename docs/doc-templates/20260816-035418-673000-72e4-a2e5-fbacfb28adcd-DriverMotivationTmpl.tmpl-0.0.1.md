@@ -184,28 +184,29 @@ references:    # OPTIONAL
 
 > **Suite ID:** [filename-id]-SUITE
 > **Suite name:** [Human-readable name — e.g. "Macro-Economic Analysis"]
+> **Test file:** `src/test/{project}/Slug.driv/test_slug.sh`
 > **Integration test boundary:** tests this driver against the parent Layer 0 goal
 > **Unit test boundary:** tests the paired motivation as a unit against this driver
 
 ### ⚙️ Functional Tests
 
-| ID | Description | Method | Pass Criteria |
-|----|-------------|--------|---------------|
+| ID | Description | Method | Pass Criteria | TDD |
+|----|-------------|--------|---------------|-----|
 
 ### 📊 Performance / Profile / Electrical Tests
 
-| ID | Description | Metric | Target | Tolerance |
-|----|-------------|--------|--------|-----------|
+| ID | Description | Metric | Target | Tolerance | TDD |
+|----|-------------|--------|--------|-----------|-----|
 
 ### 🛡️ Security Tests
 
-| ID | Description | Attack / Scenario | Expected Defense |
-|----|-------------|-------------------|------------------|
+| ID | Description | Attack / Scenario | Expected Defense | TDD |
+|----|-------------|-------------------|------------------|-----|
 
 ### 🧠 Memory / CPU / Hardware Tests
 
-| ID | Description | Resource | Threshold |
-|----|-------------|----------|-----------|
+| ID | Description | Resource | Threshold | TDD |
+|----|-------------|----------|-----------|-----|
 
 ## References
 
@@ -243,28 +244,29 @@ references:    # OPTIONAL
 
 > **Suite ID:** [filename-id]-SUITE
 > **Suite name:** [Human-readable name — e.g. "Business Acceptance Suite"]
+> **Test file:** `src/test/{project}/Slug.driv/Slug.moti/test_slug.sh`
 > **Integration test boundary:** tests this motivation against the parent driver
 > **Unit test boundary:** tests Layer 2 features as units against this motivation
 
 ### ⚙️ Functional Tests
 
-| ID | Description | Method | Pass Criteria |
-|----|-------------|--------|---------------|
+| ID | Description | Method | Pass Criteria | TDD |
+|----|-------------|--------|---------------|-----|
 
 ### 📊 Performance / Profile / Electrical Tests
 
-| ID | Description | Metric | Target | Tolerance |
-|----|-------------|--------|--------|-----------|
+| ID | Description | Metric | Target | Tolerance | TDD |
+|----|-------------|--------|--------|-----------|-----|
 
 ### 🛡️ Security Tests
 
-| ID | Description | Attack / Scenario | Expected Defense |
-|----|-------------|-------------------|------------------|
+| ID | Description | Attack / Scenario | Expected Defense | TDD |
+|----|-------------|-------------------|------------------|-----|
 
 ### 🧠 Memory / CPU / Hardware Tests
 
-| ID | Description | Resource | Threshold |
-|----|-------------|----------|-----------|
+| ID | Description | Resource | Threshold | TDD |
+|----|-------------|----------|-----------|-----|
 
 ## References
 
