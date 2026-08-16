@@ -1,0 +1,12 @@
+# IDE config dirs
+.amazonq/
+.continue/
+.cursor/
+.windsurf/
+.gemini/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*~

@@ -1,0 +1,137 @@
+{
+  "suite": "bootstrap-v0.0.3",
+  "conversation_id": "0d49b11c-83cb-4bbd-9f0d-f57fab1b8988",
+  "timestamp_start": "2026-08-04T16:56:49Z",
+  "timestamp_end": "2026-08-04T16:59:45Z",
+  "duration_ms": 176000,
+  "summary": {
+    "total_scenarios": 40,
+    "total_rows": 62,
+    "passed": 40,
+    "failed": 0,
+    "skipped": 0,
+    "error": 0
+  },
+  "coverage": {
+    "functions_total": 14,
+    "functions_tested": [
+      "verifyTrue", "verifyNotNull", "verifyTrueSoft", "verifySummary",
+      "statEntriesInDirAll", "buildCatalogForDir", "buildCatalog",
+      "findExecFiles", "snapshot", "processFile", "retainOutline",
+      "onBoot", "onBootBefore", "onBootAfter", "onAiTurnBefore", "onAiTurnAfter"
+    ],
+    "functions_not_tested": [],
+    "percentage": 100.0
+  },
+  "tdd_cycles": {
+    "red_attempts": 1,
+    "green_attempts": 40,
+    "refactor_attempts": 0
+  },
+  "groups": [
+    {
+      "name": "DSL Assertions",
+      "spec_file": "VerifyAssertions.spec.md",
+      "timestamp_start": "2026-08-04T16:56:49Z",
+      "timestamp_end": "2026-08-04T16:57:34Z",
+      "scenarios": [
+        {"id": "S1", "name": "verifyTrue passes on true", "status": "PASS", "rows_passed": 2, "rows_total": 2},
+        {"id": "S2", "name": "verifyTrue halts on false", "status": "PASS", "rows_passed": 2, "rows_total": 2},
+        {"id": "S3", "name": "verifyNotNull passes on non-null", "status": "PASS", "rows_passed": 3, "rows_total": 3},
+        {"id": "S4", "name": "verifyNotNull halts on null", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S5", "name": "verifyTrueSoft collects no halt", "status": "PASS", "rows_passed": 3, "rows_total": 3},
+        {"id": "S6", "name": "verifySummary logs counts", "status": "PASS", "rows_passed": 2, "rows_total": 2}
+      ]
+    },
+    {
+      "name": "Stat Entries",
+      "spec_file": "BuildCatalog.spec.md",
+      "timestamp_start": "2026-08-04T16:57:47Z",
+      "timestamp_end": "2026-08-04T16:57:48Z",
+      "scenarios": [
+        {"id": "S1", "name": "list entries with all fields", "status": "PASS", "rows_passed": 3, "rows_total": 3},
+        {"id": "S2", "name": "empty dir returns 0", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S3", "name": "isExecutable field", "status": "PASS", "rows_passed": 2, "rows_total": 2},
+        {"id": "S4", "name": "isDir field", "status": "PASS", "rows_passed": 2, "rows_total": 2}
+      ]
+    },
+    {
+      "name": "Recursive Catalog",
+      "spec_file": "RecursiveCatalog.spec.md",
+      "timestamp_start": "2026-08-04T16:58:10Z",
+      "timestamp_end": "2026-08-04T16:58:11Z",
+      "scenarios": [
+        {"id": "S1", "name": "recursive traversal all files", "status": "PASS", "rows_passed": 2, "rows_total": 2},
+        {"id": "S2", "name": "WALK_DEPTH limits recursion", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S3", "name": "WALK_GLOB filters extensions", "status": "PASS", "rows_passed": 2, "rows_total": 2},
+        {"id": "S4", "name": "alpha sort deterministic", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S5", "name": "files before subdirs", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S6", "name": "isExecutable populated", "status": "PASS", "rows_passed": 2, "rows_total": 2}
+      ]
+    },
+    {
+      "name": "Shebang Detection",
+      "spec_file": "DualShebang.spec.md",
+      "timestamp_start": "2026-08-04T16:58:30Z",
+      "timestamp_end": "2026-08-04T16:58:30Z",
+      "scenarios": [
+        {"id": "S1", "name": "AI shebang detected", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S2", "name": "OS shebang with +x", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S3", "name": "frontmatter fallback", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S4", "name": "OS shebang no +x skip", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S5", "name": "plain file excluded", "status": "PASS", "rows_passed": 1, "rows_total": 1}
+      ]
+    },
+    {
+      "name": "Snapshot Diff",
+      "spec_file": "SnapshotDiff.spec.md",
+      "timestamp_start": "2026-08-04T16:58:47Z",
+      "timestamp_end": "2026-08-04T16:58:49Z",
+      "scenarios": [
+        {"id": "S1", "name": "created in DIFF.changed", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S2", "name": "deleted in DIFF.deleted", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S3", "name": "modified in DIFF.changed", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S4", "name": "unchanged not in DIFF", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S5", "name": "CATALOG updated after snapshot", "status": "PASS", "rows_passed": 1, "rows_total": 1}
+      ]
+    },
+    {
+      "name": "Process File",
+      "spec_file": "ProcessFile.spec.md",
+      "timestamp_start": "2026-08-04T16:59:09Z",
+      "timestamp_end": "2026-08-04T16:59:09Z",
+      "scenarios": [
+        {"id": "S1", "name": "AI_EXEC path", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S2", "name": "OS_EXEC path", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S3", "name": "retainOutline after exec", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S4", "name": "non-core unloaded", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S5", "name": "CORE_FILES kept", "status": "PASS", "rows_passed": 3, "rows_total": 3}
+      ]
+    },
+    {
+      "name": "Boot Sequence",
+      "spec_file": "BootSequence.spec.md",
+      "timestamp_start": "2026-08-04T16:59:26Z",
+      "timestamp_end": "2026-08-04T16:59:26Z",
+      "scenarios": [
+        {"id": "S1", "name": "onBootBefore fires first", "status": "PASS", "rows_passed": 2, "rows_total": 2},
+        {"id": "S2", "name": "onBoot builds non-empty CATALOG", "status": "PASS", "rows_passed": 3, "rows_total": 3},
+        {"id": "S3", "name": "sequential processing", "status": "PASS", "rows_passed": 2, "rows_total": 2},
+        {"id": "S4", "name": "onBootAfter fires last", "status": "PASS", "rows_passed": 3, "rows_total": 3}
+      ]
+    },
+    {
+      "name": "Warm Turn",
+      "spec_file": "WarmTurnProcessing.spec.md",
+      "timestamp_start": "2026-08-04T16:59:44Z",
+      "timestamp_end": "2026-08-04T16:59:45Z",
+      "scenarios": [
+        {"id": "S1", "name": "no changes 0 diffs", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S2", "name": "file added processFile", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S3", "name": "file deleted purge", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S4", "name": "file modified re-process", "status": "PASS", "rows_passed": 1, "rows_total": 1},
+        {"id": "S5", "name": "BOOTSTRAP.md change reboot", "status": "PASS", "rows_passed": 3, "rows_total": 3}
+      ]
+    }
+  ]
+}
