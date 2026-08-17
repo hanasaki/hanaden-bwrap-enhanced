@@ -678,7 +678,25 @@ EXAMPLES:
      * Expected: Full browser with portal file picker (can browse host FS).
        Use only when portal integration is required.
 
-  5. Isolated Custom Home & Profile:
+  5. Mise toolchain (read-only, default):
+     $0 --mise-enable bash
+     * Expected: Interactive shell with all mise-managed tools (python, go,
+       bats, cargo, etc.) available via shims. mise install will fail (EROFS).
+
+  6. Mise toolchain (read-write):
+     $0 --mise-enable rw bash
+     * Expected: Same as above, but mise install can download new runtimes.
+
+  7. Mise + GUI + network (full dev sandbox):
+     $0 --mise-enable --enable-wayland --enable-audio --share-net bash
+     * Expected: GUI apps, sound, network, and all mise tools available.
+
+  8. Extra read-only bind (passthrough):
+     $0 --mise-enable --ro-bind ~/.local/bin ~/.local/bin bash
+     * Expected: ~/.local/bin is visible read-only inside the sandbox,
+       in addition to the mise toolchain.
+
+  9. Isolated Custom Home & Profile:
      $0 --virtual-user-name tester --host-real-root / --host-real-home-parent ~/containers /bin/bash -c "echo \$HOME"
      * Expected: Prints "/home/tester" and binds the host directory
        "~/containers/tester" isolated from your real home.
