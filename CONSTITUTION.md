@@ -150,3 +150,30 @@ Task execution targets standard Maven lifecycle phases via `mise.toml`:
 > inherited from a prior project. They reference files that do not exist in this
 > repository. These files require a full rewrite to align with the current
 > project before any lifecycle commands are functional.
+
+---
+
+## Article VI — SDLC Engine Instantiation
+
+### §1. Governing Engine
+`PROJECT_HOME/docs/20260818-033649-124680-7266-a219-84d3929f1e0a-SdlcEngineSpec.system-0.0.1.md`
+READ-ONLY. Project-agnostic generic SDLC engine. This article provides the project-specific input data to that engine.
+
+### §2. Spec Tree Root
+`PROJECT_HOME/docs/architecture-design-features-specs/BwrapEnhanced2026.strat/`
+
+### §3. Navigation Map
+Node count determined dynamically at doc-consumption time by walking the spec tree.
+`PROJECT_HOME/docs/architecture-design-features-specs/20260816-171937-121071-7f00-a05f-7ea9697692bc-SdlcHierarchyOverview.overview-0.0.1.md`
+
+### §4. TDD Implementation Order
+Per SdlcEngineSpec §2: BOTTOM-UP — leaf SPECs → FEATs → MOTI → DRIV → STRAT.
+Phase 0 (Preflight gate) → Phase 1 (45 SPECs) → Phase 2 (Feature integration) → Phase 3 (E2E strategy).
+
+### §5. Phase Gate Rule
+Phase 0 BwrapMinimalSmoke MUST pass before any Phase 1 tests run.
+If BwrapMinimalSmoke fails: record BLOCKED, halt, report.
+
+### §6. Code as SST
+During reverse engineering: bwrap-enhanced.sh is the Single Source of Truth.
+Spec parent assignments confirmed from code context, not spec metadata.
