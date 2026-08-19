@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0800-log-rotation.md -- Hanaden AI -->
 
 ## 8. Log Rotation
 

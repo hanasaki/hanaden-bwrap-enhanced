@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 20260812-143504-326043-76b0-9f98-85e9b7fae832-AgentsMdInitDirectivesIgnoredByAiIde.secbul-0.0.1.md -- Hanaden AI -->
 ---
 bulletin-id: 20260812-143504-326043-76b0-9f98-85e9b7fae832-AgentsMdInitDirectivesIgnoredByAiIde
 pk: 019ff665-f306-76b0-9f98-85e9b7fae832

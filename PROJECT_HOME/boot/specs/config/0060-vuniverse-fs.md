@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0060-vuniverse-fs.md -- Hanaden AI -->
 
 ## Vuniverse Filesystem Layout
 

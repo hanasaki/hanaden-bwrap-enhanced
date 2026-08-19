@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 1000-service-controller.md -- Hanaden AI -->
 
 # 12. Service Controller Design
 

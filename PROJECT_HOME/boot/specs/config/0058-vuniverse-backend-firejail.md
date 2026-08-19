@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0058-vuniverse-backend-firejail.md -- Hanaden AI -->
 
 ## Vuniverse Backend Profile: Firejail
 

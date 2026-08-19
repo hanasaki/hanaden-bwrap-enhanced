@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0900-anti-regression.md -- Hanaden AI -->
 # 11. Anti-Regression Mandates
 
 * AI MUST implement the event loop per the active lang profile's event_loop specification.

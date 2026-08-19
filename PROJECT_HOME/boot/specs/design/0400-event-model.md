@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0400-event-model.md -- Hanaden AI -->
 # 6. Event Model
 
 ## Event Registry
