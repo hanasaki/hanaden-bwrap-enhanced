@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0300-inotify-architecture.md -- Hanaden AI -->
 # 5. inotify Architecture
 
 ## No Polling. Ever.

@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 20260816-032635-090691-7baa-a12f-a48697fe626b-TemplateDevelopmentProcessLessons.lesson-0.0.1.md -- Hanaden AI -->
 ---
 lesson-id:    20260816-032635-090691-7baa-a12f-a48697fe626b-TemplateDevelopmentProcessLessons
 pk:           0199b095-6452-7baa-a12f-a48697fe626b

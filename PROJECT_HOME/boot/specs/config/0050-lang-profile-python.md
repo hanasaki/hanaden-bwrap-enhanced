@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0050-lang-profile-python.md -- Hanaden AI -->
 
 ## Language Profile: Python
 

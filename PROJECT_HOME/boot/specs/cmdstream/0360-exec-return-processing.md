@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0360-exec-return-processing.md -- Hanaden AI -->
 
 ## Exec Return Processing
 

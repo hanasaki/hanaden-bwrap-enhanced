@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0000-frontmatter-identity.md -- Hanaden AI -->
 <!-- #!/usr/bin/env ai-exec flow_type=PSEUDOCODE -->
 ---
 title: HANADEN-AI Daemon Design

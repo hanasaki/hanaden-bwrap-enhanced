@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0200-file-classification.md -- Hanaden AI -->
 # 4. File Classification
 
 ## Shebang Detection

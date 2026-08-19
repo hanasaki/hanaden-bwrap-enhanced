@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0400-wire-format.md -- Hanaden AI -->
 
 ## Wire Format — JSON:API-Aligned Command Protocol
 

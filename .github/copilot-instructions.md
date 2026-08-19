@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- copilot-instructions.md -- Hanaden AI -->
 > [!IMPORTANT]
 >
 > **HANADEN.AI POLICY AND GOVERNANCE RULES**

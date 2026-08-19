@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0500-ai-standing-rules.md -- Hanaden AI -->
 # 7. Global AI Standing Rules
 
 * MUST always obey RFC-2119 terminology.
