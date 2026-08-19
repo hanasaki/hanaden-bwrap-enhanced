@@ -1,4 +1,5 @@
 #!/bin/bash
+# (c) 2026-* Frederick Bloom -- All Rights Reserved -- Hanaden AI
 set -euo pipefail
 BWRAP_SH="/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
 SHARED="/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/shared"

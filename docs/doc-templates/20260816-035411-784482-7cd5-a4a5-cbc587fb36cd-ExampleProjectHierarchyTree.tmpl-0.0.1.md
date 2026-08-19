@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 20260816-035411-784482-7cd5-a4a5-cbc587fb36cd-ExampleProjectHierarchyTree.tmpl-0.0.1.md -- Hanaden AI -->
 # Example Project Hierarchy Tree
 
 > A reference example of the canonical hierarchical decomposition model used across HANADEN projects.

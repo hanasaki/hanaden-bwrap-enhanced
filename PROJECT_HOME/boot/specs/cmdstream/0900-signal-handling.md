@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0900-signal-handling.md -- Hanaden AI -->
 
 ## 9. Signal Handling
 

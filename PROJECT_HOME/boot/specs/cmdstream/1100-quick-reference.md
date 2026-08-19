@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 1100-quick-reference.md -- Hanaden AI -->
 
 ## Quick Reference Card
 

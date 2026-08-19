@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 9100-daemon-language-tradeoff.md -- Hanaden AI -->
 <!-- #!/usr/bin/env ai-exec flow_type=REFERENCE -->
 ---
 title: "Daemon Implementation Language Tradeoff Analysis"

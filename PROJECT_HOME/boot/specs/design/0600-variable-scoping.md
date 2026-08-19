@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0600-variable-scoping.md -- Hanaden AI -->
 # 8. Variable Scoping
 
 * Scope hierarchy: `OS/Shell.ENV` < `AGENT.ENV` < `WORKSPACE.ENV` < `PROJECT.ENV` < `FILE.ENV` < `FUNCT`

@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 1000-phase-status.md -- Hanaden AI -->
 
 ## 10. Phase Status Format
 

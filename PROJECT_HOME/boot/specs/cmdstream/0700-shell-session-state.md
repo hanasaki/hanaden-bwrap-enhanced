@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0700-shell-session-state.md -- Hanaden AI -->
 
 ## 7. Shell Session State
 

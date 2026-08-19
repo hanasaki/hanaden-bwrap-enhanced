@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0200-caller-mode-detection.md -- Hanaden AI -->
 
 ## 2. Caller Mode Detection
 

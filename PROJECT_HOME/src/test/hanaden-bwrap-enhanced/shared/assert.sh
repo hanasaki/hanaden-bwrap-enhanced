@@ -1,4 +1,5 @@
 #!/bin/bash
+# (c) 2026-* Frederick Bloom -- All Rights Reserved -- Hanaden AI
 # Shared test assertion library for hanaden-bwrap-enhanced
 PASS_COUNT=0
 FAIL_COUNT=0

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# (c) 2026-* Frederick Bloom -- All Rights Reserved -- Hanaden AI
 # *!! IMPORTANT - AI - Immutable file without user permission - ask user
 # ==============================================================================
 # NAME:      bwrap-enhanced.sh
