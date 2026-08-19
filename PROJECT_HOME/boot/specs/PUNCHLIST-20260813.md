@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- PUNCHLIST-20260813.md -- Hanaden AI -->
 # Complete Validated Punchlist — Rev 2
 
 All outstanding work from the 120-minute session.

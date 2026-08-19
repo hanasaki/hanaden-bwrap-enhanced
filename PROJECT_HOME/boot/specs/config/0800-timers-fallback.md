@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0800-timers-fallback.md -- Hanaden AI -->
 
 ## Event Timers
 

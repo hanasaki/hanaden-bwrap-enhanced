@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0350-cmd-executor.md -- Hanaden AI -->
     
 ## Command Executor
 

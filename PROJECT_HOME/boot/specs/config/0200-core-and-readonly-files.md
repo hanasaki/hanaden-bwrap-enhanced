@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0200-core-and-readonly-files.md -- Hanaden AI -->
 
 ## Core Files (inotify-watched, change triggers reboot)
 

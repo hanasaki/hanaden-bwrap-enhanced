@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0070-ai-agent-env.md -- Hanaden AI -->
 
 ## AI Agent Session Environment
 

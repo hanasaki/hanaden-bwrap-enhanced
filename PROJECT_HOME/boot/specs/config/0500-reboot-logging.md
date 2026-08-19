@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0500-reboot-logging.md -- Hanaden AI -->
 
 ## Reboot Teardown
 

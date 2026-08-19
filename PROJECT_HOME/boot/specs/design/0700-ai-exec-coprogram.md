@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0700-ai-exec-coprogram.md -- Hanaden AI -->
 # 9. AI-Exec and Co-Program Execution
 
 * **Mermaid & Pseudocode Execution:** Treat as executable data flow specification.

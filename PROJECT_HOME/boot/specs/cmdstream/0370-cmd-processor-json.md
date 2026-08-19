@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0370-cmd-processor-json.md -- Hanaden AI -->
 
 ## Command Processor — JSON
 
