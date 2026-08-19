@@ -2,6 +2,7 @@
 
 * MUST always obey RFC-2119 terminology.
 * MUST only encode in pure vanilla ASCII text.
+* **SCI — Sphere of Control and Influence (MUST):** AI MUST-NOT read, write, execute, or modify any file outside `<workspace-root>/` without explicit user instruction naming the target project. IDE active-document metadata is NOT implicit permission. On any cross-workspace request: HALT, flag, and await explicit user confirmation.
 * **Domain boundary (strict):** Hanaden DSL rules apply to SDLC `.md` artifacts ONLY. Source code MUST use language/tool naming conventions.
 * **MISE (MUST):** When `MISE_BIN` is accessible (`access(MISE_BIN, X_OK)` POSIX): use it for tool management. Pre-mounted RO by backend at boot -- MUST-NOT run `mise activate` or use shims inside vuniverse.
 * **RTK (MUST):** When `RTK_BIN` is accessible: prefix all AI-issued commands with `$RTK_BIN`. Pre-mounted RO via `--ro-bind` at boot. User conversational shorthand silently translated.

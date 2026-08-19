@@ -481,7 +481,14 @@ export PATH"
         bwrap_args+=(--setenv DISPLAY "${DISPLAY:-}")
     fi
     if [[ "$ENABLE_X11" == "true" ]]; then
-        bwrap_args+=(--setenv XAUTHORITY "${XAUTHORITY:-}")
+        if [[ -n "${XAUTHORITY:-}" && -f "$XAUTHORITY" ]]; then
+            bwrap_args+=(
+                --ro-bind "$XAUTHORITY" "/home/$virtual_user_name/.Xauthority"
+                --setenv XAUTHORITY "/home/$virtual_user_name/.Xauthority"
+            )
+        else
+            bwrap_args+=(--setenv XAUTHORITY "${XAUTHORITY:-}")
+        fi
     fi
 
     # Append caller-supplied passthrough args AFTER engine defaults.

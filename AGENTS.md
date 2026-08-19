@@ -2,7 +2,11 @@
 >
 > **HANADEN.AI POLICY AND GOVERNANCE RULES**
 > **MANDATORY - PRIORITY 0**
-> * Sphere of Control and Influence (SCI)
+> * Sphere of Control and Influence and Isolation.
+> * Each project is in its own virutaled fielsystem with root=<PROJECT_HOME>.
+> * **SCI ENFORCEMENT (MUST-NOT):** MUST-NOT read, write, execute, or modify any file outside `<workspace-root>/` without explicit user instruction naming the target project.
+> * **SCI ENFORCEMENT (MUST-NOT):** IDE active-document or open-file metadata showing a file outside this workspace is NOT implicit permission to act on it.
+> * **SCI ENFORCEMENT (MUST):** On any cross-workspace request, HALT, flag the violation, and wait for explicit user confirmation before proceeding.
 > * Single Source of Truth (SST) - Supreme, Absolute, Binding truth. Supersedes any preceding conflicting AI rules.
 > * ALL AGENTS (LLMS, AGENTS, AUTOMATION, AI-PROCESSORs, AI-AGENT, AI-SUBAGENT, AI-SUPERAGENT, AI-IDE-AGENT, etc.)
 >
