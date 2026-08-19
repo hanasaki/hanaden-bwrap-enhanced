@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0800-daemon-io.md -- Hanaden AI -->
 # 10. Daemon I/O Connectivity
 
 The daemon functions as the session I/O hub. Full protocol defined in

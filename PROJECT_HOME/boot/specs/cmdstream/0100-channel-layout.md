@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0100-channel-layout.md -- Hanaden AI -->
 ## 1. Channel Layout
 
 All channels live inside the ephemeral home. The home is created before bwrap

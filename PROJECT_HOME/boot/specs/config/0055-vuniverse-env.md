@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0055-vuniverse-env.md -- Hanaden AI -->
 
 > **Vuniverse** (n.) — *Hanaden term.* The complete, designed operational environment
 > inside a vuniverse backend boundary. Not just filesystem isolation (jail) or process restriction

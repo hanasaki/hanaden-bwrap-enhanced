@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0500-aiexec-dispatch-protocol.md -- Hanaden AI -->
 ---
 
 ## 5. ai-exec Dispatch Protocol

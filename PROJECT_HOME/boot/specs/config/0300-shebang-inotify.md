@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0300-shebang-inotify.md -- Hanaden AI -->
 
 ## Shebang Patterns
 

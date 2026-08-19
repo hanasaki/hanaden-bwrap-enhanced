@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 9000-tradeoff-analysis.md -- Hanaden AI -->
 <!-- #!/usr/bin/env ai-exec flow_type=REFERENCE -->
 ---
 title: "Spec Split Tradeoff Analysis"
