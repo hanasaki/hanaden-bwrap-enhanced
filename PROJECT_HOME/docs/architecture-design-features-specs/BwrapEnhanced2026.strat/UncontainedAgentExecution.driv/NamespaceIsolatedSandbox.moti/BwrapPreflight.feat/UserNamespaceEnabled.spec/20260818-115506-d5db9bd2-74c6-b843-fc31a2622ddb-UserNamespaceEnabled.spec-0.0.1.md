@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 20260818-115506-d5db9bd2-74c6-b843-fc31a2622ddb-UserNamespaceEnabled.spec-0.0.1.md -- Hanaden AI -->
 ---
 filename-id:   20260818-115436-d5db9bd2-74c6-b843-fc31a2622ddb-UserNamespaceEnabled.spec
 node-type:     SPEC

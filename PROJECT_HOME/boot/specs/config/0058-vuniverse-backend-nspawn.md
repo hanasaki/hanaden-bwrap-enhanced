@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0058-vuniverse-backend-nspawn.md -- Hanaden AI -->
 
 ## Vuniverse Backend Profile: systemd-nspawn
 

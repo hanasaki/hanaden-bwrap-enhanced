@@ -1,12 +1,30 @@
-# IDE config dirs
-.amazonq/
-.continue/
-.cursor/
-.windsurf/
-.gemini/
-
 # OS
 .DS_Store
 Thumbs.db
 *.swp
+*.swo
 *~
+
+# Temp
+/tmp/
+*.tmp
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Editors
+.idea/
+.vscode/
+*.sublime-*
+
+# Build artifacts
+*.o
+*.so
+*.a
+
+# Ephemeral sandbox homes (never commit)
+/ephemeral/

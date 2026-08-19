@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0600-lifecycle-sidecar.md -- Hanaden AI -->
 
 ## Daemon Lifecycle Phases
 

@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0050-lang-profile-zig.md -- Hanaden AI -->
 
 ## Language Profile: Zig
 

@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0400-aiexec-handshake-bash.md -- Hanaden AI -->
 
 ## ai-exec Dispatch
 

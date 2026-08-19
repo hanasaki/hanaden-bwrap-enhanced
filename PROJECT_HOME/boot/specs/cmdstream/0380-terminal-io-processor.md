@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0380-terminal-io-processor.md -- Hanaden AI -->
 
 ## Terminal IO Processor
 

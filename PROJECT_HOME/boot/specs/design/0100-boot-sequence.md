@@ -1,3 +1,4 @@
+<!-- (c) 2026-* Frederick Bloom -- 0100-boot-sequence.md -- Hanaden AI -->
 # 3. Boot Sequence
 
 ## Phase Lifecycle (MUST follow in order)
