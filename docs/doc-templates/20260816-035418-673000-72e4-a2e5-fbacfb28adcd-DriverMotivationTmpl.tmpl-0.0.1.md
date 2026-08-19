@@ -1,7 +1,7 @@
 <!-- (c) 2026-* Frederick Bloom -- 20260816-035418-673000-72e4-a2e5-fbacfb28adcd-DriverMotivationTmpl.tmpl-0.0.1.md -- Hanaden AI Loader -->
 ---
 tmpl-id:      20260816-035418-673000-72e4-a2e5-fbacfb28adcd-DriverMotivationTmpl
-version:      0.0.2
+version:      0.0.1
 status:       ACTIVE
 category:     TEMPLATE
 node-types-covered: [B-DRIV, B-MOTI, T-DRIV, T-MOTI]
@@ -68,14 +68,14 @@ Features (Layer 2) are children of a Motivation — they implement the solution.
 flowchart TD
     CS["👑 CORP-STRAT-YYYY<br/>(Layer 0)"]:::l0
 
-    BD["💼 B-DRIV-100<br/>Business Driver<br/><i>THE PROBLEM</i><br/>parent → CS"]:::driv
-    BM["💼 B-MOTI-101<br/>Business Motivation<br/><i>THE SOLUTION</i><br/>parent → BD"]:::moti
+    BD["💼 EcommTransitFatigue.driv<br/>Business Driver<br/><i>THE PROBLEM</i><br/>parent → CS"]:::driv
+    BM["💼 IndoorDroneFleet.moti<br/>Business Motivation<br/><i>THE SOLUTION</i><br/>parent → BD"]:::moti
 
-    TD2["🛠️ T-DRIV-200<br/>Technical Driver<br/><i>THE PROBLEM</i><br/>parent → CS"]:::driv
-    TM["🛠️ T-MOTI-201<br/>Technical Motivation<br/><i>THE SOLUTION</i><br/>parent → TD"]:::moti
+    TD2["🛠️ UncontainedAgentExecution.driv<br/>Technical Driver<br/><i>THE PROBLEM</i><br/>parent → CS"]:::driv
+    TM["🛠️ NamespaceIsolatedSandbox.moti<br/>Technical Motivation<br/><i>THE SOLUTION</i><br/>parent → TD"]:::moti
 
-    F1["🚗 FEAT-300<br/>(Layer 2)<br/>parent → BM"]:::l2
-    A1["🏗️ ARCH-501<br/>(Layer 3)<br/>parent → TM"]:::l3
+    F1["🚗 AutonomousNavigation.feat<br/>(Layer 2)<br/>parent → BM"]:::l2
+    A1["🏗️ SpatialVisionGuidance.arch<br/>(Layer 3)<br/>parent → TM"]:::l3
 
     CS --- BD
     BD --- BM
@@ -115,6 +115,12 @@ description: > # REQUIRED
 parent:        # REQUIRED — filename-id of the Layer 0 CORP-STRAT this problem serves
 supersedes:    # OPTIONAL — filename-id of prior version
 references:    # OPTIONAL
+tdd:
+  state:          # REQUIRED — NOT_STARTED | RED | GREEN | REFACTOR
+  test-file:      # REQUIRED — relative path to test script in src/test/
+  last-run:       # OPTIONAL — ISO 8601 timestamp of last test execution
+  iterations:     # OPTIONAL — RED→GREEN cycle count (default: 0)
+  coverage-lines: # OPTIONAL — source lines this node covers
 ---
 ```
 
@@ -137,6 +143,12 @@ parent:        # REQUIRED — filename-id of the DRIV this solution addresses
                #   e.g. 20260816-...-EcommTransitFatigue
 supersedes:    # OPTIONAL — filename-id of prior version
 references:    # OPTIONAL
+tdd:
+  state:          # REQUIRED — NOT_STARTED | RED | GREEN | REFACTOR
+  test-file:      # REQUIRED — relative path to test script in src/test/
+  last-run:       # OPTIONAL — ISO 8601 timestamp of last test execution
+  iterations:     # OPTIONAL — RED→GREEN cycle count (default: 0)
+  coverage-lines: # OPTIONAL — source lines this node covers
 ---
 ```
 
@@ -144,6 +156,20 @@ references:    # OPTIONAL
 > **DRIV `parent`** → Layer 0 CORP-STRAT filename-id.
 > **MOTI `parent`** → Layer 1 DRIV filename-id (NOT CORP-STRAT).
 > This is the key structural difference: MOTI is a child of DRIV.
+
+> [!NOTE]
+> **No `children` field** — children discover this node via their own `parent` pointer.
+> **No `children-order`, `depends-on`, or `order` field** — sibling ordering is determined
+> by semantic inference from document content (see SdlcHierarchyOverview).
+> **No `node-id` field** — `filename-id` is the single identity.
+
+> [!NOTE]
+> **Directory convention:** DRIVER documents live in `Slug.driv/` directories.
+> MOTIVATION documents live in `Slug.moti/` directories. No UUIDv7 on directory names.
+> File slugs drop the class prefix (e.g. `UncontainedAgentExecution.driv` not
+> `TDrivUncontainedAgentExecution.driv`).
+> `tdd.state` tracks the **test lifecycle** (RED/GREEN). `status` tracks the
+> **document lifecycle** (Draft/Active). These are independent axes.
 
 ---
 
@@ -178,28 +204,29 @@ references:    # OPTIONAL
 
 > **Suite ID:** [filename-id]-SUITE
 > **Suite name:** [Human-readable name — e.g. "Macro-Economic Analysis"]
+> **Test file:** `src/test/{project}/Slug.driv/test_slug.sh`
 > **Integration test boundary:** tests this driver against the parent Layer 0 goal
 > **Unit test boundary:** tests the paired motivation as a unit against this driver
 
 ### ⚙️ Functional Tests
 
-| ID | Description | Method | Pass Criteria |
-|----|-------------|--------|---------------|
+| ID | Description | Method | Pass Criteria | TDD |
+|----|-------------|--------|---------------|-----|
 
 ### 📊 Performance / Profile / Electrical Tests
 
-| ID | Description | Metric | Target | Tolerance |
-|----|-------------|--------|--------|-----------|
+| ID | Description | Metric | Target | Tolerance | TDD |
+|----|-------------|--------|--------|-----------|-----|
 
 ### 🛡️ Security Tests
 
-| ID | Description | Attack / Scenario | Expected Defense |
-|----|-------------|-------------------|------------------|
+| ID | Description | Attack / Scenario | Expected Defense | TDD |
+|----|-------------|-------------------|------------------|-----|
 
 ### 🧠 Memory / CPU / Hardware Tests
 
-| ID | Description | Resource | Threshold |
-|----|-------------|----------|-----------|
+| ID | Description | Resource | Threshold | TDD |
+|----|-------------|----------|-----------|-----|
 
 ## References
 
@@ -237,28 +264,29 @@ references:    # OPTIONAL
 
 > **Suite ID:** [filename-id]-SUITE
 > **Suite name:** [Human-readable name — e.g. "Business Acceptance Suite"]
+> **Test file:** `src/test/{project}/Slug.driv/Slug.moti/test_slug.sh`
 > **Integration test boundary:** tests this motivation against the parent driver
 > **Unit test boundary:** tests Layer 2 features as units against this motivation
 
 ### ⚙️ Functional Tests
 
-| ID | Description | Method | Pass Criteria |
-|----|-------------|--------|---------------|
+| ID | Description | Method | Pass Criteria | TDD |
+|----|-------------|--------|---------------|-----|
 
 ### 📊 Performance / Profile / Electrical Tests
 
-| ID | Description | Metric | Target | Tolerance |
-|----|-------------|--------|--------|-----------|
+| ID | Description | Metric | Target | Tolerance | TDD |
+|----|-------------|--------|--------|-----------|-----|
 
 ### 🛡️ Security Tests
 
-| ID | Description | Attack / Scenario | Expected Defense |
-|----|-------------|-------------------|------------------|
+| ID | Description | Attack / Scenario | Expected Defense | TDD |
+|----|-------------|-------------------|------------------|-----|
 
 ### 🧠 Memory / CPU / Hardware Tests
 
-| ID | Description | Resource | Threshold |
-|----|-------------|----------|-----------|
+| ID | Description | Resource | Threshold | TDD |
+|----|-------------|----------|-----------|-----|
 
 ## References
 
@@ -295,6 +323,12 @@ references:    # OPTIONAL
 | `domain` | enum | ✅ | `BUSINESS` `TECHNICAL` |
 | `role` | enum | ✅ | `DRIVER` `MOTIVATION` |
 | `parent` | string | ✅ | DRIV: Layer 0 filename-id · MOTI: DRIV filename-id |
+| `supersedes` | string | ⬜ | filename-id of prior version |
+| `tdd.state` | enum | ✅ | `NOT_STARTED` `RED` `GREEN` `REFACTOR` |
+| `tdd.test-file` | string | ✅ | Relative path to test script |
+| `tdd.last-run` | string | ⬜ | ISO 8601 timestamp |
+| `tdd.iterations` | int | ⬜ | RED→GREEN cycle count |
+| `tdd.coverage-lines` | string | ⬜ | Source line range |
 
 ---
 
@@ -303,4 +337,5 @@ references:    # OPTIONAL
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 0.0.1 | 2026-08-16 | Frederick Bloom | Initial template — Layer 1 Driver/Motivation |
-| 0.0.2 | 2026-08-16 | Frederick Bloom | Schema refactor: MOTI parent→DRIV, drop `node-id`/`children`/`paired-with`, all pointers use `filename-id`, separate DRIV/MOTI body templates, add definition blocks with examples and decision guide |
+| 0.0.1 | 2026-08-16 | Frederick Bloom | Schema refactor: MOTI parent→DRIV, drop `node-id`/`children`/`paired-with`, all pointers use `filename-id`, separate DRIV/MOTI body templates, add definition blocks with examples and decision guide |
+| 0.0.1 | 2026-08-16 | Frederick Bloom + AI | Add tdd: frontmatter (both schemas), TDD column, test-file ref, Slug.class IDs, dir convention notes |
