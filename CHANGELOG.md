@@ -5,6 +5,20 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [v0.2.0] - 2026-08-21
+
+### Added
+- **Custom Dual-Licensing & Governance Framework:** AGPL-3.0-only reciprocal copyleft with Section 7 terms (Perpetual Attribution, Moral Rights Assertion, No AI/ML Training without authorization, Mandatory Contributor License Agreement).
+- **Commercial Licensing Guide:** Multi-tier commercial licensing framework (`PROJECT_HOME/docs/legal/FrederickBloom/LICENSE-COMMERCIAL.md`).
+- **Contributor License Agreement (CLA v1.0):** IP and patent assignment terms (`PROJECT_HOME/docs/legal/FrederickBloom/CLA.md`).
+- **NOTICE & Third-Party Legal Artifacts:** Added `NOTICE` and official GNU `AGPL-3.0.txt`.
+- **Enterprise VFS Architecture Topology:** Added Mermaid flowchart and MSC sequence diagrams in `README.md`.
+
+### Changed
+- **Unified Constitution:** Rewrote root `CONSTITUTION.md` codifying **The Immutable Principle** (*The jailer builds the jail; never trust a prisoner to build their own jail, or anyone else's jail*), Zero Side-Effects mandate, and explicit indemnification clause (§6).
+- **DRY Refactoring:** Converted `PROJECT_HOME/CONSTITUTION.md` and `PROJECT_HOME/README.md` into lean pointer references.
+- **Version Alignment:** Standardized project version baseline to `0.2.0` across all files.
+
 ## [v0.1.0] - 2026-08-18
 
 ### Added
