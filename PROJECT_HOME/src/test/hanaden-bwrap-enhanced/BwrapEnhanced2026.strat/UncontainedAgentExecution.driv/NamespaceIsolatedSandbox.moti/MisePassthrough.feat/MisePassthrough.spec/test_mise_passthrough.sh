@@ -10,7 +10,7 @@ for p in "$HOME/.local/bin/mise" '/homes/home-local/hanasaki/.local/bin/mise' "$
   if [[ -x "$p" ]]; then MISE_BIN="$p"; break; fi
 done
 if [[ -z "$MISE_BIN" ]]; then
-  fail 'FAIL: mise binary absent — MisePassthrough requires mise on host (C1)'
+  fail 'FAIL: mise binary absent -- MisePassthrough requires mise on host (C1)'
 else
   MISE_DIR=$(dirname "$MISE_BIN")
   out=$("/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" --ro-bind "$MISE_BIN" "$MISE_BIN" --dir "$MISE_DIR" -- "$MISE_BIN" --version 2>&1)

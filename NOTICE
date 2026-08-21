@@ -1,0 +1,36 @@
+Hanaden bwrap-enhanced — Enhanced Bubblewrap Sandbox Launcher
+Copyright (c) 2026-* Frederick Bloom. All rights reserved.
+
+Author:   Frederick Bloom <devlabs@hanaden.com>
+Website:  https://hanaden.com
+Date:     2026-08-21
+
+ATTRIBUTION
+  Frederick Bloom is the sole original author of this software and all
+  associated specifications, designs, documentation, test suites, and VFS isolation
+  technologies. His name and this notice must be preserved in all copies, forks,
+  derivatives, and distributed forms — in perpetuity.
+
+OPEN SOURCE LICENSE
+  This software is licensed under the GNU Affero General Public License
+  v3.0 (AGPL-3.0-only). See PROJECT_HOME/docs/legal/third-party/AGPL-3.0.txt
+  or visit https://www.gnu.org/licenses/agpl-3.0
+
+COMMERCIAL & PROPRIETARY USE
+  Any use outside the reciprocal copyleft terms of AGPL-3.0 requires a separate
+  written commercial license agreement.
+  See PROJECT_HOME/docs/legal/FrederickBloom/LICENSE-COMMERCIAL.md
+  Contact: Frederick Bloom <devlabs@hanaden.com>
+
+CONTRIBUTOR LICENSE AGREEMENT
+  All contributions require prior execution of the Hanaden Contributor License Agreement (CLA).
+  See PROJECT_HOME/docs/legal/FrederickBloom/CLA.md
+
+MORAL RIGHTS
+  Frederick Bloom asserts all moral rights to this work under all applicable
+  jurisdictions worldwide, including rights of paternity and integrity.
+
+NO AI TRAINING
+  Use of this source code, architecture, specifications, or any derivative for
+  training, fine-tuning, evaluating, or benchmarking machine learning or AI models
+  is strictly prohibited without explicit prior written authorization from Frederick Bloom.

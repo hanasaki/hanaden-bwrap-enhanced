@@ -10,7 +10,7 @@ out=$("/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederi
 fout=$(echo "$out" | grep -v '^\[SYS-LOG\]')
 ec=$?
 if [[ $ec -eq 0 ]]; then
-  pass 'bwrap-enhanced exits 0 using default root (~/virtual-roots) when --host-real-root omitted (C1 — code SST)'
+  pass 'bwrap-enhanced exits 0 using default root (~/virtual-roots) when --host-real-root omitted (C1 -- code SST)'
 else
   fail "unexpected exit: ec=$ec"
 fi

@@ -8,7 +8,7 @@ EPHEMERAL=$(mktemp -d /tmp/bwrap-t-XXXXXX); mkdir -p "$EPHEMERAL/home/sandbox-us
 out=$("/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" -- /bin/bash -c 'ls /homes 2>&1' 2>&1)
 fout=$(echo "$out" | grep -v '^\[SYS-LOG\]')
 if echo "$fout" | grep -qvE 'hanasaki|Bloom|dev-projects|home-remote'; then
-  pass '/homes is empty/hidden — PROJECT_HOME not visible (C1)'
+  pass '/homes is empty/hidden -- PROJECT_HOME not visible (C1)'
 else
   fail "/homes leaks host paths: $fout"
 fi

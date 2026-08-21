@@ -9,7 +9,7 @@ EPHEMERAL=$(mktemp -d /tmp/bwrap-t-XXXXXX); mkdir -p "$EPHEMERAL/home/sandbox-us
 out=$("/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" --setenv CONTEST first --setenv CONTEST middle --setenv CONTEST last -- /bin/bash -c 'echo $CONTEST' 2>&1)
 fout=$(echo "$out" | grep -v '^\[SYS-LOG\]')
 if echo "$fout" | grep -q 'last'; then
-  pass 'last --setenv wins in bwrap (C1 — bwrap processes flags L-to-R)'
+  pass 'last --setenv wins in bwrap (C1 -- bwrap processes flags L-to-R)'
 else
   fail "last-wins failed: $fout"
 fi
@@ -18,7 +18,7 @@ fi
 out2=$("/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" --setenv CONTEST passthrough_last -- /bin/bash -c 'echo $CONTEST' 2>&1)
 fout2=$(echo "$out2" | grep -v '^\[SYS-LOG\]')
 if echo "$fout2" | grep -q 'passthrough_last'; then
-  pass 'CLI --setenv appended last wins over engine defaults (C2 — code SST L488)'
+  pass 'CLI --setenv appended last wins over engine defaults (C2 -- code SST L488)'
 else
   fail "CLI passthrough-last failed: $fout2"
 fi

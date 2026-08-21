@@ -10,7 +10,7 @@ if [[ -z "$KDE_FULL_SESSION" ]] && [[ -z "$KDE_SESSION_VERSION" ]]; then
   "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" -- /bin/true; ec=$?
   [[ $ec -eq 0 ]] && pass 'sandbox exits 0 without KDE (MUST-NOT-FATAL) (C1)' || fail "ec=$ec"
 else
-  pass 'KDE session detected — bind tested via smoke'
+  pass 'KDE session detected -- bind tested via smoke'
 fi
 
 results
