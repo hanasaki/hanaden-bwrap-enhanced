@@ -15,8 +15,12 @@
 
 Autonomous AI coding agents, background language servers, and developer scripts execute arbitrary commands, download packages, and write files directly on host machines. Running untrusted or automated workloads directly with full user privileges creates severe risks of host file contamination, credential theft, and accidental system mutation.
 
-`bwrap-enhanced` creates an **inescapable virtual universe (vuniverse)**:
-* **The Immutable Principle:** *The jailer builds the jail; never trust a prisoner to build their own cage or anyone else's.*
+`bwrap-enhanced` creates an **inescapable virtual universe (vuniverse)** governed by **The Immutable Principle**:
+1. **External Construction:** The jailer designs and provisions the jail before execution.
+2. **External Enforcement:** The sandbox and kernel guards enforce the boundaries from the outside.
+3. **Zero Self-Policing:** Never trust or enable a prisoner to build their own cell, alter their confines, or enforce rules upon themselves.
+
+### Key Pillars
 * **Zero Root / Zero Daemons:** Leverages unprivileged Linux user namespaces via Bubblewrap.
 * **Zero Side Effects:** Never creates host directories or mutates host files during startup; fails fast on misconfiguration.
 * **Controlled Egress:** Locks root (`/`) read-only and confines filesystem persistence strictly to a dedicated user home write-hole.
