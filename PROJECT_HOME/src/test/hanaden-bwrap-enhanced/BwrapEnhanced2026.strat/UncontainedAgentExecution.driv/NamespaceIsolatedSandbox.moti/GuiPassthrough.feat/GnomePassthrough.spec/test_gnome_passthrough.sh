@@ -11,7 +11,7 @@ if [[ $ec -eq 0 ]]; then
     skip 'no GNOME session on host'
     pass 'sandbox exits 0 without GNOME (MUST-NOT-FATAL) (C1)'
   else
-    pass 'GNOME session detected — sandbox starts OK (C1)'
+    pass 'GNOME session detected -- sandbox starts OK (C1)'
   fi
 else
   fail "sandbox failed: ec=$ec"

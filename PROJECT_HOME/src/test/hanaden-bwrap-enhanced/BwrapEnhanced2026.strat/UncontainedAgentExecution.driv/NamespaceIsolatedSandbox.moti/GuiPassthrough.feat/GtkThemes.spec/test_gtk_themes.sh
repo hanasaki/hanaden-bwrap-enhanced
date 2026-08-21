@@ -5,7 +5,7 @@ source "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Freder
 
 echo '=== GtkThemes ==='
 EPHEMERAL=$(mktemp -d /tmp/bwrap-t-XXXXXX); mkdir -p "$EPHEMERAL/home/sandbox-user"; trap "rm -rf '$EPHEMERAL'" EXIT
-# GTK theme dirs bound read-only — test path accessibility
+# GTK theme dirs bound read-only -- test path accessibility
 out=$("/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" -- /bin/bash -c 'ls /usr/share/themes 2>&1 || echo NOTHEMES' 2>&1)
 echo "$out" | grep -qv 'NOTHEMES\|No such' && pass 'GTK themes dir accessible (C1)' || skip 'no themes installed on host'
 

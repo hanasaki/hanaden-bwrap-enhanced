@@ -8,11 +8,11 @@ EPHEMERAL=$(mktemp -d /tmp/bwrap-t-XXXXXX); mkdir -p "$EPHEMERAL/home/sandbox-us
 SENTINEL="$EPHEMERAL/sentinel_before"
 touch "$SENTINEL"
 "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" -- /bin/bash -c 'touch /tmp/zerotest; echo ok' 2>/dev/null
-# /tmp inside sandbox is tmpfs — any writes stay inside. Check host sentinel not newer.
+# /tmp inside sandbox is tmpfs -- any writes stay inside. Check host sentinel not newer.
 if [[ -f "$SENTINEL" ]]; then
   pass 'host filesystem unchanged after sandbox run (C1)'
 else
-  fail 'sentinel file disappeared — host mutation detected'
+  fail 'sentinel file disappeared -- host mutation detected'
 fi
 # Verify sandbox /tmp write doesn't appear on host
 if [[ ! -f /tmp/zerotest_host_leak_$$ ]]; then

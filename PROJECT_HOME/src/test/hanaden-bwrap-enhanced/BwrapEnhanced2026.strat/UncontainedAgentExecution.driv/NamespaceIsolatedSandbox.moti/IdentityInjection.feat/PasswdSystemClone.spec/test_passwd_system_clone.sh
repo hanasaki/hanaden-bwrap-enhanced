@@ -15,7 +15,7 @@ fi
 if echo "$fout" | grep -qE '^(nobody|daemon|bin):'; then
   pass 'system users cloned from host (C2)'
 else
-  skip 'no nobody/daemon (system-specific — OK)'
+  skip 'no nobody/daemon (system-specific -- OK)'
 fi
 
 results
