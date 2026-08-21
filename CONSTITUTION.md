@@ -21,7 +21,10 @@ Autonomous AI agents, coding assistants, and modern developer tooling execute ar
 
 1. **Containment by Default:** Contain AI agents and developers within a controlled world without host escape. No process shall mutate the host filesystem unless explicitly routed through designated egress write-holes.
 2. **Zero-Config Rootless Security:** Security must be the default path. Zero daemons, zero kernel modules, zero `sudo` / root requirements.
-3. **The Immutable Principle:** *The jailer builds the jail; never trust a prisoner to build their own jail, or anyone else's jail.* The sandbox environment is completely pre-structured by the trusted host environment before child process instantiation.
+3. **The Immutable Principle:**
+   * **External Construction:** The jailer designs and provisions the jail before execution.
+   * **External Enforcement:** The sandbox and kernel guards enforce the boundaries from the outside.
+   * **Zero Self-Policing:** Never trust or enable a prisoner to build their own cell, alter their confines, or enforce rules upon themselves.
 4. **Desktop & GUI Capable:** Sandbox workloads must support rich rendering (Wayland, X11, PipeWire/PulseAudio, accessibility) without compromising filesystem boundaries.
 5. **Deterministic Auditability:** Every namespace boundary, mount table, and environment sanitization rule is rigorously verified through executable specifications.
 
@@ -42,9 +45,10 @@ Autonomous AI agents, coding assistants, and modern developer tooling execute ar
 The following invariants are absolute (RFC 2119: **MUST**, **MUST-NOT**).
 
 ### §1. The Immutable Principle (Jailer vs. Prisoner)
-- The host-side invocation environment (the jailer) MUST fully provision all required directories, mountpoints, and identity files prior to executing the sandbox.
-- The sandboxed process (the prisoner) MUST-NOT create, alter, or negotiate its own container boundaries or anyone else's.
-- Never trust a prisoner to build their own jail or anyone else's jail.
+The Immutable Principle governs all execution boundaries within Hanaden:
+1. **External Construction:** The host-side invocation environment (the jailer) MUST fully design, provision, and validate all required directories, mountpoints, and identity files prior to executing the sandbox.
+2. **External Enforcement:** The Bubblewrap wrapper, Linux kernel namespaces, and VFS mount tables (the guards) MUST enforce isolation boundaries from the outside.
+3. **Zero Self-Policing (MUST-NOT):** The sandboxed process (the prisoner) MUST-NOT create, alter, or negotiate its own container boundaries or anyone else's. Workloads MUST-NOT be trusted to self-police or enforce rules upon themselves.
 
 ### §2. Zero Side-Effects Mandate
 - `bwrap-enhanced.sh` MUST-NOT create host directories, write scratch files, or mutate host configuration outside the explicitly bound paths.
