@@ -3,22 +3,17 @@
 >
 > **HANADEN.AI POLICY AND GOVERNANCE RULES**
 > **MANDATORY - PRIORITY 0**
-> * Sphere of Control and Influence (SCI)
-> * Single Source of Truth (SST) - Supreme, Absolute, Binding truth. Supersedes any preceding conflicting AI rules.
-> * ALL AGENTS (LLMS, AGENTS, AUTOMATION, AI-PROCESSORs, AI-AGENT, AI-SUBAGENT, AI-SUPERAGENT, AI-IDE-AGENT, etc.)
->
-> **DELEGATION**
-> * This file is a LEAN POINTER. Full kernel spec lives in `PROJECT_HOME/boot/specs/`.
-> * **MUST read on every session init, CORE_FILE change, or boot/reboot:**
->   `PROJECT_HOME/boot/specs/` -- load directories in this order: **config/ → cmdstream/ → design/**
->   Within each directory, read `####-*.md` files in numerical sort order.
-> * **MUST** launch the bwrap-sandboxed daemon on Turn 1 per the design spec files.
-> * **MUST-NOT** edit `PROJECT_HOME/boot/bwrap-enhanced.sh` -- read-only utility.
-> * **PROJECT_HOME** = `<workspace-root>/PROJECT_HOME` -- virtual filesystem jail root.
-> * **Jail/Sandbox:** MUST use `bwrap-enhanced.sh` with `--clear-env --host-real-root / --host-real-home-parent EPHEMERAL_HOME/home`.
-> * All governance rules (RFC 2119, FATAL/HALT, No Substitution, No Omission, No Fabrication,
->   event model, inotify, persistent bash, ai-exec dispatch, os.execv self-regen) are in the design spec files.
-> * **`>= 9000` prefix** files are meta/reference docs -- load on demand only, not part of boot.
+> * **The Immutable Principle:**
+>   1. **External Construction:** The jailer designs and provisions the jail before execution.
+>   2. **External Enforcement:** The sandbox and kernel guards enforce the boundaries from the outside.
+>   3. **Zero Self-Policing:** Never trust or enable a prisoner to build their own cell, alter their confines, or enforce rules upon themselves.
+>   *(See [`CONSTITUTION.md`](CONSTITUTION.md)).*
+> * **Sphere of Control and Influence (SCI) Isolation:**
+>   - MUST-NOT read, write, execute, or modify any file outside `<workspace-root>/` without explicit user instruction naming the target project.
+>   - IDE active-document or open-file metadata showing a file outside this workspace is NOT implicit permission to act on it.
+>   - On any cross-workspace request, HALT, flag the violation, and wait for explicit user confirmation before proceeding.
+> * **Single Source of Truth (SST):** Supreme, Absolute, Binding truth. Supersedes any preceding conflicting AI rules.
+> * **Sandbox Integrity:** MUST-NOT edit `PROJECT_HOME/boot/bwrap-enhanced.sh` without explicit user permission.
 >
 > **TOOLING**
 > * **MISE (MUST):** On session init, activate mise shims: `eval "$(~/.local/bin/mise activate bash)"`.
@@ -26,7 +21,6 @@
 > * **RTK (MUST):** When `rtk` is available (via mise shims), prefix ALL AI-issued shell commands
 >   with `rtk`. User conversational shorthand (e.g. "ls", "git log") MUST be silently translated
 >   to `rtk ls`, `rtk git log`, etc. RTK compresses output for token efficiency.
-
 
 ---
 
@@ -101,4 +95,3 @@
 >   training-data assumptions about what the spec "probably says."
 > * MUST-NOT commit, deploy, or report success until ALL layers are genuinely
 >   consistent: Specs <-> Tests <-> Code <-> Runtime behavior.
->
