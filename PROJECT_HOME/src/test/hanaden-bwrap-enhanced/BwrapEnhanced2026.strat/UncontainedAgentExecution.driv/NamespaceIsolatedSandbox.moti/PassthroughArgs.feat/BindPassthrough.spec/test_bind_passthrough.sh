@@ -12,7 +12,7 @@ out=$("/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederi
 fout=$(echo "$out" | grep -v '^\[SYS-LOG\]')
 rm -f "$TMPF"
 if echo "$fout" | grep -q 'bind_passthrough_content'; then
-  pass '--ro-bind CLI arg passed through to bwrap (C1 — code SST L757)'
+  pass '--ro-bind CLI arg passed through to bwrap (C1 -- code SST L757)'
 else
   fail "bind passthrough failed: $fout"
 fi
