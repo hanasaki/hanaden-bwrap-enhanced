@@ -2,7 +2,7 @@
 ---
 title: HANADEN-AI Daemon Configuration
 class: config
-version: 0.0.1
+version: 0.2.0
 status: active-development
 DOB: 2026-08-11T15:58:36.252218434Z
 copyright: (c) 2026 Hanaden - Frederick Bloom

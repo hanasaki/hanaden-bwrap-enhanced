@@ -2,7 +2,7 @@
 ---
 title: HANADEN-AI Daemon Command Stream Protocol
 class: design
-version: 0.1.0
+version: 0.2.0
 status: active-development
 DOB: 2026-08-11T15:58:36.252218434Z
 copyright: (c) 2026 Hanaden - Frederick Bloom

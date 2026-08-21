@@ -7,7 +7,7 @@ The daemon service controller: `boot/hanaden-daemon`
 ## Identity
 
 ```
-hanaden-daemon 0.0.1
+hanaden-daemon 0.2.0
 Copyright (c) 2026 Hanaden - Frederick Bloom
 ```
 
@@ -31,7 +31,7 @@ Copyright (c) 2026 Hanaden - Frederick Bloom
 # See:     boot/specs/design/1000-service-controller.md
 # ============================================================================
 
-readonly VERSION="0.0.1"
+readonly VERSION="0.2.0"
 readonly AUTHOR="Frederick Bloom"
 readonly COPYRIGHT="Copyright (c) 2026 Hanaden - ${AUTHOR}"
 ```

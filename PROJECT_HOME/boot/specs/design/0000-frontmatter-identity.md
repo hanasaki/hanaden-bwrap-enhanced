@@ -5,7 +5,7 @@ title: HANADEN-AI Daemon Design
 Mandate: "For all AI tools: every AI-conversation, AI-session, AI-Processor, AI-Agent start, restart, or reboot MUST follow the boot sequence steps sequentially and completely - skipping steps is not allowed."
 priority: 0
 class: design
-version: 0.0.1
+version: 0.2.0
 status: active-development
 DOB: 2026-08-11T15:58:36.252218434Z
 copyright: (c) 2026 Hanaden - Frederick Bloom
