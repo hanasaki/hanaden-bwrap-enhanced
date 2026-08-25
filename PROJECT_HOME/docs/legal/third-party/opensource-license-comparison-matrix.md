@@ -239,7 +239,7 @@ graph BT
 
     style A fill:#2ecc71,color:#000
     style B fill:#f39c12,color:#000
-    C fill:#e67e22,color:#000
+    style C fill:#e67e22,color:#000
     style D fill:#e74c3c,color:#fff
     style E fill:#8e44ad,color:#fff
 ```
