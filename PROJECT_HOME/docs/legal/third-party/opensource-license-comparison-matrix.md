@@ -2,10 +2,10 @@
 <!-- Source: PROJECT_HOME/docs/legal/third-party/opensource/ — 27 license texts -->
 <!-- Scope: open-source distribution licenses only. See ../contributor-license-agreement/ for CLA analysis. -->
 
-> **Scope:** Generic analysis of the 27 OSI-recognized licenses present in the corpus.  
+> **Scope:** Generic analysis of the 27 OSI-recognized licenses present in the corpus.
 > No project-specific context is included.
 >
-> **Research & synthesis:** Prior session — Claude Sonnet 4.6 (corpus reading, legal text analysis, matrix population).  
+> **Research & synthesis:** Prior session — Claude Sonnet 4.6 (corpus reading, legal text analysis, matrix population).
 > **Revision:** Claude Sonnet 4.6 (diagram layout & colour corrections).
 
 ---
