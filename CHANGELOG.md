@@ -5,6 +5,16 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [v0.2.1] - 2026-08-25
+
+### Changed
+- **Legal Corpus Reorganization:** Added CLA reference collection, comparison matrix, and reorganized third-party open-source licenses.
+- **Cruft Cleanup:** Removed 52 legacy/deprecated draft specs from `PROJECT_HOME/boot/specs/` and 8 obsolete bootstrap-0.0.3 execution run records.
+- **Version Alignment:** Standardized project version baseline to `0.2.1` across all script headers and version files.
+
+### Fixed
+- **Documentation:** Corrected Mermaid syntax error in §3.1 Copyleft Strength Hierarchy.
+
 ## [v0.2.0] - 2026-08-21
 
 ### Added
