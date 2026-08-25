@@ -3,7 +3,7 @@
 # *!! IMPORTANT - AI - Immutable file without user permission - ask user
 # ==============================================================================
 # NAME:      bwrap-enhanced.sh
-# VERSION:   0.2.0
+# VERSION:   0.2.1
 # ARCH:      Linux Namespace Isolation & VFS Remapping (Debian 12+, Usr-Merge)
 # AUTHOR:    Frederick Bloom <devlabs@hanaden.com>
 # COPYRIGHT: (c) 2026 Hanaden - Frederick Bloom. All rights reserved.
