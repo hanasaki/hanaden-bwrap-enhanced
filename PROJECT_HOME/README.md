@@ -37,7 +37,7 @@ PROJECT_HOME/
 │   ├── history/                  # Historical delivery records
 │   ├── lessons-learned/          # Post-mortem analyses
 │   └── security-bulletins/       # Security advisories
-├── generic-sldc-and-engine-readonly/  # SDLC engine spec (read-only)
+├── generic-sdlc-and-engine-readonly/  # SDLC engine spec (read-only)
 ├── src/
 │   ├── main/hanaden-bwrap-enhanced/
 │   │   └── bwrap-enhanced.sh     # Source of truth implementation

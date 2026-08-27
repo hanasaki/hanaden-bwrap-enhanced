@@ -213,7 +213,7 @@ TMPL-FIX → SPEC-CLEAN → HARNESS → TEST-IMPL → ARCH-PLANES → ARCH-VROOT
 
 - [ ] **HARNESS: Design test harness output format**
   - Choose JSONL or XML for machine-readable test results
-  - Align with [GenericSdlcEngine.strat](../../../generic-sldc-and-engine-readonly/) standard for Bash testing (bats-core + JSONL)
+  - Align with [GenericSdlcEngine.strat](../../../generic-sdlc-and-engine-readonly/) standard for Bash testing (bats-core + JSONL)
   - Separate runtime results from static spec documents (JUnit/JaCoCo pattern)
 
 - [ ] **TEST-IMPL: Implement or remove 260 NOT_STARTED test cases**

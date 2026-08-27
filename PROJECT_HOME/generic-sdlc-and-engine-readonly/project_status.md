@@ -8,7 +8,7 @@
 **Conversation:** `3360c8d8` -- "Generic SDLC Engine Refactoring"
 **Commit:** `a60004d` -- `feat(generic-sdlc): add GenericSdlcEngine.strat/ artifact tree (60 nodes)`
 
-**What was done:** Created the complete `GenericSdlcEngine.strat/` directory tree inside `generic-sldc-and-engine-readonly/` with all 60 Hanaden UUIDv7 Extended files:
+**What was done:** Created the complete `GenericSdlcEngine.strat/` directory tree inside `generic-sdlc-and-engine-readonly/` with all 60 Hanaden UUIDv7 Extended files:
 
 | Node Type | Count |
 |---|---|
@@ -62,7 +62,7 @@ The 60 dirty files in `git status` are mostly the **A3 test script portability f
 - 1 new untracked dir: `brainstorming-ideas-only/`
 
 #### Conversation ended with:
-User told the agent it was "losing its mind" -- the agent was conflating `DriverVsMotivator-analysis.analys.md` (which is scoped only to `generic-sldc-and-engine-readonly/`) with the broader BwrapEnhanced SDLC hierarchy. The conversation ended there with no further resolution.
+User told the agent it was "losing its mind" -- the agent was conflating `DriverVsMotivator-analysis.analys.md` (which is scoped only to `generic-sdlc-and-engine-readonly/`) with the broader BwrapEnhanced SDLC hierarchy. The conversation ended there with no further resolution.
 
 ---
 
@@ -110,4 +110,4 @@ You have these files open right now:
 > Were these intentional? Should they be committed, moved, or deleted?
 
 > **Q6 -- DriverVsMotivator scope confusion**
-> The previous agent conflated `generic-sldc-and-engine-readonly/DriverVsMotivator-analysis.analys.md` (scoped ONLY to the generic SDLC engine) with the broader `BwrapEnhanced2026.strat` hierarchy. That confusion was flagged but never resolved. Any cleanup needed in the analysis doc from that session's edits?
+> The previous agent conflated `generic-sdlc-and-engine-readonly/DriverVsMotivator-analysis.analys.md` (scoped ONLY to the generic SDLC engine) with the broader `BwrapEnhanced2026.strat` hierarchy. That confusion was flagged but never resolved. Any cleanup needed in the analysis doc from that session's edits?

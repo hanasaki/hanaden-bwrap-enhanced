@@ -24,7 +24,7 @@ cross-references:
 ## 1. Layer Model (Authoritative)
 
 From [`SdlcHierarchyOverview.overview`](./20260816-171937-121071-7f00-a05f-7ea9697692bc-SdlcHierarchyOverview.overview-0.0.1.md)
-and [`SdlcEngineSpec.system`](../generic-sldc-and-engine-readonly/20260818-033649-124680-7266-a219-84d3929f1e0a-SdlcEngineSpec.system-0.0.1.md):
+and [`SdlcEngineSpec.system`](../generic-sdlc-and-engine-readonly/20260818-033649-124680-7266-a219-84d3929f1e0a-SdlcEngineSpec.system-0.0.1.md):
 
 | Layer | Node Type | Role |
 |---|---|---|
@@ -50,7 +50,7 @@ and [`SdlcEngineSpec.system`](../generic-sldc-and-engine-readonly/20260818-03364
 
 ## 2. Term Definitions
 
-Derived from [`DriverVsMotivator-analysis.analys.md`](../generic-sldc-and-engine-readonly/DriverVsMotivator-analysis.analys.md).
+Derived from [`DriverVsMotivator-analysis.analys.md`](../generic-sdlc-and-engine-readonly/DriverVsMotivator-analysis.analys.md).
 
 ```mermaid
 graph TD
