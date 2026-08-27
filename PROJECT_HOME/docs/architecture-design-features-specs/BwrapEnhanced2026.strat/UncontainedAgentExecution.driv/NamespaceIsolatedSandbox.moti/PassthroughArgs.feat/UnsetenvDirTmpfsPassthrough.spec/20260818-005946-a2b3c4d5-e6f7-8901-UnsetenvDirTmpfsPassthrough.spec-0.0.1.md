@@ -19,11 +19,7 @@ parent:        20260816-182145-PassthroughArgs.feat
 leaf-value:    "--unsetenv(1 arg) --dir/--tmpfs/--symlink(2 args) → BWRAP_PASSTHROUGH_ARGS; unknown → FATAL"
 leaf-unit:     "CLI parse + BWRAP_PASSTHROUGH_ARGS append"
 tdd:
-  state:          PASS
   test-file:      src/test/hanaden-bwrap-enhanced/BwrapEnhanced2026.strat/UncontainedAgentExecution.driv/NamespaceIsolatedSandbox.moti/PassthroughArgs.feat/UnsetenvDirTmpfsPassthrough.spec/test_unsetenv_dir_tmpfs_passthrough.sh
-  last-run:       2026-08-18T16:08:59Z
-  iterations:     1
-  coverage-lines: "L780-L787"
 ---
 
 # UnsetenvDirTmpfsPassthrough: --unsetenv, --dir, --tmpfs, --symlink, --, and Unknown Flag Handling

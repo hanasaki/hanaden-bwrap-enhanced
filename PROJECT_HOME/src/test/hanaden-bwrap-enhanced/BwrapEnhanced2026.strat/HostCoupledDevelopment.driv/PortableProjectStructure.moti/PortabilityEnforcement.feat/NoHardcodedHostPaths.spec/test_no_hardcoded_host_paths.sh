@@ -36,4 +36,16 @@ else
   fail "$count_user user-specific paths found in src/ (NHP-C2)"
 fi
 
+# NHP-002: Regression detection (mutation test)
+# Verify that injecting a hardcoded path into a temporary probe file is detected by the scanner
+TMP_PROBE=$(mktemp "$WS/PROJECT_HOME/src/test/probe-XXXXXX.sh")
+echo 'SAMPLE_PATH="/homes/test-user/repo"' > "$TMP_PROBE"
+detected=$(grep -rn '/homes/' "$TMP_PROBE" | wc -l || true)
+rm -f "$TMP_PROBE"
+if [[ "$detected" -ge 1 ]]; then
+  pass "scanner detects injected /homes/ path violation (NHP-002)"
+else
+  fail "scanner failed to detect injected path violation (NHP-002)"
+fi
+
 results

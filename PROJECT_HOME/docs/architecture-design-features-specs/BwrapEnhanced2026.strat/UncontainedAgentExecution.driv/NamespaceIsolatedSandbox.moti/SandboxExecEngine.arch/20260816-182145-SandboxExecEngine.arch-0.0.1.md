@@ -60,7 +60,7 @@ sequenceDiagram
     BA->>K: 7. --bind /sys /sys
     BA->>K: 8. --tmpfs /home
     BA->>K: 9. --dir /home/VUSER
-    BA->>K: 10. --tmpfs /homes (autofs shadow)
+    BA->>K: 10. --tmpfs /homes (host /homes shadow)
     BA->>K: 11. --remount-ro / (LOCK — all host-backed paths become RO)
     BA->>K: 12. --bind HOST_HOME /home/VUSER (post-lock RW egress hole)
 ```
@@ -149,15 +149,8 @@ Key invariants:
 - All poll loop commands are bash builtins (no fork)
 - Exit code of CMD = exit code of bwrap-enhanced.sh
 
-## tdd
-```
 tdd:
-  state:          NOT_STARTED
-  test-file:      null
-  last-run:       null
-  iterations:     0
-  coverage-lines: "L15-L555"
-```
+  test-file:src/test/hanaden-bwrap-enhanced/BwrapEnhanced2026.strat/UncontainedAgentExecution.driv/NamespaceIsolatedSandbox.moti/SandboxExecEngine.arch/test_sandbox_exec_engine.sh
 
 ## Changelog
 | Version | Date | Author | Changes |
