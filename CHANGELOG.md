@@ -5,6 +5,27 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [v0.2.2] - 2026-08-25
+
+### Security
+- **D-Bus Decoupling (`--enable-gnome`, `--enable-kde`):** `--enable-gnome` and `--enable-kde` no longer implicitly set `ENABLE_DBUS=true`. The D-Bus session bus (`/run/user/UID/bus`) is now **strictly absent** inside the sandbox unless `--enable-dbus` is explicitly passed. This closes a prior escape vector where GNOME/KDE desktop integration silently exposed host portals (file pickers, secret keyrings, systemd --user execution) without the caller's awareness.
+- **`--enable-dbus` Help Text — Critical Warning:** Upgraded from a single-sentence warning to a detailed threat model listing all three escape vectors unlocked: (1) host filesystem browsing via portal file pickers, (2) host secret keyring access via `org.freedesktop.secrets`, (3) unconfined host command execution via `systemd --user`.
+
+### Changed
+- **Security Tier Table Rewrite:** Tiers reordered and relabelled to reflect the corrected isolation model:
+  - Tier 1 `(media)`: `--enable-wayland --enable-audio` — zero host FS escape
+  - Tier 2 `(accessible)`: + `--enable-a11y` — zero host FS escape
+  - Tier 3 `(desktop)`: + `--enable-gnome` / `--enable-kde` — native themes/fonts; zero host FS escape
+  - Tier 4 `(portal)`: + `--enable-dbus` — **PUNCHES A SECURITY HOLE**
+- **Spec Docs Updated:** `GnomePassthrough.spec` and `KdePassthrough.spec` revised to reflect decoupled D-Bus behaviour; GN-005/KDE-005 test cases flipped from "bus socket present" → "bus absent (ISOLATED)"; Mermaid behavioral flow diagrams updated to remove the `ENABLE_DBUS=true (implied)` node.
+- **Version Bump:** `0.2.1` → `0.2.2`.
+
+### Fixed
+- **Test Path Portability:** `test_gnome_passthrough.sh` and `test_kde_passthrough.sh` replaced hardcoded absolute NFS paths with portable `SCRIPT_DIR` / `PROJECT_DIR` traversal (`cd` up until `PROJECT_HOME/` is found). Tests now run correctly from any checkout location.
+
+### Tests
+- **GN-005 / KDE-005 — D-Bus Decoupling Assertion (new):** Both passthrough test scripts now include a second test that invokes the sandbox with only `--enable-gnome` / `--enable-kde` and asserts that `/run/user/$(id -u)/bus` is **absent** inside the sandbox, providing runtime proof of the decoupling guarantee.
+
 ## [v0.2.1] - 2026-08-25
 
 ### Changed

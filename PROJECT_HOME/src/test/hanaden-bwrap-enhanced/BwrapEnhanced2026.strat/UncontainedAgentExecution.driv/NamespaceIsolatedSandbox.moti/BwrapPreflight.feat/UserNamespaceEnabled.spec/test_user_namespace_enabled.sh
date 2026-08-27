@@ -1,7 +1,9 @@
 #!/bin/bash
 # (c) 2026-* Frederick Bloom -- All Rights Reserved -- Hanaden AI
-source "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/shared/env.sh"
-source "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/shared/assert.sh"
+_T="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
+source "$_T/shared/env.sh"
+source "$_T/shared/assert.sh"
+unset _T
 echo "=== UserNamespaceEnabled ==="
 
 # C1: /proc/sys/kernel/unprivileged_userns_clone

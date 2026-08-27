@@ -153,7 +153,7 @@ Key invariants:
 ```
 tdd:
   state:          NOT_STARTED
-  test-file:      src/test/hanaden-bwrap-enhanced/.../test_sandbox_exec_engine_arch.sh
+  test-file:      null
   last-run:       null
   iterations:     0
   coverage-lines: "L15-L555"

@@ -1,7 +1,9 @@
 #!/bin/bash
 # (c) 2026-* Frederick Bloom -- All Rights Reserved -- Hanaden AI
-source "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/shared/env.sh"
-source "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/shared/assert.sh"
+_T="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
+source "$_T/shared/env.sh"
+source "$_T/shared/assert.sh"
+unset _T
 echo "=== BwrapMinimalSmoke ==="
 
 EPHEMERAL=$(mktemp -d /tmp/bwrap-smoke-XXXXXX)
@@ -9,7 +11,7 @@ mkdir -p "$EPHEMERAL/home/sandbox-user"
 trap "rm -rf '$EPHEMERAL'" EXIT
 
 # C1: minimal sandbox launches and exits 0
-"/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" \
+"$BWRAP_SH" \
   --clear-env \
   --host-real-root / \
   --host-real-home-parent "$EPHEMERAL/home" \
@@ -24,7 +26,7 @@ else
 fi
 
 # C2: sandbox-user home writable
-"/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" \
+"$BWRAP_SH" \
   --clear-env \
   --host-real-root / \
   --host-real-home-parent "$EPHEMERAL/home" \
@@ -33,7 +35,7 @@ ec=$?
 [[ $ec -eq 0 ]] && pass "home writable inside sandbox (C2)" || fail "home not writable (C2, exit=$ec)"
 
 # C3: /etc/passwd present inside sandbox
-out=$("/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" \
+out=$("$BWRAP_SH" \
   --clear-env \
   --host-real-root / \
   --host-real-home-parent "$EPHEMERAL/home" \

@@ -1,14 +1,16 @@
 #!/bin/bash
 # (c) 2026-* Frederick Bloom -- All Rights Reserved -- Hanaden AI
 set -euo pipefail
-BWRAP_SH="/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
-SHARED="/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/shared"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SHARED="$SCRIPT_DIR/shared"
 LOG="/tmp/bwrap-tdd-progress.log"
-FEAT_BASE="/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/BwrapEnhanced2026.strat/UncontainedAgentExecution.driv/NamespaceIsolatedSandbox.moti"
-EPHEM_BASE="/tmp/bwrap-tdd-351079"
 
 source "$SHARED/env.sh"
 source "$SHARED/assert.sh"
+
+BWRAP_SH="$WS/PROJECT_HOME/boot/bwrap-enhanced.sh"
+FEAT_BASE="$SCRIPT_DIR/BwrapEnhanced2026.strat/UncontainedAgentExecution.driv/NamespaceIsolatedSandbox.moti"
+EPHEM_BASE="/tmp/bwrap-tdd-351079"
 
 TOTAL_PASS=0; TOTAL_FAIL=0; TOTAL_SKIP=0
 PHASE_RESULTS=()

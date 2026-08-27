@@ -1,13 +1,15 @@
 #!/bin/bash
 # (c) 2026-* Frederick Bloom -- All Rights Reserved -- Hanaden AI
-source "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/shared/env.sh"
-source "/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/test/hanaden-bwrap-enhanced/shared/assert.sh"
+_T="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)"
+source "$_T/shared/env.sh"
+source "$_T/shared/assert.sh"
+unset _T
 
 echo '=== ZeroMutation ==='
 EPHEMERAL=$(mktemp -d /tmp/bwrap-t-XXXXXX); mkdir -p "$EPHEMERAL/home/sandbox-user"; trap "rm -rf '$EPHEMERAL'" EXIT
 SENTINEL="$EPHEMERAL/sentinel_before"
 touch "$SENTINEL"
-"/homes/home-local/hanasaki/home-remote/home-remote-nfs/data/Bloom-Frederick/dev-projects-local/hanaden-bwrap-enhanced/PROJECT_HOME/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" -- /bin/bash -c 'touch /tmp/zerotest; echo ok' 2>/dev/null
+"$BWRAP_SH" --clear-env --host-real-root / --host-real-home-parent "$EPHEMERAL/home" -- /bin/bash -c 'touch /tmp/zerotest; echo ok' 2>/dev/null
 # /tmp inside sandbox is tmpfs -- any writes stay inside. Check host sentinel not newer.
 if [[ -f "$SENTINEL" ]]; then
   pass 'host filesystem unchanged after sandbox run (C1)'
