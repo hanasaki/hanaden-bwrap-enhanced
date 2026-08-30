@@ -95,3 +95,4 @@
 >   training-data assumptions about what the spec "probably says."
 > * MUST-NOT commit, deploy, or report success until ALL layers are genuinely
 >   consistent: Specs <-> Tests <-> Code <-> Runtime behavior.
+-----

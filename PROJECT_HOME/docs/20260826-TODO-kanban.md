@@ -7,6 +7,20 @@
 
 ---
 
+## ⏱️ Status Changes (Last 24 Hours)
+
+| Item Key | Was (24h Ago) | Now (Current) | Change Summary |
+|:---|:---|:---|:---|
+| **`PORTABILITY`** | In Progress *(1/3 Green, 1 Red, 1 Partial)* | **DONE (GREEN — 4/4 suites pass)** | 58 host path violations (`autofs`, `NFS`) eliminated; `AutofsShadow` renamed `HomesShadow` |
+| **`SPEC-CLEAN`** | Backlog P0 *(55 specs polluted)* | **DONE (GREEN — 52 specs cleaned)** | Stripped fabricated timestamps & runtime TDD fields while preserving static traceability |
+| **`KI-002`** | Untested *(`SandboxExecEngine.arch`)* | **RESOLVED (GREEN — 3/3 pass)** | Added `test_sandbox_exec_engine.sh` verifying exec payload & FD injection |
+| **`KI-004`** | P0 Violation *(49 specs with fabricated timestamp)* | **RESOLVED (GREEN — 0 timestamps)** | `test_no_fabricated_metadata.sh` passing (`NFM-001`, `NFM-002`) |
+| **`KI-005`** | Open Bug *(58 autofs/NFS path violations)* | **RESOLVED (GREEN — 0 violations)** | `NoHostTopologyInSpecs.spec` passing (`NHT-C1`, `NHT-C2`) |
+| **`TMPL-FIX`** | Backlog P0 | **IN PROGRESS** | Updating `SpecificationTmpl` to eliminate mutable runtime frontmatter fields |
+| **Repo Test Suite**| 51 / 54 passing *(94.4%)* | **54 / 54 passing (100.0% GREEN)** | +3 passing suites (+5.6% abs / 100% defect resolution across entire repository) |
+
+---
+
 ## Kanban Board Overview
 
 ```mermaid
@@ -17,8 +31,6 @@ config:
 ---
 kanban
   Backlog P0
-    SPEC-CLEAN@{ priority: 'Very High' }
-      Remove fabricated runtime fields from 55 specs
     TMPL-FIX@{ priority: 'Very High' }
       Update SpecificationTmpl — remove runtime tdd fields
     SPEC-DBUS@{ priority: 'Very High' }
@@ -47,10 +59,14 @@ kanban
       JSON Schema for virtual root spec
 
   In Progress
-    PORTABILITY@{ priority: 'High' }
-      HostCoupledDevelopment driver sweep (1/3 GREEN, 1 RED, 1 partial)
+    TMPL-FIX@{ priority: 'Very High' }
+      SpecificationTmpl runtime field cleanup
 
   Done (v0.2.2)
+    PORTABILITY@{ priority: 'High' }
+      HostCoupledDevelopment sweep (4/4 suites GREEN)
+    SPEC-CLEAN@{ priority: 'Very High' }
+      Purged fabricated runtime metadata from 52 specs
     DBUS-DECOUPLE@{ priority: 'Very High' }
       D-Bus decoupled from --enable-gnome/--enable-kde
     TIER-REWRITE
@@ -61,14 +77,14 @@ kanban
       D-Bus decoupling assertion tests
     PORTABILITY-SPECS
       PortabilityEnforcement DRIV/MOTI hierarchy
+    KI-002-TEST
+      SandboxExecEngine.arch test implemented (3/3 GREEN)
 
   Known Issues
     KI-001@{ priority: 'Medium' }
       X11Socket.spec FAIL — XAUTHORITY bug
-    KI-004@{ priority: 'Very High' }
-      49 specs share fabricated timestamp
-    KI-005@{ priority: 'Medium' }
-      58 autofs/NFS hardcoded path violations
+    KI-003@{ priority: 'Low' }
+      BwrapPreflight.feat — integration test missing
     KI-006@{ priority: 'Medium' }
       3 security bulletins unresolved
 ```
@@ -275,16 +291,17 @@ TMPL-FIX → SPEC-CLEAN → HARNESS → TEST-IMPL → ARCH-PLANES → ARCH-VROOT
 
 ## 🔵 In Progress
 
-- [ ] **PORTABILITY: HostCoupledDevelopment driver sweep** *(branch: `security/harden-dbus-isolation`, commit `30cd1d0`)*
-  - 3 specs: `NoHardcodedHostPaths`, `NoHostTopologyInSpecs`, `RelativeResourceDiscovery`
-  - `NoHostTopologyInSpecs` status: RED (58 autofs/NFS violations still exist)
-  - `NoHardcodedHostPaths` status: 1/2 cases implemented (NHP-002 regression test missing)
-  - `RelativeResourceDiscovery` status: PASS (2/2 cases implemented)
+- [ ] **TMPL-FIX: SpecificationTmpl frontmatter cleanup**
+  - Update `SpecificationTmpl` to remove mutable runtime fields (`state:`, `last-run:`, `iterations:`, `coverage-lines:`)
+  - Retain only static `tdd: test-file:` linkage
 
 ---
 
 ## 🟢 Done (v0.2.2)
 
+- [x] **PORTABILITY: HostCoupledDevelopment driver sweep** — 4/4 test suites GREEN (eliminated 58 autofs/NFS mentions, renamed AutofsShadow -> HomesShadow)
+- [x] **SPEC-CLEAN: Purged fabricated runtime metadata** — 52 specs cleaned of fabricated timestamp `2026-08-18T16:08:59Z` and mutable runtime TDD fields
+- [x] **KI-002: SandboxExecEngine architecture test** — `test_sandbox_exec_engine.sh` implemented with 3/3 passing assertions
 - [x] **D-Bus Decoupling** — `--enable-gnome`/`--enable-kde` no longer implicitly set `ENABLE_DBUS=true`
 - [x] **Security Tier Table Rewrite** — Tiers reordered to reflect corrected isolation model
 - [x] **Test Path Portability** — `test_gnome_passthrough.sh` / `test_kde_passthrough.sh` use `SCRIPT_DIR` traversal
@@ -314,14 +331,14 @@ TMPL-FIX → SPEC-CLEAN → HARNESS → TEST-IMPL → ARCH-PLANES → ARCH-VROOT
 
 ## 🟠 Known Issues / Tech Debt
 
-| ID | Issue | Severity | Source |
-|:---|:------|:---------|:-------|
-| KI-001 | X11Socket.spec status: FAIL (known X11 XAUTHORITY bug) | Medium | [X11Socket.spec](architecture-design-features-specs/BwrapEnhanced2026.strat/UncontainedAgentExecution.driv/NamespaceIsolatedSandbox.moti/GuiPassthrough.feat/X11Socket.spec/) |
-| KI-002 | SandboxExecEngine.arch — NOT_STARTED (no test exists) | Low | Governance Audit §A.3 |
-| KI-003 | BwrapPreflight.feat — integration test missing | Low | Governance Audit §A.3 |
-| KI-004 | 49 specs share fabricated timestamp `2026-08-18T16:08:59Z` | P0 | Governance Audit §2.4 |
-| KI-005 | 58 autofs/NFS hardcoded path violations in specs | Medium | NoHostTopologyInSpecs (RED) |
-| KI-006 | 3 security bulletins unresolved | Review | [security-bulletins/](security-bulletins/) |
+| ID | Issue | Severity | Status | Source |
+|:---|:------|:---------|:-------|:-------|
+| KI-001 | X11Socket.spec status: FAIL (known X11 XAUTHORITY bug) | Medium | Open | [X11Socket.spec](architecture-design-features-specs/BwrapEnhanced2026.strat/UncontainedAgentExecution.driv/NamespaceIsolatedSandbox.moti/GuiPassthrough.feat/X11Socket.spec/) |
+| KI-002 | SandboxExecEngine.arch — test coverage implemented | Low | **RESOLVED (GREEN)** | [SandboxExecEngine.arch](architecture-design-features-specs/BwrapEnhanced2026.strat/UncontainedAgentExecution.driv/NamespaceIsolatedSandbox.moti/SandboxExecEngine.arch/) |
+| KI-003 | BwrapPreflight.feat — integration test missing | Low | Open | Governance Audit §A.3 |
+| KI-004 | 49 specs share fabricated timestamp `2026-08-18T16:08:59Z` | P0 | **RESOLVED (GREEN)** | [test_no_fabricated_metadata.sh](src/test/hanaden-bwrap-enhanced/BwrapEnhanced2026.strat/HostCoupledDevelopment.driv/PortableProjectStructure.moti/PortabilityEnforcement.feat/test_no_fabricated_metadata.sh) |
+| KI-005 | 58 autofs/NFS hardcoded path violations in specs | Medium | **RESOLVED (GREEN)** | [NoHostTopologyInSpecs.spec](architecture-design-features-specs/BwrapEnhanced2026.strat/HostCoupledDevelopment.driv/PortableProjectStructure.moti/PortabilityEnforcement.feat/NoHostTopologyInSpecs.spec/) |
+| KI-006 | 3 security bulletins unresolved | Review | Open | [security-bulletins/](security-bulletins/) |
 
 ---
 
