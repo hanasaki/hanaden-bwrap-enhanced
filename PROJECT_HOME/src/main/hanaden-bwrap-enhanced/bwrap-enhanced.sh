@@ -895,6 +895,18 @@ preflight_check() {
         printf '[DIAG]  Required features: --as-pid-1, --ro-bind-data\n' >&2
         exit 2
     fi
+
+    # PF-SMK: Minimal sandbox smoke test
+    local smoke_err
+    if ! smoke_err="$(bwrap --ro-bind / / --unshare-user --die-with-parent /bin/true 2>&1)"; then
+        printf '[FATAL] Minimal bwrap sandbox smoke test failed\n' >&2
+        printf '[DIAG]  bwrap --ro-bind / / --unshare-user --die-with-parent /bin/true\n' >&2
+        if [ -n "$smoke_err" ]; then
+            printf '[DIAG]  bwrap stderr: %s\n' "$smoke_err" >&2
+        fi
+        printf '[HINT]  Check SELinux/AppArmor policy or kernel configuration\n' >&2
+        exit 2
+    fi
 }
 
 preflight_check
