@@ -851,6 +851,32 @@ preflight_check() {
         printf '[HINT]  Install: apt install uidmap  OR  dnf install shadow-utils\n' >&2
         exit 2
     fi
+
+    # PF-NS: Unprivileged user namespaces MUST be enabled
+    # BWRAP_PREFLIGHT_PROC_BASE allows test injection (default: /proc/sys)
+    local proc_base="${BWRAP_PREFLIGHT_PROC_BASE:-/proc/sys}"
+    local userns_file="${proc_base}/kernel/unprivileged_userns_clone"
+    local maxns_file="${proc_base}/user/max_user_namespaces"
+    local ns_val=""
+
+    if [ -r "$userns_file" ]; then
+        ns_val="$(cat "$userns_file" 2>/dev/null | tr -d '[:space:]')"
+        if [ "$ns_val" = "0" ]; then
+            printf '[FATAL] Unprivileged user namespaces are disabled\n' >&2
+            printf '[DIAG]  %s = 0\n' "$userns_file" >&2
+            printf '[HINT]  Enable: sudo sysctl -w kernel.unprivileged_userns_clone=1\n' >&2
+            exit 2
+        fi
+    elif [ -r "$maxns_file" ]; then
+        ns_val="$(cat "$maxns_file" 2>/dev/null | tr -d '[:space:]')"
+        if [ "$ns_val" = "0" ]; then
+            printf '[FATAL] Unprivileged user namespaces are disabled\n' >&2
+            printf '[DIAG]  %s = 0\n' "$maxns_file" >&2
+            printf '[HINT]  Enable: sudo sysctl -w user.max_user_namespaces=65536\n' >&2
+            exit 2
+        fi
+    fi
+    # If neither file exists, skip check (kernel may not expose these knobs)
 }
 
 preflight_check
