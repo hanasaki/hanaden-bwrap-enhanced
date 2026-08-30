@@ -38,3 +38,35 @@
 ### Agent Group G10: Full Regression (IN PROGRESS)
 - Dispatched: 2026-08-30T03:56:27Z
 - Expected: ~159 tests
+
+### Agent Group G2: Per-Flag Boolean FEATs (COMPLETE)
+- Dispatched: 2026-08-30T03:57:45Z
+- Completed: 2026-08-30T03:58:14Z
+- Duration: 29s
+- Result: 9 boolean flag FEATs (45 specs, 45 tests) all GREEN
+- Commit: 6a01654
+
+### Agent Group G3: Graded+Value Flag FEATs (COMPLETE)
+- Dispatched: 2026-08-30T03:59:09Z
+- Completed: 2026-08-30T03:59:30Z
+- Duration: 21s
+- Result: 4 FEATs (20 specs, 20 tests) all GREEN
+- Commit: fbc92af
+
+### Agent Group G4: Structural FEATs (COMPLETE)
+- Dispatched: 2026-08-30T04:00:19Z
+- Completed: 2026-08-30T04:01:08Z
+- Duration: 49s
+- Result: QualifierRules+RawBwrapPassthrough+HostCoupledDev (12 tests) GREEN
+- Commit: 296018c
+
+### Agent Group G5: Final FEATs (COMPLETE)
+- Dispatched: 2026-08-30T04:02:13Z
+- Completed: 2026-08-30T04:02:32Z
+- Duration: 19s
+- Result: FlagHostHomeParent+HostShadowing+5 CLI meta-FEATs (6 tests) GREEN
+- Commit: ce213c7
+
+### Agent Group G10: Final Regression (IN PROGRESS)
+- Dispatched: 2026-08-30T04:02:40Z
+- Expected: ~250 tests
