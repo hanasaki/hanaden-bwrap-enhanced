@@ -7,8 +7,6 @@ setup() {
     _test_dir="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
     _project_home="$(cd "${_test_dir}/../../../../../.." && pwd)"
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
-    export BWRAP_SKIP_PREFLIGHT=1
-
     # Create valid temp directories for validate mode
     VALID_ROOT="$(mktemp -d)"
     mkdir -p "${VALID_ROOT}/home/sandbox_user"
@@ -19,7 +17,7 @@ teardown() {
 }
 
 _validate() {
-    BWRAP_SKIP_PREFLIGHT=1 bash "$SCRIPT" --validate \
+    bash "$SCRIPT" --validate \
         --host-real-root "$VALID_ROOT" "$@" -- /bin/true 2>&1
 }
 
@@ -30,7 +28,7 @@ _validate() {
 
 @test "CLI-VAL-002: --validate with missing root -- exit 1" {
     _missing_root() {
-        BWRAP_SKIP_PREFLIGHT=1 bash "$SCRIPT" --validate \
+        bash "$SCRIPT" --validate \
             --host-real-root "/nonexistent/path/$(date +%s)" -- /bin/true 2>&1
     }
     run _missing_root

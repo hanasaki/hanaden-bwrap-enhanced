@@ -836,27 +836,10 @@ preflight_check() {
         exit 2
     fi
 
-    # PF-UID: newuidmap binary MUST be on PATH
-    if ! command -v newuidmap >/dev/null 2>&1; then
-        printf '[FATAL] newuidmap binary not found on PATH\n' >&2
-        printf '[DIAG]  command -v newuidmap returned non-zero\n' >&2
-        printf '[HINT]  Install: apt install uidmap  OR  dnf install shadow-utils\n' >&2
-        exit 2
-    fi
-
-    # PF-GID: newgidmap binary MUST be on PATH
-    if ! command -v newgidmap >/dev/null 2>&1; then
-        printf '[FATAL] newgidmap binary not found on PATH\n' >&2
-        printf '[DIAG]  command -v newgidmap returned non-zero\n' >&2
-        printf '[HINT]  Install: apt install uidmap  OR  dnf install shadow-utils\n' >&2
-        exit 2
-    fi
 
     # PF-NS: Unprivileged user namespaces MUST be enabled
-    # BWRAP_PREFLIGHT_PROC_BASE allows test injection (default: /proc/sys)
-    local proc_base="${BWRAP_PREFLIGHT_PROC_BASE:-/proc/sys}"
-    local userns_file="${proc_base}/kernel/unprivileged_userns_clone"
-    local maxns_file="${proc_base}/user/max_user_namespaces"
+    local userns_file="/proc/sys/kernel/unprivileged_userns_clone"
+    local maxns_file="/proc/sys/user/max_user_namespaces"
     local ns_val=""
 
     if [ -r "$userns_file" ]; then
@@ -909,8 +892,7 @@ preflight_check() {
     fi
 }
 
-# BWRAP_SKIP_PREFLIGHT: test-only escape hatch (never set in production)
-[[ "${BWRAP_SKIP_PREFLIGHT:-}" != "1" ]] && preflight_check
+preflight_check
 
 # ==============================================================================
 # ARGUMENT PARSING

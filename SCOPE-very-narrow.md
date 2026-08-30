@@ -201,8 +201,9 @@ Suite: `PROJECT_HOME/src/test/hanaden-bwrap-enhanced/bwrap-enhanced-v0.3.0.bats`
 Wrapper: `PROJECT_HOME/src/test/hanaden-bwrap-enhanced/bats-run.sh`
 
 - **`--help` conformance (first)** — §1 CLI contract: all flags, correct qualifiers, no extras, no contradictions, full coverage.
-- **Test methodology — aggressive TDD loop  - AI prohibited from vibe coding**
+- **Test methodology — aggressive TDD loop**
 - full process TDD generic-sdlc-and-engine-readonly
+- FORBIDDEN: vibe coding, shortsighted quick fixes, over-optimizing, mocking the tests, assuming test results or using fabricated.  MUST always do all the work and full regression testing at each incermatle step as validation of success without introduction of regression breakage.
 - test => fix => test (infinite improvement loop); min cycle delay ≤ 11 s; max parallel execution = 22 (tunable; sized for a typical 24-core CI node, 2 cores reserved for the runner).
 - **Reporting & coverage** — via `bats-run.sh` wrapper around `bats --formatter tap`:<br>
   &nbsp;&nbsp;• Header: `START: <YYYY-MM-DDTHH:MM:SSZ>`<br>

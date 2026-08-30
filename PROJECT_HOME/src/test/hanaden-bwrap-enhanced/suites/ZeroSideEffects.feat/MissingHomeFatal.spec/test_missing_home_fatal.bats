@@ -7,8 +7,6 @@ setup() {
     _test_dir="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
     _project_home="$(cd "${_test_dir}/../../../../../.." && pwd)"
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
-    export BWRAP_SKIP_PREFLIGHT=1
-
     # Create root dir but NOT the home subdir
     VALID_ROOT="$(mktemp -d)"
     # home/sandbox_user intentionally NOT created
@@ -19,7 +17,7 @@ teardown() {
 }
 
 _run_missing_home() {
-    BWRAP_SKIP_PREFLIGHT=1 bash "$SCRIPT" \
+    bash "$SCRIPT" \
         --host-real-root "$VALID_ROOT" "$@" -- /bin/true 2>&1
 }
 

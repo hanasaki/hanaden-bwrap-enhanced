@@ -7,11 +7,11 @@ setup() {
     _test_dir="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
     _project_home="$(cd "${_test_dir}/../../../../../.." && pwd)"
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
-    export BWRAP_SKIP_PREFLIGHT=1
+
 }
 
 _run_empty_cmd() {
-    BWRAP_SKIP_PREFLIGHT=1 bash "$SCRIPT" -- 2>&1
+    bash "$SCRIPT" -- 2>&1
 }
 
 # ---------------------------------------------------------------------------

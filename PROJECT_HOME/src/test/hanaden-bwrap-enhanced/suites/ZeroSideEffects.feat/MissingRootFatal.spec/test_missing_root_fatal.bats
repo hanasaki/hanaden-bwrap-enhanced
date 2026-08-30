@@ -7,11 +7,11 @@ setup() {
     _test_dir="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
     _project_home="$(cd "${_test_dir}/../../../../../.." && pwd)"
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
-    export BWRAP_SKIP_PREFLIGHT=1
+
 }
 
 _run_missing_root() {
-    BWRAP_SKIP_PREFLIGHT=1 bash "$SCRIPT" \
+    bash "$SCRIPT" \
         --host-real-root "/nonexistent/zse/$(date +%N)" "$@" -- /bin/true 2>&1
 }
 
