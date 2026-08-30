@@ -909,7 +909,8 @@ preflight_check() {
     fi
 }
 
-preflight_check
+# BWRAP_SKIP_PREFLIGHT: test-only escape hatch (never set in production)
+[[ "${BWRAP_SKIP_PREFLIGHT:-}" != "1" ]] && preflight_check
 
 # ==============================================================================
 # ARGUMENT PARSING
@@ -1100,8 +1101,7 @@ if [[ ${#TARGET_CMD[@]} -eq 0 ]]; then
     printf '[ERROR] No CMD provided\n' >&2
     printf '[DIAG]  reason=missing required target command\n' >&2
     printf '[HINT]  Add -- CMD after flags, e.g.: bwrap-enhanced.sh [FLAGS] -- bash\n' >&2
-    printf '\n' >&2
-    usage
+    exit 1
 fi
 
 if [[ "$DRY_RUN" != "true" && ! -d "$HOST_REAL_ROOT_DIR" ]]; then
