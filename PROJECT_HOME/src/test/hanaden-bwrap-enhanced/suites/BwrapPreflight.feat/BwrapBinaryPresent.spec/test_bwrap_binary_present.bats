@@ -35,6 +35,7 @@ _run_no_bwrap() {
 # ---------------------------------------------------------------------------
 @test "PF-BIN-001: bwrap present on PATH -- preflight passes" {
     command -v bwrap >/dev/null 2>&1 || skip "bwrap not installed on test host"
+    command -v newuidmap >/dev/null 2>&1 || skip "newuidmap not installed on test host"
     run bash "$SCRIPT" --dry-run -- /bin/true
     [ "$status" -ne 2 ]
 }

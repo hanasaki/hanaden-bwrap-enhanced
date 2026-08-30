@@ -835,6 +835,14 @@ preflight_check() {
         printf '[HINT]  Install: apt install bubblewrap  OR  dnf install bubblewrap\n' >&2
         exit 2
     fi
+
+    # PF-UID: newuidmap binary MUST be on PATH
+    if ! command -v newuidmap >/dev/null 2>&1; then
+        printf '[FATAL] newuidmap binary not found on PATH\n' >&2
+        printf '[DIAG]  command -v newuidmap returned non-zero\n' >&2
+        printf '[HINT]  Install: apt install uidmap  OR  dnf install shadow-utils\n' >&2
+        exit 2
+    fi
 }
 
 preflight_check
