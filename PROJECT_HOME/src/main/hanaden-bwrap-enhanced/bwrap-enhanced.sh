@@ -843,6 +843,14 @@ preflight_check() {
         printf '[HINT]  Install: apt install uidmap  OR  dnf install shadow-utils\n' >&2
         exit 2
     fi
+
+    # PF-GID: newgidmap binary MUST be on PATH
+    if ! command -v newgidmap >/dev/null 2>&1; then
+        printf '[FATAL] newgidmap binary not found on PATH\n' >&2
+        printf '[DIAG]  command -v newgidmap returned non-zero\n' >&2
+        printf '[HINT]  Install: apt install uidmap  OR  dnf install shadow-utils\n' >&2
+        exit 2
+    fi
 }
 
 preflight_check
