@@ -824,8 +824,25 @@ TARGET_CMD=()
 BWRAP_PASSTHROUGH_ARGS=()
 
 # ==============================================================================
+# HOST PREFLIGHT (runs BEFORE argument parsing — BwrapPreflight.feat)
+# ==============================================================================
+
+preflight_check() {
+    # PF-BIN: bwrap binary MUST be on PATH
+    if ! command -v bwrap >/dev/null 2>&1; then
+        printf '[FATAL] bwrap binary not found on PATH\n' >&2
+        printf '[DIAG]  command -v bwrap returned non-zero\n' >&2
+        printf '[HINT]  Install: apt install bubblewrap  OR  dnf install bubblewrap\n' >&2
+        exit 2
+    fi
+}
+
+preflight_check
+
+# ==============================================================================
 # ARGUMENT PARSING
 # ==============================================================================
+
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
