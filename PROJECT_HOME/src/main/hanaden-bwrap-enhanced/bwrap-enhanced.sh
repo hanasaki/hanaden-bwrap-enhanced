@@ -877,6 +877,24 @@ preflight_check() {
         fi
     fi
     # If neither file exists, skip check (kernel may not expose these knobs)
+
+    # PF-VER: bwrap version MUST be >= 0.3.0
+    local bwrap_ver_str bwrap_major bwrap_minor bwrap_patch
+    bwrap_ver_str="$(bwrap --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
+    if [ -z "$bwrap_ver_str" ]; then
+        printf '[FATAL] Could not determine bwrap version\n' >&2
+        printf '[DIAG]  bwrap --version returned no parseable version\n' >&2
+        exit 2
+    fi
+    bwrap_major="${bwrap_ver_str%%.*}"
+    bwrap_minor="${bwrap_ver_str#*.}"; bwrap_minor="${bwrap_minor%%.*}"
+    bwrap_patch="${bwrap_ver_str##*.}"
+    # Minimum: 0.3.0
+    if [ "$bwrap_major" -eq 0 ] && [ "$bwrap_minor" -lt 3 ]; then
+        printf '[FATAL] bwrap version %s is below minimum 0.3.0\n' "$bwrap_ver_str" >&2
+        printf '[DIAG]  Required features: --as-pid-1, --ro-bind-data\n' >&2
+        exit 2
+    fi
 }
 
 preflight_check
