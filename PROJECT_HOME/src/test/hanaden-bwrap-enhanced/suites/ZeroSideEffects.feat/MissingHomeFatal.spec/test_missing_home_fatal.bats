@@ -17,7 +17,7 @@ teardown() {
 }
 
 _run_missing_home() {
-    bash "$SCRIPT" \
+    bash "$SCRIPT" start \
         --host-real-root "$VALID_ROOT" "$@" -- /bin/true 2>&1
 }
 

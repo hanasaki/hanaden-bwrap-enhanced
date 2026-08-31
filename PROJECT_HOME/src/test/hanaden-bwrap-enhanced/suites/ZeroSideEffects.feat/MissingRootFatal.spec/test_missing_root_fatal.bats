@@ -11,7 +11,7 @@ setup() {
 }
 
 _run_missing_root() {
-    bash "$SCRIPT" \
+    bash "$SCRIPT" start \
         --host-real-root "/nonexistent/zse/$(date +%N)" "$@" -- /bin/true 2>&1
 }
 

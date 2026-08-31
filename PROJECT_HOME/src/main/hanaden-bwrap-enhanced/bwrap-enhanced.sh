@@ -782,10 +782,14 @@ _start_preflight() {
 _start_validate_paths() {
     local t="$1" root="$2" home_parent="$3" user="$4"
     if [[ ! -d "$root" ]]; then
-        _fatal "$t" "start: --host-real-root does not exist: ${root}"
+        _error "$t" "start: --host-real-root does not exist: ${root}"
+        _info  "$t" "Run: ${_SCRIPT_NAME} provision --host-real-root ${root}  (creates dirs via mkdir -p)"
+        exit 1
     fi
     if [[ ! -d "${home_parent}/${user}" ]]; then
-        _fatal "$t" "start: user home does not exist: ${home_parent}/${user}"
+        _error "$t" "start: user home does not exist: ${home_parent}/${user}"
+        _info  "$t" "Run: ${_SCRIPT_NAME} provision --host-real-root ${root}  (creates dirs via mkdir -p)"
+        exit 1
     fi
 }
 
