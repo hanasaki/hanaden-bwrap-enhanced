@@ -1,0 +1,177 @@
+{
+  "key": "sdlcEngine",
+  "version": "0.0.5",
+  "description": "Seed catalog for SdlcEngineSpec.system-0.0.5. Normative machine document (Stately machine.json). Profile omitted: core document shape only. Engine MUST interpret this JSON generically. MUST NOT execute it with XState. MUST NOT treat statig macros as this catalog. Illegal edge tdd_not_started + TEST_PASS is ABSENT.",
+  "queryLanguage": "jsonata",
+  "id": "sdlcEngine",
+  "type": "compound",
+  "initial": "backlog",
+  "context": {
+    "tdd_first_failure": null,
+    "tdd_iterations": 0
+  },
+  "guards": {
+    "tdd_green_requires_first_failure": {
+      "when": "{{ context.tdd_first_failure != null }}"
+    }
+  },
+  "states": {
+    "backlog": {
+      "id": "backlog",
+      "description": "Not pullable. No owner.",
+      "type": "atomic",
+      "on": {
+        "WORK_CREATED": { "target": "backlog", "description": "Mint stays in backlog until deps and score make it ready." },
+        "WORK_DECOMPOSED": { "target": "backlog" },
+        "WORK_UNBLOCKED": { "target": "ready" }
+      }
+    },
+    "ready": {
+      "id": "ready",
+      "description": "Pullable. No owner.",
+      "type": "atomic",
+      "on": {
+        "WORK_CLAIMED": { "target": "in-progress.tdd_not_started" },
+        "WORK_STARTED": { "target": "in-progress.tdd_not_started" },
+        "WORK_BLOCKED": { "target": "blocked" },
+        "WORK_CONFLICTED": { "target": "blocked" }
+      }
+    },
+    "in-progress": {
+      "id": "in-progress",
+      "description": "Exclusive lease. TDD nested here. Same loop zoomed in.",
+      "type": "compound",
+      "initial": "tdd_not_started",
+      "on": {
+        "WORK_BLOCKED": { "target": "blocked" },
+        "WORK_CONFLICTED": { "target": "blocked" },
+        "WORK_RELEASED": { "target": "ready" },
+        "WORK_COMPLETED": { "target": "review" },
+        "INTEGRATION_FLAW": { "target": "in-progress", "reenter": true },
+        "UNFEASIBLE_SCOPE": { "target": "blocked" },
+        "BROKEN_REQUIREMENT": { "target": "blocked" },
+        "PARADIGM_SHIFT": { "target": "blocked" },
+        "SPEC_WRONG": { "target": "in-progress", "reenter": true },
+        "FEAT_WRONG": { "target": "blocked" }
+      },
+      "states": {
+        "tdd_not_started": {
+          "id": "tdd_not_started",
+          "description": "No first-failure. TEST_PASS is NOT listed. The illegal NOT_STARTED to GREEN edge is absent data.",
+          "type": "atomic",
+          "on": {
+            "TEST_FAIL": {
+              "target": "tdd_red",
+              "context": {
+                "tdd_first_failure": "{{ event.id }}",
+                "tdd_iterations": "{{ context.tdd_iterations + 1 }}"
+              }
+            }
+          }
+        },
+        "tdd_red": {
+          "id": "tdd_red",
+          "description": "Failing test recorded. first-failure set.",
+          "type": "atomic",
+          "on": {
+            "TEST_FAIL": {
+              "target": "tdd_red",
+              "context": {
+                "tdd_iterations": "{{ context.tdd_iterations + 1 }}"
+              }
+            },
+            "TEST_PASS": {
+              "target": "tdd_green",
+              "guard": "{{ context.tdd_first_failure != null }}"
+            },
+            "CODE_REGRESSION": { "target": "tdd_red" }
+          }
+        },
+        "tdd_green": {
+          "id": "tdd_green",
+          "description": "Legal only after first-failure was recorded.",
+          "type": "atomic",
+          "on": {
+            "TEST_PASS": { "target": "tdd_green" },
+            "TEST_FAIL": { "target": "tdd_red" },
+            "CODE_REGRESSION": { "target": "tdd_red" }
+          }
+        },
+        "tdd_refactor": {
+          "id": "tdd_refactor",
+          "description": "Tests stay green while implementation is cleaned.",
+          "type": "atomic",
+          "on": {
+            "TEST_PASS": { "target": "tdd_green" },
+            "TEST_FAIL": { "target": "tdd_red" },
+            "CODE_REGRESSION": { "target": "tdd_red" }
+          }
+        }
+      }
+    },
+    "blocked": {
+      "id": "blocked",
+      "description": "CONFLICT projects here. Not a second board.",
+      "type": "atomic",
+      "on": {
+        "WORK_UNBLOCKED": { "target": "ready" },
+        "WORK_BLOCKED": { "target": "blocked" },
+        "BREAKER_TRIPPED": { "target": "blocked" }
+      }
+    },
+    "review": {
+      "id": "review",
+      "description": "Awaiting fan-in. review to done only via MERGE_ACCEPTED.",
+      "type": "atomic",
+      "on": {
+        "MERGE_READY": { "target": "queue" },
+        "MERGE_BLOCKED": { "target": "blocked" },
+        "MERGE_REJECTED": { "target": "blocked" },
+        "WORK_CONFLICTED": { "target": "blocked" },
+        "WORK_COMPLETED": { "target": "review" },
+        "INTEGRATION_FLAW": { "target": "in-progress" },
+        "CODE_REGRESSION": { "target": "in-progress.tdd_red" }
+      }
+    },
+    "queue": {
+      "id": "queue",
+      "description": "Merge-point column. Same board.",
+      "type": "atomic",
+      "on": {
+        "MERGE_READY": { "target": "active-merge" },
+        "MERGE_BLOCKED": { "target": "blocked" }
+      }
+    },
+    "active-merge": {
+      "id": "active-merge",
+      "description": "Fan-in evaluation. WIP typically 1.",
+      "type": "atomic",
+      "on": {
+        "MERGE_ACCEPTED": { "target": "verification" },
+        "WORK_MERGED": { "target": "verification", "description": "Alias of MERGE_ACCEPTED; SchemaRegistry canonicalizes before lookup." },
+        "MERGE_REJECTED": { "target": "blocked" },
+        "MERGE_BLOCKED": { "target": "blocked" }
+      }
+    },
+    "verification": {
+      "id": "verification",
+      "description": "Sync invariant SPEC == test == impl == process/template.",
+      "type": "atomic",
+      "on": {
+        "MERGE_ACCEPTED": { "target": "integrated" },
+        "MERGE_REJECTED": { "target": "blocked" },
+        "SYNC_VIOLATION": { "target": "blocked" }
+      }
+    },
+    "integrated": {
+      "id": "integrated",
+      "description": "Fan-in accepted. Maps to done for N=1 degenerate.",
+      "type": "final"
+    },
+    "done": {
+      "id": "done",
+      "description": "Only path from review is MERGE_ACCEPTED (N=1 degenerate included).",
+      "type": "final"
+    }
+  }
+}
