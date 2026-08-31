@@ -1,31 +1,34 @@
 #!/usr/bin/env bats
 # (c) 2026-* Frederick Bloom -- test_missing_separator.bats -- Hanaden AI
-# SPEC: MissingSeparator.spec -- CMD without -- -> ERROR exit 1
-# ==============================================================================
+# SPEC: MissingSeparator — `start` without `--` separator → [ERROR] exit 1
 
 setup() {
     _test_dir="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
     _project_home="$(cd "${_test_dir}/../../../../../.." && pwd)"
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
-
 }
 
-_run_missing_sep() {
-    bash "$SCRIPT" "$@" 2>&1
-}
-
-# ---------------------------------------------------------------------------
-@test "CLI-SEP-001: /bin/true without -- separator -- exit 1" {
-    run _run_missing_sep /bin/true
+@test "SEP-001: start with no args (no --) exits 1" {
+    run bash "$SCRIPT" start
     [ "$status" -eq 1 ]
 }
-
-@test "CLI-SEP-002: /bin/true without -- -- stderr contains [ERROR]" {
-    run _run_missing_sep /bin/true
+@test "SEP-002: start with no -- emits [ERROR]" {
+    run bash "$SCRIPT" start
     [[ "$output" == *"[ERROR]"* ]]
 }
-
-@test "CLI-SEP-003: /bin/true without -- -- stderr mentions separator" {
-    run _run_missing_sep /bin/true
-    [[ "$output" == *"separator"* ]] || [[ "$output" == *"--"* ]]
+@test "SEP-003: start with flags but no -- exits 1" {
+    run bash "$SCRIPT" start --net-passthrough
+    [ "$status" -eq 1 ]
+}
+@test "SEP-004: start with flags but no -- emits [ERROR]" {
+    run bash "$SCRIPT" start --net-passthrough
+    [[ "$output" == *"[ERROR]"* ]]
+}
+@test "SEP-005: start --dry-run does NOT need -- (no exec path)" {
+    run bash "$SCRIPT" start --dry-run
+    [ "$status" -eq 0 ]
+}
+@test "SEP-006: start --validate does NOT need -- (no exec path)" {
+    run bash "$SCRIPT" start --validate
+    [ "$status" -eq 0 ]
 }

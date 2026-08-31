@@ -3,7 +3,7 @@
 # *!! IMPORTANT - AI - Immutable file without user permission - ask user
 # ==============================================================================
 # NAME:      bwrap-enhanced.sh
-# VERSION:   0.3.0
+# VERSION:   0.4.0
 # ARCH:      Linux Namespace Isolation & VFS Remapping (Debian 12+, Usr-Merge)
 # AUTHOR:    Frederick Bloom <devlabs@hanaden.com>
 # COPYRIGHT: (c) 2026 Hanaden - Frederick Bloom. All rights reserved.
@@ -19,1131 +19,991 @@
 #   Minimum:    ALL tests must pass. No exceptions. No partial runs.
 #   Framework:  bats-core >= 1.14.0  (managed via mise)
 #
-# -- FUNCTION: exec_sandbox ----------------------------------------------------
-# [FULL SDD SPECIFICATION]
+# -- DISPATCHER PATTERN --------------------------------------------------------
 #
-# PURPOSE:
-#   Execute a target CMD inside a multi-namespace bwrap jail (User, PID, Mount,
-#   Network, IPC, UTS). The sandbox presents a clean, isolated Linux environment
-#   with a controlled, explicit filesystem view. Only what is explicitly bound
-#   exists inside the sandbox.
+#   This script follows the git / rtk / podman / systemctl pattern:
+#     bwrap-enhanced.sh  SUBCOMMAND  [OPTIONS]  [ARGS]
 #
-#   SECURITY MODEL: default-deny, empty virtual filesystem.
-#   - Default: ALL resources isolated (network, env, sockets, filesystem).
-#   - Add only what is explicitly needed via --*-passthrough flags.
-#   - Virtual root is a persistent local directory (default: ~/virtual-roots).
-#     The directory is used as-is; passed directly as a bind-mount source.
+#   Options belong to the subcommand — always follow the subcommand name.
+#   Pre-subcommand forms:
+#     bwrap-enhanced.sh --help | -h     # dispatch table, exit 0
+#     bwrap-enhanced.sh --version | -v  # version string, exit 0
 #
-# -- BREAKING CHANGES FROM v0.2.x ---------------------------------------------
+#   Subcommands (in dispatch order):
+#     provision   full   Create virtual root skeleton (NOT idempotent)
+#     fsck        full   Check / repair virtual root integrity
+#     start       full   Launch a process inside the sandbox
+#     stop        stub   Stop a running sandbox (not yet implemented)
+#     ls          stub   List known virtual roots (not yet implemented)
 #
-#   1. CLEAN ENV IS NOW THE DEFAULT.
-#      Previously --clear-env was an opt-in. v0.3.0 defaults to clean env.
-#      To inherit host env, pass --env-passthrough (or --env-passthrough true).
+# -- LOG LEVEL CONTRACT --------------------------------------------------------
 #
-#   2. ALL FLAGS RENAMED to --<noun>-passthrough [qualifier] pattern.
-#      Old flags (--clear-env, --share-net, --enable-*, --mise-enable)
-#      are removed. No backward-compat aliases.
+#   FATAL(100) < ERROR(200) < WARN(300) < INFO(400) < DEBUG(500) < TRACE(600)
+#   All output → stderr. Default level: INFO(400).
+#   [ERROR] and [FATAL] always emitted regardless of --log-level.
 #
-#   3. MISE BINDING FIXED: no longer leaks /homes into sandbox.
-#      Mise binary and data now bound to /home/<user>/.local/... paths
-#      (sandbox-home-relative), not same-path host absolute paths.
+# -- SECURITY MODEL ------------------------------------------------------------
 #
-#   4. NEW DEFAULTS:
-#      --virtual-user-name: sandbox_user  (was: sandbox-user)
-#      --host-real-root:    ~/virtual-roots  (was: /run/user/$(id -u)/virtual-roots)
-#      --host-real-home-parent: ~/virtual-roots/home
+#   default-deny, empty virtual filesystem.
+#   Add only what is explicitly needed via --*-passthrough flags on `start`.
+#   `start` has ZERO SIDE EFFECTS — no directories created, no host mutation.
+#   `provision` is the ONE sanctioned exception — NOT idempotent.
 #
-# -- CLI DESIGN CONTRACT -------------------------------------------------------
+# -- EXEC MODEL (start subcommand, exec_sandbox) --------------------------------
 #
-#   QUALIFIER TYPES:
-#     Boolean  [true|false(default)]:  on/off resource. Bare flag = true.
-#     Graded   [rw|ro(default)]:       filesystem privilege. Bare flag = ro.
-#
-#   RULES:
-#     Bare boolean flag         -> true  (most restrictive valid ON state)
-#     Bare graded flag          -> ro    (most restrictive valid ON state)
-#     --flag false              -> ILLEGAL: omit the flag instead
-#     --bool-flag ro|rw         -> ILLEGAL: wrong qualifier type
-#     --graded-flag true|false  -> ILLEGAL: wrong qualifier type
-#     same flag twice           -> ILLEGAL: ambiguous
-#     --wayland|gnome|kde true + --x11 false -> ILLEGAL: implication conflict
-#
-#   SYNOPSIS: run with --help for the full CLI contract (single source of truth).
-#
-# -- MOUNT SEQUENCE (ORDER-DEPENDENT) -----------------------------------------
-#
-#   bwrap processes flags LEFT TO RIGHT. Order below is exact execution order:
-#
-#   STEP | bwrap flag                               | Mode | Persists?
-#   -----+------------------------------------------+------+-----------
-#    1   | --bind $HOST_REAL_ROOT_DIR /              |  RW  | Yes (root)
-#    2   | --ro-bind /usr /usr                       |  RO  | No
-#    2   | --symlink usr/lib /lib                    |  --  | No
-#    2   | --symlink usr/lib64 /lib64                |  --  | No
-#    2   | --symlink usr/bin /bin                    |  --  | No
-#    3   | --ro-bind-try /etc/{alts,fonts,...}       |  RO  | No
-#    4   | --proc /proc                              |  RW* | No (kernel)
-#    4   | --dev-bind /dev /dev                      |  RW  | Pass-through
-#    5   | --tmpfs /dev/shm                          |  RW  | No
-#    5   | --tmpfs /tmp                              |  RW  | No
-#    5   | --ro-bind-try /tmp/.X11-unix              |  RO  | No (X11)
-#    6   | --bind-try /run/dbus /run/dbus            |  RW  | Pass-through
-#    6   | --tmpfs /run/user/UID                     |  RW  | No (empty)
-#    7a  | [--wayland-passthrough]                   |  RO  | wayland-0
-#    7b  | [--audio-passthrough]                     |  RW  | pipewire/pulse
-#    7c  | [--a11y-passthrough]                      |  RO  | at-spi/bus_1
-#    7d  | [--dbus-passthrough]  [!] PORTAL ESCAPE   |  RW  | bus socket
-#    7e  | [--gnome-passthrough]                     |  RW  | gvfs/dconf/keyring
-#    7f  | [--kde-passthrough]                       |  RW  | kwallet/KSMserver
-#    8   | --tmpfs /home                             |  RW  | No
-#    8   | --dir /home/USER                          |  --  | No (mkdir)
-#    9   | --bind HOST_HOME /home/USER               |  RW  | *** YES ***
-#    9a  | [--local-bin-passthrough]                 |  *   | .local/bin
-#    9b  | [--mise-passthrough]                      |  *   | .local/share/mise
-#   10   | --ro-bind-data 9 /etc/passwd              |  RO  | No (FD inject)
-#   10   | --ro-bind-data 10 /etc/group              |  RO  | No (FD inject)
-#   11   | --remount-ro /                            |  --  | Root locked RO
-#   12   | --bind HOST_HOME /home/USER (re-apply)    |  RW  | Write-hole open
-#
-# -- PERSISTENCE CONTRACT ------------------------------------------------------
-#
-#   /home/USER/**           YES  RW --bind (egress/write-hole)
-#   /home/USER/.local/**    YES if rw passthrough; NO if ro
-#   /tmp/**                 NO   tmpfs, ephemeral
-#   /dev/**                 PASSTHROUGH  real devices
-#   /usr/**, /etc/**        NO   read-only bind
-#   /run/user/UID/**        CONDITIONAL  per --*-passthrough flags
-#
-# -- IDENTITY INJECTION --------------------------------------------------------
-#
-#   Synthetic /etc/passwd and /etc/group injected via FD (here-string) at exec:
-#     - All system accounts with UID/GID < 1000 copied from host.
-#     - Virtual user: [USER]:x:[HOST_UID]:[HOST_GID]:...:/home/[USER]:/bin/bash
-#     - nobody:x:65534:65534 appended.
-#   Passed as --ro-bind-data on FD 9 (passwd) and FD 10 (group).
-#   FD 11 carries a minimal /etc/profile (only sets PATH=/usr/bin:/bin).
-#
-# -- FOREGROUND-HOLD (PID 1 INIT LOOP) ----------------------------------------
-#
-#   --as-pid-1: wrapper bash is PID 1. CMD runs synchronously (foreground).
-#   After CMD exits, a /proc polling loop (bash builtins only -- no forks)
-#   keeps sandbox alive until all reparented orphan child processes exit.
-#   Prevents bwrap teardown while GUI apps are still running.
-#
-# -- ZERO SIDE EFFECTS CONSTRAINT ----------------------------------------------
-#
-#   This script MUST NOT create directories or mutate host state.
-#   All required paths MUST be pre-created by the caller before invocation.
-#   Missing paths cause an immediate fatal exit with resolution instructions.
+#   exec_sandbox() implements the mount sequence defined in the SDD:
+#     1  --bind HOST_REAL_ROOT /                   RW  (root)
+#     2  --ro-bind /usr /usr + usr-merge symlinks   RO
+#     3  --ro-bind-try /etc/{alt,fonts,...}          RO
+#     4  --proc /proc  --dev-bind /dev /dev          RW
+#     5  --tmpfs /dev/shm  --tmpfs /tmp  [X11 unix]  RW
+#     6  --bind-try /run/dbus  --tmpfs /run/user/UID RW
+#     7  conditional passthrough mounts (wayland/audio/a11y/dbus/gnome/kde)
+#     8  --tmpfs /home  --dir /home/USER             RW
+#     9  --bind HOST_HOME /home/USER [+local-bin/mise RW
+#    10  --ro-bind-data FD9 /etc/passwd  FD10 /etc/group  FD11 /etc/profile
+#    11  --remount-ro /
+#    12  --bind HOST_HOME /home/USER (re-apply write-hole)
 #
 # ==============================================================================
 
 set -euo pipefail
 
 # ==============================================================================
-# DIAGNOSTIC HELPERS
+# CONSTANTS
+# ==============================================================================
+
+readonly _SCRIPT_NAME="$(basename "$0")"
+readonly _SCRIPT_VERSION="0.4.0"
+
+# Log-level numeric values — FATAL(100) < ERROR(200) < WARN(300) < INFO(400) < DEBUG(500) < TRACE(600)
+# All log output goes to stderr. Default level: INFO(400).
+readonly _LOG_FATAL=100
+readonly _LOG_ERROR=200
+readonly _LOG_WARN=300
+readonly _LOG_INFO=400
+readonly _LOG_DEBUG=500
+readonly _LOG_TRACE=600
+
+# ==============================================================================
+# LOGGING — all output to stderr, gated by LOG_LEVEL
+# ==============================================================================
+
+# _log LEVEL TAG MESSAGE  — emit iff LEVEL <= LOG_LEVEL
+# LOG_LEVEL is a local variable in each cmd_* function; passed as arg here.
+_log() {
+    local threshold="$1" level="$2" tag="$3"; shift 3
+    [[ "$level" -le "$threshold" ]] && printf '%s %s\n' "$tag" "$*" >&2 || true
+}
+
+# Convenience wrappers — caller passes threshold as first arg
+_fatal() { local t="$1"; shift; _log "$t" "${_LOG_FATAL}" "[FATAL]" "$@"; exit 2; }
+_error() { local t="$1"; shift; _log "$t" "${_LOG_ERROR}" "[ERROR]" "$@"; }
+_warn()  { local t="$1"; shift; _log "$t" "${_LOG_WARN}"  "[WARN]"  "$@"; }
+_info()  { local t="$1"; shift; _log "$t" "${_LOG_INFO}"  "[INFO]"  "$@"; }
+_debug() { local t="$1"; shift; _log "$t" "${_LOG_DEBUG}" "[DEBUG]" "$@"; }
+_trace() { local t="$1"; shift; _log "$t" "${_LOG_TRACE}" "[TRACE]" "$@"; }
+
+# ==============================================================================
+# LOG LEVEL RESOLVER
+# ==============================================================================
+
+# _resolve_log_level NAME_OR_NUMBER  → prints numeric value or exits 1
+_resolve_log_level() {
+    local raw="$1"
+    case "${raw^^}" in
+        FATAL|100) printf '%d' "${_LOG_FATAL}" ;;
+        ERROR|200) printf '%d' "${_LOG_ERROR}" ;;
+        WARN|300)  printf '%d' "${_LOG_WARN}"  ;;
+        INFO|400)  printf '%d' "${_LOG_INFO}"  ;;
+        DEBUG|500) printf '%d' "${_LOG_DEBUG}" ;;
+        TRACE|600) printf '%d' "${_LOG_TRACE}" ;;
+        *)
+            # Always emit — log level not yet parsed
+            printf '[ERROR] --log-level value=%s is invalid\n' "$raw" >&2
+            printf '[INFO]  Valid names: FATAL ERROR WARN INFO DEBUG TRACE\n' >&2
+            printf '[INFO]  Valid numbers: 100 200 300 400 500 600\n' >&2
+            printf '[INFO]  Scale: FATAL(100) < ERROR(200) < WARN(300) < INFO(400) < DEBUG(500) < TRACE(600)\n' >&2
+            exit 1
+            ;;
+    esac
+}
+
+# ==============================================================================
+# CLI ERROR HELPERS  (structured error output -> stderr, always emitted)
+#
+# These helpers emit at the appropriate log levels:
+#   [ERROR]  always (ERROR <= INFO default)
+#   [INFO]   always at default level (user guidance / corrective action)
+#   [DEBUG]  only when --log-level DEBUG or lower (raw diagnostic detail)
+#
+# Caller passes threshold as first argument (LOG_LEVEL local var).
 # ==============================================================================
 
 _err_bool_false() {
-    local flag="$1"
-    printf '[ERROR] flag=%s value=false reason="false" is implicit -- omit the flag for false\n' "$flag" >&2
-    printf '[DIAG]  expected=[true] received=false\n' >&2
-    printf '[HINT]  Remove "%s false"; the flag absence means false\n' "$flag" >&2
+    local t="$1" flag="$2"
+    _error "$t" "flag=${flag} reason='false' is implicit -- omit the flag for false"
+    _info  "$t" "Remove \"${flag} false\"; absence means false"
     exit 1
 }
 
 _err_wrong_qualifier_bool() {
-    local flag="$1" val="$2"
-    printf '[ERROR] flag=%s value=%s reason=wrong qualifier type (boolean flag accepts true only)\n' "$flag" "$val" >&2
-    printf '[DIAG]  expected=[true] received=%s\n' "$val" >&2
-    printf '[HINT]  Use "%s" or "%s true"; do not pass ro/rw to boolean flags\n' "$flag" "$flag" >&2
+    local t="$1" flag="$2" val="$3"
+    _error "$t" "flag=${flag} value=${val} reason=wrong qualifier type (boolean flag accepts true only)"
+    _debug "$t" "expected=[true] received=${val}"
+    _info  "$t" "Use \"${flag}\" or \"${flag} true\"; do not pass ro/rw to boolean flags"
     exit 1
 }
 
 _err_wrong_qualifier_graded() {
-    local flag="$1" val="$2"
-    printf '[ERROR] flag=%s value=%s reason=wrong qualifier type (graded flag accepts ro|rw only)\n' "$flag" "$val" >&2
-    printf '[DIAG]  expected=[ro|rw] received=%s\n' "$val" >&2
-    printf '[HINT]  Use "%s ro" (default) or "%s rw"\n' "$flag" "$flag" >&2
+    local t="$1" flag="$2" val="$3"
+    _error "$t" "flag=${flag} value=${val} reason=wrong qualifier type (graded flag accepts ro|rw only)"
+    _debug "$t" "expected=[ro|rw] received=${val}"
+    _info  "$t" "Use \"${flag} ro\" (default) or \"${flag} rw\""
     exit 1
 }
 
 _err_duplicate() {
-    local flag="$1"
-    printf '[ERROR] flag=%s reason=duplicate flag (specified more than once)\n' "$flag" >&2
-    printf '[DIAG]  conflict=ambiguous -- two values for the same flag\n' >&2
-    printf '[HINT]  Specify "%s" at most once\n' "$flag" >&2
+    local t="$1" flag="$2"
+    _error "$t" "flag=${flag} reason=duplicate flag (specified more than once)"
+    _debug "$t" "conflict=ambiguous -- two values for the same flag"
+    _info  "$t" "Specify \"${flag}\" at most once"
     exit 1
 }
 
 _err_implication_conflict() {
-    local src="$1" implied="$2"
-    printf '[ERROR] flag=%s reason=implication conflict\n' "$src" >&2
-    printf '[DIAG]  conflict=%s=true requires %s=true but %s=false was explicitly set\n' \
-           "$src" "$implied" "$implied" >&2
-    printf '[HINT]  Remove the explicit "%s false" -- %s implies %s=true automatically\n' \
-           "$implied" "$src" "$implied" >&2
+    local t="$1" src="$2" implied="$3"
+    _error "$t" "flag=${src} reason=implication conflict"
+    _debug "$t" "conflict=${src}=true requires ${implied}=true but ${implied}=false was explicitly set"
+    _info  "$t" "Remove the explicit \"${implied} false\" -- ${src} implies ${implied}=true automatically"
     exit 1
 }
 
-# Parse a boolean passthrough flag value.
-#   $1 = flag name, $2 = next argv token, $3 = current var value (false=unset)
+_err_missing_cmd_separator() {
+    local t="$1"
+    _error "$t" "reason=missing command separator '--'"
+    _info  "$t" "Append '-- CMD [ARG...]' to specify the command to run inside the sandbox"
+    exit 1
+}
+
+# ==============================================================================
+# QUALIFIER PARSERS — pure, no side effects
+# ==============================================================================
+
+# _parse_bool THRESHOLD FLAG NEXT_TOKEN CURRENT_VALUE
 #   Echoes "true:2" (qualifier consumed) or "true:1" (bare flag).
-#   Exits with diagnostic on any error.
 _parse_bool() {
-    local flag="$1" next="${2:-}" cur="${3:-false}"
-    [[ "$cur" != "false" ]] && _err_duplicate "$flag"
+    local t="$1" flag="$2" next="${3:-}" cur="${4:-false}"
+    [[ "$cur" != "false" ]] && _err_duplicate "$t" "$flag"
     case "$next" in
         true)    printf 'true:2' ;;
-        false)   _err_bool_false "$flag" ;;
-        ro|rw)   _err_wrong_qualifier_bool "$flag" "$next" ;;
+        false)   _err_bool_false "$t" "$flag" ;;
+        ro|rw)   _err_wrong_qualifier_bool "$t" "$flag" "$next" ;;
         *)       printf 'true:1' ;;   # bare flag = true
     esac
 }
 
-# Parse a graded passthrough flag value.
-#   $1 = flag name, $2 = next argv token, $3 = current var value (off=unset)
-#   Echoes "ro:1", "ro:2", or "rw:2".
-#   Exits with diagnostic on any error.
+# _parse_graded THRESHOLD FLAG NEXT_TOKEN CURRENT_VALUE
+#   Echoes "ro:2", "ro:1", or "rw:2".
 _parse_graded() {
-    local flag="$1" next="${2:-}" cur="${3:-off}"
-    [[ "$cur" != "off" ]] && _err_duplicate "$flag"
+    local t="$1" flag="$2" next="${3:-}" cur="${4:-off}"
+    [[ "$cur" != "off" ]] && _err_duplicate "$t" "$flag"
     case "$next" in
         ro)      printf 'ro:2' ;;
         rw)      printf 'rw:2' ;;
-        false)   _err_bool_false "$flag" ;;
-        true)    _err_wrong_qualifier_graded "$flag" "$next" ;;
+        false)   _err_bool_false "$t" "$flag" ;;
+        true)    _err_wrong_qualifier_graded "$t" "$flag" "$next" ;;
         *)       printf 'ro:1' ;;    # bare flag = ro (most restrictive)
     esac
 }
 
 # ==============================================================================
-# CORE SANDBOX FUNCTION
+# VERSION
 # ==============================================================================
 
-exec_sandbox() {
-    local env_passthrough="$1"       # true=inherit host env; false=clean env
-    local virtual_user_name="$2"
-    local mounted_new_root_dir="$3"
-    local mounted_home_dir="$4"
-    shift 4
-    local command=("$@")
+_print_version() {
+    printf '%s v%s\n' "$_SCRIPT_NAME" "$_SCRIPT_VERSION"
+}
 
-    local abs_root abs_home
-    abs_root=$(realpath "$mounted_new_root_dir" 2>/dev/null || printf '%s' "$mounted_new_root_dir")
-    abs_home=$(realpath "$mounted_home_dir"    2>/dev/null || printf '%s' "$mounted_home_dir")
+# ==============================================================================
+# TOP-LEVEL HELP (dispatch table)
+# ==============================================================================
 
-    local _RU="/run/user/$(id -u)"
+usage_top() {
+    cat <<HELPEOF
+${_SCRIPT_NAME}  v${_SCRIPT_VERSION}  --  Bubblewrap Sandbox Launcher
+(c) 2026 Hanaden - Frederick Bloom. All rights reserved.
 
-    printf '[SYS-LOG] Initializing SDD-compliant Sandbox (v0.3.0)...\n' >&2
-    printf '[SYS-LOG] Pivot: %s -> /\n' "$abs_root" >&2
-    printf '[SYS-LOG] Egress: %s -> /home/%s\n' "$abs_home" "$virtual_user_name" >&2
-    if [[ "$env_passthrough" == "true" ]]; then
-        printf '[SYS-LOG] WARNING: Environment inherited from host (--env-passthrough).\n' >&2
-    else
-        printf '[SYS-LOG] Clean environment (default-deny env).\n' >&2
+${_SCRIPT_NAME}  SUBCOMMAND  [OPTIONS]  [ARGS]
+${_SCRIPT_NAME}  --help | -h
+${_SCRIPT_NAME}  --version | -v
+
+  provision
+    --host-real-root        PATH         (default: ~/virtual-roots; MUST NOT exist)
+    --virtual-user-name     NAME         (default: sandbox_user)
+    --host-real-home-parent PATH         (default: HOST_REAL_ROOT/home)
+    --log-level             NAME|NUMBER  (default: INFO)
+    -n, --dry-run
+
+  fsck  [ROOT_PATH]
+    --host-real-root        PATH         (default: ~/virtual-roots)
+    --virtual-user-name     NAME         (default: sandbox_user)
+    --log-level             NAME|NUMBER  (default: INFO)
+    -n  (check only)  -a  (auto-repair)  -r  (interactive)  -f  (force)  -v  (verbose)
+
+  start  -- CMD [ARG...]
+    --host-real-root        PATH         (default: ~/virtual-roots; MUST exist)
+    --virtual-user-name     NAME         (default: sandbox_user)
+    --host-real-home-parent PATH         (default: HOST_REAL_ROOT/home)
+    --log-level             NAME|NUMBER  (default: INFO)
+    -n, --dry-run                        (resolve and print bwrap argv; no exec)
+    --validate                           (validate flags and paths; no exec)
+    --net-passthrough       [true|false] (default: false)
+    --env-passthrough       [true|false] (default: false)
+    --x11-passthrough       [true|false] (default: false; implied by wayland/gnome/kde
+                                          — do not pass explicitly with an implying flag)
+    --wayland-passthrough   [true|false] (default: false; implies x11)
+    --gnome-passthrough     [true|false] (default: false; implies x11)
+    --kde-passthrough       [true|false] (default: false; implies x11)
+    --audio-passthrough     [true|false] (default: false)
+    --a11y-passthrough      [true|false] (default: false)
+    --dbus-passthrough      [true|false] (default: false; NEVER implied — always explicit)
+    --mise-passthrough      [ro|rw]      (default: off; bare = ro)
+    --local-bin-passthrough [ro|rw]      (default: off; bare = ro)
+
+  stop  [stub — not yet implemented]
+    --host-real-root PATH  --log-level NAME|NUMBER  -f, --force  -t, --timeout SECONDS
+
+  ls  [stub — not yet implemented]
+    --log-level NAME|NUMBER  -a, --all  -q, --quiet  --format table|json|csv
+
+absent  <  ro  <  rw      (privilege escalation order)
+
+bare boolean flag = true  (most restrictive ON state)
+bare graded flag  = ro    (most restrictive ON state)
+flag absent       = false = default deny
+--flag false      = [ERROR]   (false is implicit; omit the flag)
+
+Log levels: FATAL(100) < ERROR(200) < WARN(300) < INFO(400) < DEBUG(500) < TRACE(600)
+Default: INFO(400). All output goes to stderr.
+Run: ${_SCRIPT_NAME} SUBCOMMAND --help  for detailed subcommand help.
+HELPEOF
+}
+
+
+# ==============================================================================
+# provision — help and implementation
+# ==============================================================================
+
+usage_provision() {
+    cat <<HELPEOF
+${_SCRIPT_NAME} provision [OPTIONS]
+
+  Create a virtual root skeleton. NOT idempotent.
+
+OPTIONS
+  -h, --help
+      This help text. Exit 0.
+
+  --host-real-root PATH
+      Root directory to create. MUST NOT already exist.
+      Default: ~/virtual-roots
+
+  --virtual-user-name NAME
+      Username whose home directory will be created inside the root.
+      Default: sandbox_user
+
+  --host-real-home-parent PATH
+      Parent directory for the user home.
+      Default: HOST_REAL_ROOT/home
+
+  --log-level NAME|NUMBER
+      FATAL(100) ERROR(200) WARN(300) INFO(400) DEBUG(500) TRACE(600)
+      Default: INFO
+
+  -n, --dry-run
+      Print what would be created; do not create anything.
+
+FOUR-WAY GATE
+  ROOT missing + provision called  -> CREATE skeleton, exit 0
+  ROOT exists  + provision called  -> [FATAL] exit 2 (NOT idempotent)
+  ROOT missing + provision absent  -> [FATAL] exit 2 (use provision first)
+  ROOT exists  + provision absent  -> caller invokes 'start' directly
+
+CREATES
+  DIRS:     usr etc home proc dev tmp run opt var
+  SYMLINKS: bin->usr/bin  lib->usr/lib  lib64->usr/lib64
+  HOME:     HOST_REAL_HOME_PARENT/VIRTUAL_USER_NAME/
+HELPEOF
+}
+
+_provision_validate() {
+    local t="$1" root="$2"
+    if [[ -e "$root" ]]; then
+        _fatal "$t" "provision: --host-real-root already exists: ${root}"
+        # _fatal exits; line below never reached
     fi
+}
 
-    # --- IDENTITY INJECTION -----------------------------------------------
-    local sys_passwd
-    sys_passwd=$(awk -F: '$3 < 1000 && $4 < 1000' /etc/passwd 2>/dev/null || true)
-    local fake_passwd="root:x:0:0:root:/root:/bin/bash
-${sys_passwd}
-${virtual_user_name}:x:$(id -u):$(id -g):${virtual_user_name}:/home/${virtual_user_name}:/bin/bash
-nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin"
+_provision_create_skeleton() {
+    local t="$1" root="$2" home_parent="$3" user="$4" dry="$5"
+    local dirs=( usr etc home proc dev tmp run opt var )
+    local symlinks=( "bin:usr/bin" "lib:usr/lib" "lib64:usr/lib64" )
 
-    local sys_group
-    sys_group=$(awk -F: '$3 < 1000' /etc/group 2>/dev/null || true)
-    local fake_group="${sys_group}
-${virtual_user_name}:x:$(id -g):${virtual_user_name}"
+    _info "$t" "provision: creating skeleton at ${root}"
 
-    # Minimal /etc/profile -- only sets PATH. Prevents host profile.d contamination.
-    local fake_profile="#!/bin/sh
-PATH=/usr/bin:/bin
-export PATH"
-
-    # --- BWRAP ARG CONSTRUCTION -------------------------------------------
-    local bwrap_args=(
-        --unshare-user
-        --unshare-ipc
-        --unshare-pid
-        --unshare-uts
-        --unshare-cgroup
-        --die-with-parent
-        --hostname "sandbox-vfs"
-    )
-
-    # Network namespace
-    if [[ "$NET_PASSTHROUGH" == "false" ]]; then
-        bwrap_args+=("--unshare-net")
-    else
-        printf '[SYS-LOG] WARNING: Network isolation disabled (--net-passthrough).\n' >&2
-    fi
-
-    bwrap_args+=(
-        # --- STEP 1: Virtual root ---
-        --bind "$abs_root" /
-
-        # --- STEP 2: System directories (usr-merge) ---
-        --dir /usr
-        --ro-bind /usr /usr
-        --symlink usr/lib   /lib
-        --symlink usr/lib64 /lib64
-        --symlink usr/bin   /bin
-
-        # --- STEP 3: /etc essentials (selective RO binds) ---
-        --dir /etc
-        --ro-bind-try /etc/alternatives   /etc/alternatives
-        --ro-bind-try /etc/fonts          /etc/fonts
-        --ro-bind-try /etc/machine-id     /etc/machine-id
-        # DNS resolution:
-        --ro-bind-try /etc/resolv.conf    /etc/resolv.conf
-        --ro-bind-try /etc/nsswitch.conf  /etc/nsswitch.conf
-        --ro-bind-try /etc/hosts          /etc/hosts
-        --ro-bind-try /etc/host.conf      /etc/host.conf
-        --ro-bind-try /etc/services       /etc/services
-        --ro-bind-try /etc/protocols      /etc/protocols
-        # TLS certificates:
-        --ro-bind-try /etc/ssl            /etc/ssl
-        --ro-bind-try /etc/pki            /etc/pki
-        # Dynamic linker:
-        --ro-bind-try /etc/ld.so.cache    /etc/ld.so.cache
-        # Desktop environment configs:
-        --ro-bind-try /etc/xdg            /etc/xdg
-        --ro-bind-try /etc/gtk-3.0        /etc/gtk-3.0
-        --ro-bind-try /etc/gtk-4.0        /etc/gtk-4.0
-        --ro-bind-try /etc/dconf          /etc/dconf
-        --ro-bind-try /etc/dbus-1         /etc/dbus-1
-        --ro-bind-try /etc/X11            /etc/X11
-        --ro-bind-try /etc/mime.types     /etc/mime.types
-        # Browser policies:
-        --ro-bind-try /etc/firefox-esr    /etc/firefox-esr
-        --ro-bind-try /etc/chromium       /etc/chromium
-        --ro-bind-try /etc/chromium.d     /etc/chromium.d
-        --ro-bind-try /etc/opt/chrome     /etc/opt/chrome
-        # Enterprise SSO:
-        --ro-bind-try /etc/gss            /etc/gss
-        --ro-bind-try /etc/krb5.conf      /etc/krb5.conf
-        # NOTE: /etc/profile and /etc/profile.d intentionally NOT bound here.
-        # Shadowed below via FD inject + tmpfs to prevent PATH contamination.
-
-        # --- STEP 4: Kernel filesystems ---
-        --proc /proc
-        --dev-bind /dev /dev
-
-        # --- STEP 5: Ephemeral tmpfs mounts ---
-        --tmpfs /dev/shm
-        --tmpfs /tmp
-        # X11 socket preserved after --tmpfs /tmp by explicit bind:
-        --ro-bind-try /tmp/.X11-unix /tmp/.X11-unix
-
-        # --- STEP 6: /run -- system bus (low-risk) + user session (default empty) ---
-        --bind-try /run/dbus /run/dbus
-        --tmpfs "$_RU"
-
-        # --- STEP 8: Home overlay ---
-        --tmpfs /home
-        --dir   "/home/$virtual_user_name"
-
-        # --- STEP 9: Egress write-hole (initial, before root lock) ---
-        --bind "$abs_home" "/home/$virtual_user_name"
-    )
-
-    # --- STEP 7a: Wayland ---
-    if [[ "$WAYLAND_PASSTHROUGH" == "true" ]]; then
-        bwrap_args+=(
-            --ro-bind-try "$_RU/wayland-0"       "$_RU/wayland-0"
-            --ro-bind-try "$_RU/wayland-0.lock"  "$_RU/wayland-0.lock"
-        )
-    fi
-
-    # --- STEP 7b: Audio ---
-    if [[ "$AUDIO_PASSTHROUGH" == "true" ]]; then
-        bwrap_args+=(
-            --bind-try "$_RU/pipewire-0"              "$_RU/pipewire-0"
-            --bind-try "$_RU/pipewire-0.lock"         "$_RU/pipewire-0.lock"
-            --bind-try "$_RU/pipewire-0-manager"      "$_RU/pipewire-0-manager"
-            --bind-try "$_RU/pipewire-0-manager.lock" "$_RU/pipewire-0-manager.lock"
-            --dir      "$_RU/pulse"
-            --bind-try "$_RU/pulse/native"            "$_RU/pulse/native"
-            --bind-try "$_RU/pulse/pid"               "$_RU/pulse/pid"
-        )
-    fi
-
-    # --- STEP 7c: Accessibility ---
-    if [[ "$A11Y_PASSTHROUGH" == "true" ]]; then
-        bwrap_args+=(
-            --dir         "$_RU/at-spi"
-            --ro-bind-try "$_RU/at-spi/bus_1" "$_RU/at-spi/bus_1"
-        )
-    fi
-
-    # --- STEP 7d: D-Bus session bus [!] SECURITY CRITICAL ---
-    if [[ "$DBUS_PASSTHROUGH" == "true" ]]; then
-        printf '[SYS-LOG] WARNING: D-Bus session bus enabled -- host FS/keyring/exec exposed via portals.\n' >&2
-        bwrap_args+=(
-            --bind-try "$_RU/bus"    "$_RU/bus"
-            --dir      "$_RU/dbus-1"
-            --bind-try "$_RU/dbus-1" "$_RU/dbus-1"
-        )
-    fi
-
-    # --- STEP 7e: GNOME ---
-    if [[ "$GNOME_PASSTHROUGH" == "true" ]]; then
-        bwrap_args+=(
-            --bind-try "$_RU/gvfs"    "$_RU/gvfs"
-            --bind-try "$_RU/gvfsd"   "$_RU/gvfsd"
-            --bind-try "$_RU/doc"     "$_RU/doc"
-            --dir      "$_RU/dconf"
-            --bind-try "$_RU/dconf"   "$_RU/dconf"
-            --dir      "$_RU/keyring"
-            --bind-try "$_RU/keyring" "$_RU/keyring"
-            --dir      "$_RU/gcr"
-            --bind-try "$_RU/gcr"     "$_RU/gcr"
-        )
-    fi
-
-    # --- STEP 7f: KDE ---
-    if [[ "$KDE_PASSTHROUGH" == "true" ]]; then
-        bwrap_args+=(
-            --bind-try    "$_RU/kwallet5.socket"           "$_RU/kwallet5.socket"
-            --ro-bind-try "$_RU/KSMserver__1"              "$_RU/KSMserver__1"
-            --bind-try    "$_RU/drkonqi-coredump-launcher" "$_RU/drkonqi-coredump-launcher"
-        )
-    fi
-
-    # --- STEP 9a: --local-bin-passthrough --------------------------------
-    # Binds host ~/.local/bin into sandbox home. DST is sandbox-home-relative.
-    if [[ "$LOCAL_BIN_PASSTHROUGH" != "off" ]]; then
-        local _LOCAL_BIN_BIND="--ro-bind"
-        [[ "$LOCAL_BIN_PASSTHROUGH" == "rw" ]] && _LOCAL_BIN_BIND="--bind"
-        local _HOST_LOCAL_BIN="${HOME}/.local/bin"
-        if [[ ! -d "$_HOST_LOCAL_BIN" ]]; then
-            printf '[FATAL] --local-bin-passthrough: %s does not exist\n' "$_HOST_LOCAL_BIN" >&2
-            exit 1
-        fi
-        bwrap_args+=(
-            --dir             "/home/$virtual_user_name/.local"
-            --dir             "/home/$virtual_user_name/.local/bin"
-            $_LOCAL_BIN_BIND  "$_HOST_LOCAL_BIN" "/home/$virtual_user_name/.local/bin"
-        )
-    fi
-
-    # --- STEP 9b: --mise-passthrough -------------------------------------
-    # Binds mise binary + data dir to sandbox-home-relative paths.
-    # If --local-bin-passthrough is also active, that already covers the bin
-    # dir mount; skip individual mise binary bind to avoid double-mount conflict.
-    if [[ "$MISE_PASSTHROUGH" != "off" ]]; then
-        local _MISE_BIN _MISE_DATA _MISE_CFG _MISE_CACHE _MISE_BIND
-        _MISE_BIN="${MISE_BIN:-$(command -v mise 2>/dev/null || printf '%s/.local/bin/mise' "$HOME")}"
-        _MISE_DATA="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
-        _MISE_CFG="${MISE_CONFIG_DIR:-$HOME/.config/mise}"
-        _MISE_CACHE="${MISE_CACHE_DIR:-$HOME/.cache/mise}"
-
-        if [[ ! -f "$_MISE_BIN" ]]; then
-            printf '[FATAL] --mise-passthrough: mise binary not found at %s\n' "$_MISE_BIN" >&2
-            exit 1
-        fi
-        if [[ ! -d "$_MISE_DATA" ]]; then
-            printf '[FATAL] --mise-passthrough: MISE_DATA_DIR not found at %s\n' "$_MISE_DATA" >&2
-            exit 1
-        fi
-
-        _MISE_BIND="--ro-bind"
-        [[ "$MISE_PASSTHROUGH" == "rw" ]] && _MISE_BIND="--bind"
-
-        # Bind mise binary only if --local-bin-passthrough is NOT already covering
-        # the ~/.local/bin dir (which would include the mise binary).
-        if [[ "$LOCAL_BIN_PASSTHROUGH" == "off" ]]; then
-            bwrap_args+=(
-                --dir     "/home/$virtual_user_name/.local"
-                --dir     "/home/$virtual_user_name/.local/bin"
-                --ro-bind "$_MISE_BIN" "/home/$virtual_user_name/.local/bin/mise"
-            )
-        fi
-
-        # mise data dir (installs, shims, plugins) -> sandbox home path
-        bwrap_args+=(
-            --dir "/home/$virtual_user_name/.local/share"
-            $_MISE_BIND "$_MISE_DATA" "/home/$virtual_user_name/.local/share/mise"
-        )
-
-        # Optional: mise config -> sandbox home (avoid same-path bind)
-        if [[ -d "$_MISE_CFG" ]]; then
-            bwrap_args+=(
-                --dir         "/home/$virtual_user_name/.config"
-                --ro-bind-try "$_MISE_CFG" "/home/$virtual_user_name/.config/mise"
-            )
-        else
-            printf '[SYS-LOG] WARNING: --mise-passthrough: config not found at %s (skipping)\n' "$_MISE_CFG" >&2
-        fi
-
-        # Optional: mise cache -> sandbox home (avoid same-path bind)
-        if [[ -d "$_MISE_CACHE" ]]; then
-            bwrap_args+=(
-                --dir         "/home/$virtual_user_name/.cache"
-                --ro-bind-try "$_MISE_CACHE" "/home/$virtual_user_name/.cache/mise"
-            )
-        else
-            printf '[SYS-LOG] WARNING: --mise-passthrough: cache not found at %s (skipping)\n' "$_MISE_CACHE" >&2
-        fi
-
-        # PATH: shims first, then sandbox local bin, then system.
-        bwrap_args+=(
-            --setenv PATH            "/home/$virtual_user_name/.local/share/mise/shims:/home/$virtual_user_name/.local/bin:/usr/bin:/bin"
-            --setenv MISE_DATA_DIR   "/home/$virtual_user_name/.local/share/mise"
-            --setenv MISE_CONFIG_DIR "/home/$virtual_user_name/.config/mise"
-        )
-    fi
-
-    # --- STEP 10: Identity injection via FD ---
-    bwrap_args+=(
-        --ro-bind-data 9  /etc/passwd
-        --ro-bind-data 10 /etc/group
-        # Shadow /etc/profile and /etc/profile.d to prevent PATH contamination:
-        --ro-bind-data 11 /etc/profile
-        --tmpfs           /etc/profile.d
-    )
-
-    # --- MISC: Google Chrome in /opt (not under /usr, absent from virtual-roots) ---
-    bwrap_args+=(
-        --dir     /opt
-        --ro-bind-try /opt/google /opt/google
-    )
-
-    # --- MISC: Shared data / font caches ---
-    bwrap_args+=(
-        --dir         /usr/share
-        --ro-bind-try /usr/share /usr/share
-        --dir         /var/cache
-        --ro-bind-try /var/cache/fontconfig /var/cache/fontconfig
-    )
-
-    # --- Environment variables always set inside sandbox ---
-    bwrap_args+=(
-        --setenv HOME          "/home/$virtual_user_name"
-        --setenv USER          "$virtual_user_name"
-        --setenv XDG_DATA_HOME "/home/$virtual_user_name/.local/share"
-        --setenv XDG_STATE_HOME "/home/$virtual_user_name/.local/state"
-        --setenv XDG_DATA_DIRS  "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
-        --setenv MOZ_NO_REMOTE 1
-        # Default PATH; overridden by --mise-passthrough or caller --setenv:
-        --setenv PATH          "/usr/bin:/bin"
-        --chdir "/home/$virtual_user_name"
-    )
-
-    # --- STEP 11: Lock root read-only ---
-    # All --dir / --ro-bind mountpoints must be created ABOVE this line.
-    bwrap_args+=(
-        --remount-ro /
-        # STEP 12: Re-apply home write-hole after root lockdown
-        --bind "$abs_home" "/home/$virtual_user_name"
-    )
-
-    # --- Conditional env var injection (display, after root lock) ---
-    if [[ "$WAYLAND_PASSTHROUGH" == "true" ]]; then
-        bwrap_args+=(--setenv WAYLAND_DISPLAY "${WAYLAND_DISPLAY:-}")
-    fi
-    if [[ "$WAYLAND_PASSTHROUGH" == "true" || "$X11_PASSTHROUGH" == "true" ]]; then
-        bwrap_args+=(--setenv DISPLAY "${DISPLAY:-}")
-    fi
-    if [[ "$X11_PASSTHROUGH" == "true" ]]; then
-        if [[ -n "${XAUTHORITY:-}" && -f "$XAUTHORITY" ]]; then
-            bwrap_args+=(
-                --ro-bind "$XAUTHORITY" "/home/$virtual_user_name/.Xauthority"
-                --setenv XAUTHORITY     "/home/$virtual_user_name/.Xauthority"
-            )
-        else
-            bwrap_args+=(--setenv XAUTHORITY "${XAUTHORITY:-}")
-        fi
-    fi
-
-    # --- Caller raw passthrough args (appended last; caller --setenv wins) ---
-    if [[ ${#BWRAP_PASSTHROUGH_ARGS[@]} -gt 0 ]]; then
-        bwrap_args+=("${BWRAP_PASSTHROUGH_ARGS[@]}")
-    fi
-
-    # --- Clean env prepend (default) / inherit env ---
-    if [[ "$env_passthrough" != "true" ]]; then
-        # Default: clear host env; prepend --clearenv + unset TERM
-        bwrap_args=(
-            "--clearenv"
-            "${bwrap_args[@]}"
-            --unsetenv TERM
-        )
-    else
-        # Inherit mode: TERM passes through
-        bwrap_args+=(--setenv TERM "${TERM:-dumb}")
-    fi
-
-    # --- PID 1 ---
-    bwrap_args+=("--as-pid-1")
-
-    # --- DRY-RUN GATE: print resolved argv, do not exec ---
-    if [[ "${DRY_RUN:-false}" == "true" ]]; then
-        printf '[DRY-RUN] bwrap argv (one token per line):\n'
-        for _arg in bwrap "${bwrap_args[@]}"; do
-            printf '  %s\n' "$_arg"
+    if [[ "$dry" == "true" ]]; then
+        _info "$t" "[DRY RUN] mkdir -p ${root}"
+        for d in "${dirs[@]}"; do
+            _info "$t" "[DRY RUN] mkdir -p ${root}/${d}"
         done
-        printf '[DRY-RUN] CMD: %s\n' "${command[*]}"
+        for pair in "${symlinks[@]}"; do
+            local link="${pair%%:*}" target="${pair##*:}"
+            _info "$t" "[DRY RUN] ln -sfn ${target} ${root}/${link}"
+        done
+        _info "$t" "[DRY RUN] mkdir -p ${home_parent}/${user}"
         return 0
     fi
 
-    # FOREGROUND-HOLD PATTERN:
-    # 1. --as-pid-1: our bash IS PID 1. CMD runs synchronously in foreground.
-    # 2. After CMD exits, /proc polling loop (bash builtins ONLY -- no forks)
-    #    keeps sandbox alive until all reparented orphan children exit.
-    # 3. Exit with CMD exit code, not the poll loop code.
-    exec bwrap "${bwrap_args[@]}" /bin/bash -c '
-        trap ":" CHLD
+    mkdir -p "$root"
+    for d in "${dirs[@]}"; do
+        mkdir -p "${root}/${d}"
+        _debug "$t" "provision: created ${root}/${d}"
+    done
+    for pair in "${symlinks[@]}"; do
+        local link="${pair%%:*}" target="${pair##*:}"
+        ln -sfn "$target" "${root}/${link}"
+        _debug "$t" "provision: symlink ${root}/${link} -> ${target}"
+    done
+    mkdir -p "${home_parent}/${user}"
+    _debug "$t" "provision: created home ${home_parent}/${user}"
+    _info "$t" "provision: done"
+}
 
-        "$@"; _CMD_EXIT=$?
+cmd_provision() {
+    local log_level="${_LOG_INFO}"
+    local host_real_root="${HOME}/virtual-roots"
+    local virtual_user_name="sandbox_user"
+    local host_real_home_parent=""
+    local dry_run="false"
+    # set-once sentinels
+    local _root_set="" _user_set="" _home_parent_set="" _log_set="" _dry_set=""
 
-        while true; do
-            children=""
-            read -r children < /proc/1/task/1/children 2>/dev/null || true
-            [ -z "$children" ] && break
-            read -t 0.5 _ 2>/dev/null || true
-        done
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                usage_provision; exit 0 ;;
+            --host-real-root)
+                [[ -n "$_root_set" ]] && _err_duplicate "$log_level" "--host-real-root"
+                _root_set="1"; host_real_root="${2:?'--host-real-root requires PATH'}"; shift 2 ;;
+            --virtual-user-name)
+                [[ -n "$_user_set" ]] && _err_duplicate "$log_level" "--virtual-user-name"
+                _user_set="1"; virtual_user_name="${2:?'--virtual-user-name requires NAME'}"; shift 2 ;;
+            --host-real-home-parent)
+                [[ -n "$_home_parent_set" ]] && _err_duplicate "$log_level" "--host-real-home-parent"
+                _home_parent_set="1"; host_real_home_parent="${2:?'--host-real-home-parent requires PATH'}"; shift 2 ;;
+            --log-level)
+                [[ -n "$_log_set" ]] && _err_duplicate "$log_level" "--log-level"
+                _log_set="1"; log_level="$(_resolve_log_level "${2:?'--log-level requires NAME|NUMBER'}")"; shift 2 ;;
+            -n|--dry-run)
+                [[ -n "$_dry_set" ]] && _err_duplicate "$log_level" "--dry-run"
+                _dry_set="1"; dry_run="true"; shift ;;
+            *)
+                _error "$log_level" "provision: unknown option: $1"
+                _info  "$log_level" "Run: ${_SCRIPT_NAME} provision --help"
+                exit 1 ;;
+        esac
+    done
 
-        exit "$_CMD_EXIT"
-    ' -- "${command[@]}" \
-        9<<<"$fake_passwd" \
-        10<<<"$fake_group" \
-        11<<<"$fake_profile"
+    # Derive home parent default after root is known
+    [[ -z "$host_real_home_parent" ]] && host_real_home_parent="${host_real_root}/home"
+
+    [[ "$dry_run" == "false" ]] && _provision_validate "$log_level" "$host_real_root"
+    _provision_create_skeleton "$log_level" "$host_real_root" "$host_real_home_parent" "$virtual_user_name" "$dry_run"
 }
 
 # ==============================================================================
-# USAGE / --help
+# fsck — help and implementation
 # ==============================================================================
 
-usage() {
+usage_fsck() {
     cat <<HELPEOF
-$(basename "$0")  v0.3.0  --  Bubblewrap Sandbox Launcher
-(c) 2026 Hanaden - Frederick Bloom. All rights reserved.
+${_SCRIPT_NAME} fsck [OPTIONS] [ROOT_PATH]
 
-DESCRIPTION
-  Launches a process inside a bubblewrap (bwrap) sandbox.
-  Security model: default deny, empty virtual filesystem.
-  Add only what is explicitly needed via --*-passthrough flags.
+  Check (and optionally repair) virtual root integrity.
+  Exit codes follow the fsck(8) bitmap convention (OR-able).
 
-    !! IMPORTANT: --host-real-root becomes the sandbox's root filesystem
-       itself via bind mount to /. It is used as-is from the host.
-       Keep it as a clean OS skeleton plus your project-specific files.
-       Default: ~/virtual-roots
+ARGUMENTS
+  ROOT_PATH   Virtual root to check. Default: --host-real-root value.
 
-SYNOPSIS
-  $(basename "$0") [PASSTHROUGH]... [CONFIG]... [TESTING]... -- CMD [ARG...]
+OPTIONS
+  -h, --help
+  --host-real-root PATH       Default: ~/virtual-roots
+  --virtual-user-name NAME    Default: sandbox_user
+  --log-level NAME|NUMBER     FATAL(100) ERROR(200) WARN(300) INFO(400) DEBUG(500) TRACE(600)
+                              Default: INFO
+  -n    Check only — no repairs. Exit 1 if any problem found.
+  -a    Auto-repair: fix all repairable problems without prompting. Mutex with -r.
+  -r    Interactive repair: prompt before each fix. Mutex with -a.
+  -f    Force: run all checks even if root looks clean.
+  -v    Verbose: print every check, not just failures.
 
-PASSTHROUGH FLAGS  (all default to most restrictive; ordered by implication)
+EXIT CODES (bitmap — OR-able)
+  0   No errors
+  1   Errors found, NOT repaired
+  2   Errors found and repaired
+  4   Uncorrectable errors (e.g. root is a file, not a dir)
+  8   Operational error (fsck itself failed)
 
-  --net-passthrough       [true|false(default)]
-      Share host network namespace. D-Bus is a local socket -- not network.
-      Bare flag = true.
-
-  --env-passthrough       [true|false(default)]
-      Inherit host environment variables (copied by value; no write-back).
-      Default (false) = clean environment. BREAKING CHANGE from v0.2.x
-      (old default was inherit). Pass this flag to restore old behavior.
-      Bare flag = true.
-
-  --x11-passthrough       [true|false(default)]
-      Bind X11 socket; inject DISPLAY, XAUTHORITY into sandbox.
-      Also implied (true) by --wayland-passthrough, --gnome-passthrough,
-      and --kde-passthrough.
-      Bare flag = true.
-
-  --wayland-passthrough   [true|false(default)]
-      Bind Wayland compositor socket; inject WAYLAND_DISPLAY.
-      -> implies --x11-passthrough true  (XWayland compat).
-      Bare flag = true.
-
-  --gnome-passthrough     [true|false(default)]
-      Bind GNOME service sockets (dconf, keyring, gvfs, gcr).
-      Enables native GTK theming and fonts.
-      -> implies --x11-passthrough true.
-      Does NOT imply --dbus-passthrough.
-      Bare flag = true.
-
-  --kde-passthrough       [true|false(default)]
-      Bind KDE Plasma service sockets (kwallet5, KSMserver, drkonqi).
-      Enables native Qt styling.
-      -> implies --x11-passthrough true.
-      Does NOT imply --dbus-passthrough.
-      Bare flag = true.
-
-  --audio-passthrough     [true|false(default)]
-      Bind PipeWire and PulseAudio sockets. Required for sound.
-      NOTE: PipeWire does not distinguish playback vs recording at socket level.
-      Bare flag = true.
-
-  --a11y-passthrough      [true|false(default)]
-      Bind AT-SPI accessibility bus (/run/user/UID/at-spi/bus_1).
-      Required for screen readers and accessibility tooling.
-      Does NOT imply --dbus-passthrough.
-      Bare flag = true.
-
-  --dbus-passthrough      [true|false(default)]    *** SECURITY CRITICAL ***
-      Bind D-Bus session bus (/run/user/UID/bus).
-      [!] CRITICAL: Exposes host filesystem and services via portals:
-        * File Pickers: Can read the FULL HOST filesystem (~/.ssh, ~/.aws, /etc).
-        * Host Secret Stores: Queries GNOME Keyring / KWallet.
-        * Host Process Execution: via org.freedesktop.systemd1.
-      NEVER implied by any other flag. Must always be explicit.
-      Bare flag = true.
-
-  --mise-passthrough      [rw|ro(default)]
-      Bind mise binary + data into sandbox home (.local/bin, .local/share/mise).
-      Bound to /home/<user>/... paths inside sandbox.
-      ro (default): existing tools work via shims; mise install blocked (EROFS).
-      rw:           existing tools work; mise install writes to host data dir.
-      Bare flag = ro. Combined with --local-bin-passthrough: bin dir is shared.
-
-  --local-bin-passthrough [rw|ro(default)]
-      Bind host ~/.local/bin -> sandbox /home/<user>/.local/bin.
-      ro (default): host binaries visible and executable; no writes to bin dir.
-      rw:           host binaries visible; sandbox can install to host bin dir.
-      Bare flag = ro.
-
-TESTING FLAGS
-
-  --dry-run
-      Resolve all flags and implication chains, print the final bwrap_args[]
-      array (one argument per line), then exit 0. No bwrap is executed.
-      Use to verify flag resolution and mount sequence before live invocation.
-
-  --validate
-      Run all conflict checks and implication chains; exit 0 if clean,
-      exit 1 with [ERROR]/[DIAG]/[HINT] output if any problem found.
-      No bwrap is executed. Stricter than --dry-run: also validates paths.
-
-RAW BWRAP PASSTHROUGH (injected before --; appended after engine defaults)
-  --ro-bind SRC DST   --bind SRC DST        --bind-try SRC DST
-  --ro-bind-try SRC DST   --dev-bind SRC DST   --dev-bind-try SRC DST
-  --symlink SRC DST   --setenv KEY VAL       --unsetenv KEY
-  --dir PATH          --tmpfs PATH
-  Caller --setenv overrides engine defaults (appended last; last wins).
-
-CONFIGURATION FLAGS
-
-  --virtual-user-name NAME
-      Username inside sandbox. HOME=/home/NAME, USER=NAME.
-      Default: sandbox_user
-
-  --host-real-root PATH
-      Host directory used as-is; bound as sandbox root /.
-      Default: ~/virtual-roots
-
-  --host-real-home-parent PATH
-      Host directory containing user home subdirectories.
-      Actual home bound: PATH/NAME -> /home/NAME.
-      Default: HOST_REAL_ROOT/home
-
-ERRORS -- any conflict or ambiguity exits 1 with structured output:
-  [ERROR] flag=<flag> value=<value> reason=<why>
-  [DIAG]  expected=[<valid-values>] received=<value>
-  [DIAG]  conflict=<flag-a>:<value-a>  vs  <flag-b>:<value-b>
-  [HINT]  <corrective action>
-
-  Detected conflicts:
-    boolean flag + ro|rw qualifier          -> wrong qualifier type
-    graded  flag + true|false qualifier     -> wrong qualifier type
-    any flag + false qualifier              -> false is implicit; omit the flag
-    same flag specified twice               -> duplicate, ambiguous
-    --wayland|gnome|kde true + --x11 false -> implication conflict
-    missing -- before CMD                   -> missing command separator
-    --host-real-root not a directory        -> path missing (zero side-effects)
-    --host-real-home-parent/USER missing    -> home dir missing
-
-SECURITY TIERS
-  Tier 1 (media):      --net-passthrough --wayland-passthrough --audio-passthrough
-    Network, display, audio via direct kernel sockets. No host FS escape.
-
-  Tier 2 (accessible): Tier 1 + --a11y-passthrough
-    Adds AT-SPI. No new host FS escape.
-
-  Tier 3 (desktop):    Tier 2 + --gnome-passthrough / --kde-passthrough
-    Native desktop themes, fonts, settings. No host FS escape.
-
-  Tier 4 (portal):     Tier 3 + --dbus-passthrough
-    [!] PUNCHES SECURITY HOLE. Portal file picker can exfiltrate host files.
-
-EXAMPLE
-  VIRTUAL_ROOT=~/virtual-roots/myproject
-  mkdir -p \$VIRTUAL_ROOT/home/sandbox_user
-
-  $(basename "$0")                              \\
-    --net-passthrough                            \\
-    --env-passthrough                            \\
-    --wayland-passthrough                        \\
-    --audio-passthrough                          \\
-    --mise-passthrough      ro                   \\
-    --local-bin-passthrough ro                   \\
-    --host-real-root        \$VIRTUAL_ROOT        \\
-    --host-real-home-parent \$VIRTUAL_ROOT/home   \\
-    -- bash --norc --noprofile
-
-  # Dry-run to inspect resolved bwrap_args before live invocation:
-  $(basename "$0") --dry-run [FLAGS] -- bash
-
-  # Validate flags only (no exec, checks paths):
-  $(basename "$0") --validate [FLAGS] -- bash
+CHECKS (in order)
+  1  ROOT exists and is a directory                      (uncorrectable if not)
+  2  usr etc home proc dev tmp run opt var dirs present  (auto-repairable)
+  3  bin -> usr/bin symlink correct                       (auto-repairable)
+  4  lib -> usr/lib symlink correct                       (auto-repairable)
+  5  lib64 -> usr/lib64 symlink correct                   (auto-repairable)
+  6  home/VIRTUAL_USER_NAME exists                        (not auto: run provision)
+  7  home/VIRTUAL_USER_NAME is a directory                (uncorrectable if not)
+  8  no unexpected top-level entries                      (warn only)
 HELPEOF
-    exit 0
+}
+
+# _fsck_check_root ROOT — returns 0 or calls exit 4
+_fsck_check_root() {
+    local t="$1" root="$2" verbose="$3"
+    if [[ ! -e "$root" ]]; then
+        _error "$t" "fsck: root does not exist: ${root}"
+        exit 4
+    fi
+    if [[ ! -d "$root" ]]; then
+        _error "$t" "fsck: root exists but is not a directory: ${root}"
+        exit 4
+    fi
+    [[ "$verbose" == "true" ]] && _info "$t" "fsck: [OK] root is a directory: ${root}"
+}
+
+# _fsck_check_dirs ROOT REPAIR_MODE VERBOSE — echoes exit-bit (0 or 1 or 2)
+_fsck_check_dirs() {
+    local t="$1" root="$2" repair="$3" verbose="$4"
+    local dirs=( usr etc home proc dev tmp run opt var )
+    local bit=0
+    for d in "${dirs[@]}"; do
+        if [[ ! -d "${root}/${d}" ]]; then
+            _error "$t" "fsck: missing dir: ${root}/${d}"
+            if [[ "$repair" == "auto" ]]; then
+                mkdir -p "${root}/${d}"
+                _info "$t" "fsck: repaired: created ${root}/${d}"
+                bit=$(( bit | 2 ))
+            else
+                bit=$(( bit | 1 ))
+            fi
+        else
+            [[ "$verbose" == "true" ]] && _info "$t" "fsck: [OK] dir: ${root}/${d}"
+        fi
+    done
+    printf '%d' "$bit"
+}
+
+# _fsck_check_symlinks ROOT REPAIR_MODE VERBOSE — echoes exit-bit
+_fsck_check_symlinks() {
+    local t="$1" root="$2" repair="$3" verbose="$4"
+    local symlinks=( "bin:usr/bin" "lib:usr/lib" "lib64:usr/lib64" )
+    local bit=0
+    for pair in "${symlinks[@]}"; do
+        local link="${pair%%:*}" target="${pair##*:}"
+        local link_path="${root}/${link}"
+        if [[ -L "$link_path" && "$(readlink "$link_path")" == "$target" ]]; then
+            [[ "$verbose" == "true" ]] && _info "$t" "fsck: [OK] symlink: ${link} -> ${target}"
+            continue
+        fi
+        _error "$t" "fsck: bad/missing symlink: ${link_path} -> ${target}"
+        if [[ "$repair" == "auto" ]]; then
+            ln -sfn "$target" "$link_path"
+            _info "$t" "fsck: repaired: ${link_path} -> ${target}"
+            bit=$(( bit | 2 ))
+        else
+            bit=$(( bit | 1 ))
+        fi
+    done
+    printf '%d' "$bit"
+}
+
+# _fsck_check_home ROOT USER VERBOSE — echoes exit-bit (0, 1, or exits 4)
+_fsck_check_home() {
+    local t="$1" root="$2" user="$3" verbose="$4"
+    local home_path="${root}/home/${user}"
+    if [[ ! -e "$home_path" ]]; then
+        _error "$t" "fsck: missing user home: ${home_path}"
+        _info  "$t" "fsck: run 'provision' to create the user home"
+        printf '1'
+        return
+    fi
+    if [[ ! -d "$home_path" ]]; then
+        _error "$t" "fsck: home path exists but is not a directory: ${home_path}"
+        exit 4
+    fi
+    [[ "$verbose" == "true" ]] && _info "$t" "fsck: [OK] user home: ${home_path}"
+    printf '0'
+}
+
+# _fsck_check_unexpected_entries ROOT VERBOSE — warns only, no bit change
+_fsck_check_unexpected_entries() {
+    local t="$1" root="$2" verbose="$3"
+    local expected=( usr etc home proc dev tmp run opt var bin lib lib64 )
+    while IFS= read -r -d '' entry; do
+        local name; name="$(basename "$entry")"
+        local found=false
+        for e in "${expected[@]}"; do [[ "$name" == "$e" ]] && found=true && break; done
+        if [[ "$found" == "false" ]]; then
+            _warn "$t" "fsck: unexpected top-level entry: ${entry} (not auto-removed)"
+        fi
+    done < <(find "$root" -maxdepth 1 -mindepth 1 -print0)
+    [[ "$verbose" == "true" ]] && _info "$t" "fsck: unexpected-entry check complete"
+}
+
+cmd_fsck() {
+    local log_level="${_LOG_INFO}"
+    local host_real_root="${HOME}/virtual-roots"
+    local virtual_user_name="sandbox_user"
+    local check_only="false"
+    local repair_mode="none"   # none | auto | interactive
+    local force="false"
+    local verbose="false"
+    # set-once sentinels
+    local _root_set="" _user_set="" _log_set=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)       usage_fsck; exit 0 ;;
+            --host-real-root)
+                [[ -n "$_root_set" ]] && _err_duplicate "$log_level" "--host-real-root"
+                _root_set="1"; host_real_root="${2:?'--host-real-root requires PATH'}"; shift 2 ;;
+            --virtual-user-name)
+                [[ -n "$_user_set" ]] && _err_duplicate "$log_level" "--virtual-user-name"
+                _user_set="1"; virtual_user_name="${2:?'--virtual-user-name requires NAME'}"; shift 2 ;;
+            --log-level)
+                [[ -n "$_log_set" ]] && _err_duplicate "$log_level" "--log-level"
+                _log_set="1"; log_level="$(_resolve_log_level "${2:?'--log-level requires NAME|NUMBER'}")"; shift 2 ;;
+            -n)  check_only="true"; shift ;;
+            -a)
+                if [[ "$repair_mode" == "interactive" ]]; then
+                    _error "$log_level" "fsck: -a and -r are mutually exclusive"
+                    exit 1
+                fi
+                repair_mode="auto"; shift ;;
+            -r)
+                if [[ "$repair_mode" == "auto" ]]; then
+                    _error "$log_level" "fsck: -a and -r are mutually exclusive"
+                    exit 1
+                fi
+                repair_mode="interactive"; shift ;;
+            -f)  force="true"; shift ;;
+            -v)  verbose="true"; shift ;;
+            -*)
+                _error "$log_level" "fsck: unknown option: $1"
+                _info  "$log_level" "Run: ${_SCRIPT_NAME} fsck --help"
+                exit 1 ;;
+            *)
+                # Positional: ROOT_PATH override
+                [[ -n "$_root_set" ]] && _err_duplicate "$log_level" "ROOT_PATH"
+                _root_set="1"; host_real_root="$1"; shift ;;
+        esac
+    done
+
+    [[ "$check_only" == "true" ]] && repair_mode="none"
+
+    local exit_bit=0
+
+    _fsck_check_root "$log_level" "$host_real_root" "$verbose"
+
+    local bit
+    bit="$(_fsck_check_dirs "$log_level" "$host_real_root" "$repair_mode" "$verbose")"
+    exit_bit=$(( exit_bit | bit ))
+
+    bit="$(_fsck_check_symlinks "$log_level" "$host_real_root" "$repair_mode" "$verbose")"
+    exit_bit=$(( exit_bit | bit ))
+
+    bit="$(_fsck_check_home "$log_level" "$host_real_root" "$virtual_user_name" "$verbose")"
+    exit_bit=$(( exit_bit | bit ))
+
+    _fsck_check_unexpected_entries "$log_level" "$host_real_root" "$verbose"
+
+    if [[ "$exit_bit" -eq 0 ]]; then
+        _info "$log_level" "fsck: no errors found"
+    fi
+    exit "$exit_bit"
 }
 
 # ==============================================================================
-# DEFAULTS
+# start — help and implementation
 # ==============================================================================
 
-_UID=$(id -u)
+usage_start() {
+    cat <<HELPEOF
+${_SCRIPT_NAME} start [OPTIONS] -- CMD [ARG...]
 
-NET_PASSTHROUGH="false"
-ENV_PASSTHROUGH="false"
-X11_PASSTHROUGH="false"
-WAYLAND_PASSTHROUGH="false"
-AUDIO_PASSTHROUGH="false"
-A11Y_PASSTHROUGH="false"
-DBUS_PASSTHROUGH="false"
-GNOME_PASSTHROUGH="false"
-KDE_PASSTHROUGH="false"
-MISE_PASSTHROUGH="off"         # off | ro | rw
-LOCAL_BIN_PASSTHROUGH="off"    # off | ro | rw
-DRY_RUN="false"
-VALIDATE_ONLY="false"
+  Launch a process inside the bubblewrap sandbox.
+  Security model: default-deny, empty virtual filesystem.
 
-VIRTUAL_USER_NAME_DEFAULT="sandbox_user"
-HOST_REAL_ROOT_DIR_DEFAULT="${HOME}/virtual-roots"
-# HOST_REAL_HOME_PARENT has no static default — derived post-parse as
-# ${HOST_REAL_ROOT_DIR}/home, allowing --host-real-root to influence it.
+OPTIONS
+  -h, --help
+  --host-real-root        PATH  Must already exist. Default: ~/virtual-roots
+  --virtual-user-name     NAME  Default: sandbox_user
+  --host-real-home-parent PATH  Default: HOST_REAL_ROOT/home
+  --log-level             NAME|NUMBER
+                          FATAL(100) ERROR(200) WARN(300) INFO(400) DEBUG(500) TRACE(600)
+                          Default: INFO
+  -n, --dry-run           Resolve and print bwrap argv; exit 0. No exec.
+  --validate              Validate flags and paths; exit 0 if clean.
 
-VIRTUAL_USER_NAME="$VIRTUAL_USER_NAME_DEFAULT"
-HOST_REAL_ROOT_DIR="$HOST_REAL_ROOT_DIR_DEFAULT"
-HOST_REAL_HOME_PARENT=""   # empty = derive from HOST_REAL_ROOT_DIR after parse
-TARGET_CMD=()
-BWRAP_PASSTHROUGH_ARGS=()
+PASSTHROUGH FLAGS (default: off = default deny)
+  --net-passthrough       [true|false]   Network namespace passthrough
+  --env-passthrough       [true|false]   Inherit host environment
+  --x11-passthrough       [true|false]   X11 socket (do NOT pass if using wayland/gnome/kde)
+  --wayland-passthrough   [true|false]   Wayland socket (implies x11)
+  --gnome-passthrough     [true|false]   GNOME session sockets (implies x11)
+  --kde-passthrough       [true|false]   KDE session sockets (implies x11)
+  --audio-passthrough     [true|false]   PipeWire + PulseAudio
+  --a11y-passthrough      [true|false]   AT-SPI accessibility bus
+  --dbus-passthrough      [true|false]   D-Bus session socket [SECURITY: portal escape]
+  --mise-passthrough      [ro|rw]        ~/.local/share/mise toolchain (bare=ro)
+  --local-bin-passthrough [ro|rw]        ~/.local/bin (bare=ro)
 
-# ==============================================================================
-# HOST PREFLIGHT (runs BEFORE argument parsing — BwrapPreflight.feat)
-# ==============================================================================
+QUALIFIER RULES
+  absent < ro < rw                  (privilege escalation order)
+  bare boolean flag   -> true       (most restrictive ON state)
+  bare graded flag    -> ro         (most restrictive ON state)
+  --flag false        -> [ERROR]    (false is implicit; omit the flag)
+  --bool-flag ro|rw   -> [ERROR]    (wrong qualifier type)
+  --graded-flag true  -> [ERROR]    (wrong qualifier type)
+  same flag twice     -> [ERROR]    (ambiguous)
 
-preflight_check() {
-    # PF-BIN: bwrap binary MUST be on PATH
-    if ! command -v bwrap >/dev/null 2>&1; then
-        printf '[FATAL] bwrap binary not found on PATH\n' >&2
-        printf '[DIAG]  command -v bwrap returned non-zero\n' >&2
-        printf '[HINT]  Install: apt install bubblewrap  OR  dnf install bubblewrap\n' >&2
-        exit 2
+IMPLICATION RULES
+  --wayland-passthrough  implies --x11-passthrough
+  --gnome-passthrough    implies --x11-passthrough
+  --kde-passthrough      implies --x11-passthrough
+  --dbus-passthrough     NEVER implied -- always explicit
+
+COMMAND SEPARATOR
+  -- CMD [ARG...]   Required. Everything after '--' runs inside the sandbox.
+HELPEOF
+}
+
+# _start_preflight — verify bwrap present, kernel namespaces available
+_start_preflight() {
+    local t="$1"
+    if ! command -v bwrap &>/dev/null; then
+        _fatal "$t" "start: 'bwrap' not found on PATH"
     fi
-
-
-    # PF-NS: Unprivileged user namespaces MUST be enabled
-    local userns_file="/proc/sys/kernel/unprivileged_userns_clone"
-    local maxns_file="/proc/sys/user/max_user_namespaces"
-    local ns_val=""
-
-    if [ -r "$userns_file" ]; then
-        ns_val="$(cat "$userns_file" 2>/dev/null | tr -d '[:space:]')"
-        if [ "$ns_val" = "0" ]; then
-            printf '[FATAL] Unprivileged user namespaces are disabled\n' >&2
-            printf '[DIAG]  %s = 0\n' "$userns_file" >&2
-            printf '[HINT]  Enable: sudo sysctl -w kernel.unprivileged_userns_clone=1\n' >&2
-            exit 2
-        fi
-    elif [ -r "$maxns_file" ]; then
-        ns_val="$(cat "$maxns_file" 2>/dev/null | tr -d '[:space:]')"
-        if [ "$ns_val" = "0" ]; then
-            printf '[FATAL] Unprivileged user namespaces are disabled\n' >&2
-            printf '[DIAG]  %s = 0\n' "$maxns_file" >&2
-            printf '[HINT]  Enable: sudo sysctl -w user.max_user_namespaces=65536\n' >&2
-            exit 2
-        fi
-    fi
-    # If neither file exists, skip check (kernel may not expose these knobs)
-
-    # PF-VER: bwrap version MUST be >= 0.3.0
-    local bwrap_ver_str bwrap_major bwrap_minor bwrap_patch
-    bwrap_ver_str="$(bwrap --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
-    if [ -z "$bwrap_ver_str" ]; then
-        printf '[FATAL] Could not determine bwrap version\n' >&2
-        printf '[DIAG]  bwrap --version returned no parseable version\n' >&2
-        exit 2
-    fi
-    bwrap_major="${bwrap_ver_str%%.*}"
-    bwrap_minor="${bwrap_ver_str#*.}"; bwrap_minor="${bwrap_minor%%.*}"
-    bwrap_patch="${bwrap_ver_str##*.}"
-    # Minimum: 0.3.0
-    if [ "$bwrap_major" -eq 0 ] && [ "$bwrap_minor" -lt 3 ]; then
-        printf '[FATAL] bwrap version %s is below minimum 0.3.0\n' "$bwrap_ver_str" >&2
-        printf '[DIAG]  Required features: --as-pid-1, --ro-bind-data\n' >&2
-        exit 2
-    fi
-
-    # PF-SMK: Minimal sandbox smoke test
-    local smoke_err
-    if ! smoke_err="$(bwrap --ro-bind / / --unshare-user --die-with-parent /bin/true 2>&1)"; then
-        printf '[FATAL] Minimal bwrap sandbox smoke test failed\n' >&2
-        printf '[DIAG]  bwrap --ro-bind / / --unshare-user --die-with-parent /bin/true\n' >&2
-        if [ -n "$smoke_err" ]; then
-            printf '[DIAG]  bwrap stderr: %s\n' "$smoke_err" >&2
-        fi
-        printf '[HINT]  Check SELinux/AppArmor policy or kernel configuration\n' >&2
-        exit 2
+    if ! bwrap --dev-bind / / --ro-bind /usr /usr true &>/dev/null 2>&1; then
+        _fatal "$t" "start: bwrap smoke test failed (kernel user namespaces may be disabled)"
     fi
 }
 
-preflight_check
+# _start_validate_paths — verify root and home exist
+_start_validate_paths() {
+    local t="$1" root="$2" home_parent="$3" user="$4"
+    if [[ ! -d "$root" ]]; then
+        _fatal "$t" "start: --host-real-root does not exist: ${root}"
+    fi
+    if [[ ! -d "${home_parent}/${user}" ]]; then
+        _fatal "$t" "start: user home does not exist: ${home_parent}/${user}"
+    fi
+}
+
+# _start_apply_implications X11 WAYLAND GNOME KDE — echoes resolved X11 value
+_start_apply_implications() {
+    local t="$1" x11="$2" wayland="$3" gnome="$4" kde="$5"
+    local implied=false
+    if [[ "$wayland" == "true" ]]; then implied=true; fi
+    if [[ "$gnome"   == "true" ]]; then implied=true; fi
+    if [[ "$kde"     == "true" ]]; then implied=true; fi
+    if [[ "$implied" == "true" ]]; then
+        printf 'true'
+    else
+        printf '%s' "$x11"
+    fi
+}
+
+# _start_check_x11_conflict — [ERROR] if x11 explicitly set AND an implicator is set
+_start_check_x11_conflict() {
+    local t="$1" x11_explicitly_set="$2" wayland="$3" gnome="$4" kde="$5"
+    if [[ "$x11_explicitly_set" == "true" ]]; then
+        if [[ "$wayland" == "true" ]]; then _err_implication_conflict "$t" "--wayland-passthrough" "--x11-passthrough"; fi
+        if [[ "$gnome"   == "true" ]]; then _err_implication_conflict "$t" "--gnome-passthrough"   "--x11-passthrough"; fi
+        if [[ "$kde"     == "true" ]]; then _err_implication_conflict "$t" "--kde-passthrough"     "--x11-passthrough"; fi
+    fi
+}
+
+# exec_sandbox — construct and run bwrap (or dry-run)
+exec_sandbox() {
+    local t="$1"; shift
+    # All resolved flags passed as named args
+    local root="$1" home_parent="$2" user="$3"
+    local net="$4" env_pt="$5" x11="$6" wayland="$7" gnome="$8" kde="$9"
+    local audio="${10}" a11y="${11}" dbus="${12}"
+    local mise="${13}" local_bin="${14}"
+    local dry_run="${15}" validate="${16}"
+    shift 16
+    local target_cmd=("$@")
+
+    _info "$t" "start: exec_sandbox not yet implemented (skeleton)"
+    _debug "$t" "start: root=${root} user=${user} dry=${dry_run}"
+    if [[ "$dry_run" == "true" ]]; then
+        _info "$t" "[DRY RUN] bwrap [args would appear here]"
+        exit 0
+    fi
+    if [[ "$validate" == "true" ]]; then
+        _info "$t" "[VALIDATE] all flags resolved cleanly"
+        exit 0
+    fi
+    _fatal "$t" "start: exec_sandbox is not yet implemented"
+}
+
+cmd_start() {
+    local log_level="${_LOG_INFO}"
+    local host_real_root="${HOME}/virtual-roots"
+    local virtual_user_name="sandbox_user"
+    local host_real_home_parent=""
+    local dry_run="false"
+    local validate_only="false"
+    # Passthrough booleans
+    local net_pt="false" env_pt="false" x11_pt="false" wayland_pt="false"
+    local gnome_pt="false" kde_pt="false" audio_pt="false" a11y_pt="false" dbus_pt="false"
+    # Passthrough graded
+    local mise_pt="off" local_bin_pt="off"
+    # set-once sentinels
+    local _root_set="" _user_set="" _home_set="" _log_set="" _dry_set="" _val_set=""
+    local _net_set="" _env_set="" _x11_set="" _wayland_set="" _gnome_set="" _kde_set=""
+    local _audio_set="" _a11y_set="" _dbus_set="" _mise_set="" _local_bin_set=""
+    local _x11_explicit="false"   # tracks whether --x11-passthrough was passed directly
+    local target_cmd=()
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)      usage_start; exit 0 ;;
+            --host-real-root)
+                [[ -n "$_root_set" ]] && _err_duplicate "$log_level" "--host-real-root"
+                _root_set="1"; host_real_root="${2:?'--host-real-root requires PATH'}"; shift 2 ;;
+            --virtual-user-name)
+                [[ -n "$_user_set" ]] && _err_duplicate "$log_level" "--virtual-user-name"
+                _user_set="1"; virtual_user_name="${2:?'--virtual-user-name requires NAME'}"; shift 2 ;;
+            --host-real-home-parent)
+                [[ -n "$_home_set" ]] && _err_duplicate "$log_level" "--host-real-home-parent"
+                _home_set="1"; host_real_home_parent="${2:?'--host-real-home-parent requires PATH'}"; shift 2 ;;
+            --log-level)
+                [[ -n "$_log_set" ]] && _err_duplicate "$log_level" "--log-level"
+                _log_set="1"; log_level="$(_resolve_log_level "${2:?'--log-level requires NAME|NUMBER'}")"; shift 2 ;;
+            -n|--dry-run)
+                [[ -n "$_dry_set" ]] && _err_duplicate "$log_level" "--dry-run"
+                _dry_set="1"; dry_run="true"; shift ;;
+            --validate)
+                [[ -n "$_val_set" ]] && _err_duplicate "$log_level" "--validate"
+                _val_set="1"; validate_only="true"; shift ;;
+            --net-passthrough)
+                [[ -n "$_net_set" ]] && _err_duplicate "$log_level" "--net-passthrough"
+                _net_set="1"
+                local _r; _r="$(_parse_bool "$log_level" "--net-passthrough" "${2:-}" "$net_pt")"
+                net_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --env-passthrough)
+                [[ -n "$_env_set" ]] && _err_duplicate "$log_level" "--env-passthrough"
+                _env_set="1"
+                local _r; _r="$(_parse_bool "$log_level" "--env-passthrough" "${2:-}" "$env_pt")"
+                env_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --x11-passthrough)
+                [[ -n "$_x11_set" ]] && _err_duplicate "$log_level" "--x11-passthrough"
+                _x11_set="1"; _x11_explicit="true"
+                local _r; _r="$(_parse_bool "$log_level" "--x11-passthrough" "${2:-}" "$x11_pt")"
+                x11_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --wayland-passthrough)
+                [[ -n "$_wayland_set" ]] && _err_duplicate "$log_level" "--wayland-passthrough"
+                _wayland_set="1"
+                local _r; _r="$(_parse_bool "$log_level" "--wayland-passthrough" "${2:-}" "$wayland_pt")"
+                wayland_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --gnome-passthrough)
+                [[ -n "$_gnome_set" ]] && _err_duplicate "$log_level" "--gnome-passthrough"
+                _gnome_set="1"
+                local _r; _r="$(_parse_bool "$log_level" "--gnome-passthrough" "${2:-}" "$gnome_pt")"
+                gnome_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --kde-passthrough)
+                [[ -n "$_kde_set" ]] && _err_duplicate "$log_level" "--kde-passthrough"
+                _kde_set="1"
+                local _r; _r="$(_parse_bool "$log_level" "--kde-passthrough" "${2:-}" "$kde_pt")"
+                kde_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --audio-passthrough)
+                [[ -n "$_audio_set" ]] && _err_duplicate "$log_level" "--audio-passthrough"
+                _audio_set="1"
+                local _r; _r="$(_parse_bool "$log_level" "--audio-passthrough" "${2:-}" "$audio_pt")"
+                audio_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --a11y-passthrough)
+                [[ -n "$_a11y_set" ]] && _err_duplicate "$log_level" "--a11y-passthrough"
+                _a11y_set="1"
+                local _r; _r="$(_parse_bool "$log_level" "--a11y-passthrough" "${2:-}" "$a11y_pt")"
+                a11y_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --dbus-passthrough)
+                [[ -n "$_dbus_set" ]] && _err_duplicate "$log_level" "--dbus-passthrough"
+                _dbus_set="1"
+                local _r; _r="$(_parse_bool "$log_level" "--dbus-passthrough" "${2:-}" "$dbus_pt")"
+                dbus_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --mise-passthrough)
+                [[ -n "$_mise_set" ]] && _err_duplicate "$log_level" "--mise-passthrough"
+                _mise_set="1"
+                local _r; _r="$(_parse_graded "$log_level" "--mise-passthrough" "${2:-}" "$mise_pt")"
+                mise_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --local-bin-passthrough)
+                [[ -n "$_local_bin_set" ]] && _err_duplicate "$log_level" "--local-bin-passthrough"
+                _local_bin_set="1"
+                local _r; _r="$(_parse_graded "$log_level" "--local-bin-passthrough" "${2:-}" "$local_bin_pt")"
+                local_bin_pt="${_r%%:*}"; [[ "${_r##*:}" -eq 2 ]] && shift 2 || shift ;;
+            --)
+                shift; target_cmd=("$@"); break ;;
+            *)
+                _error "$log_level" "start: unknown option: $1"
+                _info  "$log_level" "Run: ${_SCRIPT_NAME} start --help"
+                exit 1 ;;
+        esac
+    done
+
+    # Derive defaults
+    [[ -z "$host_real_home_parent" ]] && host_real_home_parent="${host_real_root}/home"
+
+    # Check implication conflicts before applying implications
+    _start_check_x11_conflict "$log_level" "$_x11_explicit" "$wayland_pt" "$gnome_pt" "$kde_pt"
+
+    # Apply x11 implication
+    x11_pt="$(_start_apply_implications "$log_level" "$x11_pt" "$wayland_pt" "$gnome_pt" "$kde_pt")"
+
+    # CMD required unless dry-run or validate
+    if [[ "${#target_cmd[@]}" -eq 0 && "$dry_run" == "false" && "$validate_only" == "false" ]]; then
+        _err_missing_cmd_separator "$log_level"
+    fi
+
+    # Preflight (skip for dry-run)
+    if [[ "$dry_run" == "false" && "$validate_only" == "false" ]]; then
+        _start_preflight "$log_level"
+        _start_validate_paths "$log_level" "$host_real_root" "$host_real_home_parent" "$virtual_user_name"
+    fi
+
+    exec_sandbox "$log_level" \
+        "$host_real_root" "$host_real_home_parent" "$virtual_user_name" \
+        "$net_pt" "$env_pt" "$x11_pt" "$wayland_pt" "$gnome_pt" "$kde_pt" \
+        "$audio_pt" "$a11y_pt" "$dbus_pt" \
+        "$mise_pt" "$local_bin_pt" \
+        "$dry_run" "$validate_only" \
+        "${target_cmd[@]}"
+}
 
 # ==============================================================================
-# ARGUMENT PARSING
+# stop — stub
 # ==============================================================================
 
+usage_stop() {
+    cat <<HELPEOF
+${_SCRIPT_NAME} stop [OPTIONS]
 
-while [[ "$#" -gt 0 ]]; do
-    case "$1" in
+  Stop a running sandbox.
 
-        # --- BOOLEAN PASSTHROUGHS ---
+  [stub — not yet implemented]
 
-        --net-passthrough)
-            _r=$(_parse_bool "--net-passthrough" "${2:-}" "$NET_PASSTHROUGH")
-            NET_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+OPTIONS
+  -h, --help
+  --host-real-root PATH   Identify sandbox by root path. Default: ~/virtual-roots
+  --log-level NAME|NUMBER Default: INFO
+  -f, --force             Send SIGKILL instead of SIGTERM.
+  -t, --timeout SECONDS   Grace period before SIGKILL. Default: 10.
+HELPEOF
+}
 
-        --env-passthrough)
-            _r=$(_parse_bool "--env-passthrough" "${2:-}" "$ENV_PASSTHROUGH")
-            ENV_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+cmd_stop() {
+    local log_level="${_LOG_INFO}"
 
-        --x11-passthrough)
-            _r=$(_parse_bool "--x11-passthrough" "${2:-}" "$X11_PASSTHROUGH")
-            X11_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help) usage_stop; exit 0 ;;
+            --log-level)
+                log_level="$(_resolve_log_level "${2:?'--log-level requires NAME|NUMBER'}")"; shift 2 ;;
+            --host-real-root) shift 2 ;;   # accepted, not yet used
+            -f|--force)       shift ;;
+            -t|--timeout)     shift 2 ;;
+            *)
+                _error "$log_level" "stop: unknown option: $1"
+                _info  "$log_level" "Run: ${_SCRIPT_NAME} stop --help"
+                exit 1 ;;
+        esac
+    done
 
-        --wayland-passthrough)
-            _r=$(_parse_bool "--wayland-passthrough" "${2:-}" "$WAYLAND_PASSTHROUGH")
-            WAYLAND_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+    _error "$log_level" "stop: not yet implemented"
+    exit 1
+}
 
-        --audio-passthrough)
-            _r=$(_parse_bool "--audio-passthrough" "${2:-}" "$AUDIO_PASSTHROUGH")
-            AUDIO_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+# ==============================================================================
+# ls — stub
+# ==============================================================================
 
-        --a11y-passthrough)
-            _r=$(_parse_bool "--a11y-passthrough" "${2:-}" "$A11Y_PASSTHROUGH")
-            A11Y_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+usage_ls() {
+    cat <<HELPEOF
+${_SCRIPT_NAME} ls [OPTIONS]
 
-        --dbus-passthrough)
-            _r=$(_parse_bool "--dbus-passthrough" "${2:-}" "$DBUS_PASSTHROUGH")
-            DBUS_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+  List known virtual roots and their run state.
 
-        --gnome-passthrough)
-            _r=$(_parse_bool "--gnome-passthrough" "${2:-}" "$GNOME_PASSTHROUGH")
-            GNOME_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+  [stub — not yet implemented]
 
-        --kde-passthrough)
-            _r=$(_parse_bool "--kde-passthrough" "${2:-}" "$KDE_PASSTHROUGH")
-            KDE_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+OPTIONS
+  -h, --help
+  --log-level NAME|NUMBER  Default: INFO
+  -a, --all                Show all roots (not just running).
+  -q, --quiet              Print root paths only, one per line (scriptable).
+  --format FMT             table (default) | json | csv
+HELPEOF
+}
 
-        # --- GRADED PASSTHROUGHS ---
+cmd_ls() {
+    local log_level="${_LOG_INFO}"
 
-        --mise-passthrough)
-            _r=$(_parse_graded "--mise-passthrough" "${2:-}" "$MISE_PASSTHROUGH")
-            MISE_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)       usage_ls; exit 0 ;;
+            --log-level)
+                log_level="$(_resolve_log_level "${2:?'--log-level requires NAME|NUMBER'}")"; shift 2 ;;
+            -a|--all)        shift ;;
+            -q|--quiet)      shift ;;
+            --format)        shift 2 ;;
+            *)
+                _error "$log_level" "ls: unknown option: $1"
+                _info  "$log_level" "Run: ${_SCRIPT_NAME} ls --help"
+                exit 1 ;;
+        esac
+    done
 
-        --local-bin-passthrough)
-            _r=$(_parse_graded "--local-bin-passthrough" "${2:-}" "$LOCAL_BIN_PASSTHROUGH")
-            LOCAL_BIN_PASSTHROUGH="${_r%%:*}"
-            [[ "${_r##*:}" == "2" ]] && shift 2 || shift 1
-            ;;
+    _error "$log_level" "ls: not yet implemented"
+    exit 1
+}
 
-        # --- CONFIGURATION FLAGS ---
+# ==============================================================================
+# MAIN — dispatcher
+# ==============================================================================
 
-        --virtual-user-name)
-            [[ -z "${2:-}" ]] && { printf '[ERROR] --virtual-user-name requires NAME argument\n' >&2; exit 1; }
-            [[ -n "${_VIRTUAL_USER_NAME_SET:-}" ]] && {
-                printf '[ERROR] --virtual-user-name specified more than once\n' >&2
-                printf '[DIAG]  First value: %s  Duplicate: %s\n' "$VIRTUAL_USER_NAME" "$2" >&2
-                printf '[HINT]  Specify --virtual-user-name exactly once.\n' >&2
-                exit 1
-            }
-            VIRTUAL_USER_NAME="$2"; _VIRTUAL_USER_NAME_SET=1; shift 2
-            ;;
-
-        --host-real-root)
-            [[ -z "${2:-}" ]] && { printf '[ERROR] --host-real-root requires PATH argument\n' >&2; exit 1; }
-            [[ -n "${_HOST_REAL_ROOT_SET:-}" ]] && {
-                printf '[ERROR] --host-real-root specified more than once\n' >&2
-                printf '[DIAG]  First value: %s  Duplicate: %s\n' "$HOST_REAL_ROOT_DIR" "$2" >&2
-                printf '[HINT]  Specify --host-real-root exactly once.\n' >&2
-                exit 1
-            }
-            HOST_REAL_ROOT_DIR="${2/#\~/$HOME}"
-            HOST_REAL_ROOT_DIR="${HOST_REAL_ROOT_DIR%/}"  # strip trailing slash
-            _HOST_REAL_ROOT_SET=1; shift 2
-            ;;
-
-        --host-real-home-parent)
-            [[ -z "${2:-}" ]] && { printf '[ERROR] --host-real-home-parent requires PATH argument\n' >&2; exit 1; }
-            [[ -n "${_HOST_REAL_HOME_PARENT_SET:-}" ]] && {
-                printf '[ERROR] --host-real-home-parent specified more than once\n' >&2
-                printf '[DIAG]  First value: %s  Duplicate: %s\n' "$HOST_REAL_HOME_PARENT" "$2" >&2
-                printf '[HINT]  Specify --host-real-home-parent exactly once.\n' >&2
-                exit 1
-            }
-            HOST_REAL_HOME_PARENT="${2/#\~/$HOME}"
-            HOST_REAL_HOME_PARENT="${HOST_REAL_HOME_PARENT%/}"  # strip trailing slash
-            _HOST_REAL_HOME_PARENT_SET=1; shift 2
-            ;;
-
-        # --- RAW BWRAP PASSTHROUGH FLAGS ---
-
-        --ro-bind|--ro-bind-try|--bind|--bind-try|--dev-bind|--dev-bind-try)
-            BWRAP_PASSTHROUGH_ARGS+=("$1" "$2" "$3"); shift 3 ;;
-        --symlink)
-            BWRAP_PASSTHROUGH_ARGS+=("$1" "$2" "$3"); shift 3 ;;
-        --setenv)
-            BWRAP_PASSTHROUGH_ARGS+=("$1" "$2" "$3"); shift 3 ;;
-        --unsetenv)
-            BWRAP_PASSTHROUGH_ARGS+=("$1" "$2"); shift 2 ;;
-        --dir)
-            BWRAP_PASSTHROUGH_ARGS+=("$1" "$2"); shift 2 ;;
-        --tmpfs)
-            BWRAP_PASSTHROUGH_ARGS+=("$1" "$2"); shift 2 ;;
-
-        # --- META ---
-
-        -h|--help) usage ;;
-
-        --dry-run)
-            DRY_RUN="true"
-            shift 1
-            ;;
-
-        --validate)
-            VALIDATE_ONLY="true"
-            shift 1
-            ;;
-
-        --)
-            shift; TARGET_CMD=("$@"); break ;;
-
-        -*)
-            printf '[ERROR] Unknown flag: %s\n' "$1" >&2
-            printf '[HINT]  Run with --help to see valid flags\n' >&2
-            exit 1
-            ;;
-
-        *)
-            printf '[ERROR] Missing -- separator before CMD: %s\n' "$1" >&2
-            printf '[DIAG]  reason=missing command separator\n' >&2
-            printf '[HINT]  Add -- before your command: bwrap-enhanced.sh [FLAGS] -- %s\n' "$*" >&2
-            exit 1
-            ;;
+main() {
+    # Pre-subcommand: --help / --version only
+    case "${1:-}" in
+        --help|-h)    usage_top;       exit 0 ;;
+        --version|-v) _print_version;  exit 0 ;;
+        "")
+            usage_top; exit 0 ;;
     esac
-done
 
-# ==============================================================================
-# POST-PARSE: IMPLICATION CHAINS
-# wayland -> x11, gnome -> x11, kde -> x11
-# ==============================================================================
+    local subcmd="$1"; shift
 
-for _implied_by in wayland gnome kde; do
-    _var="${_implied_by^^}_PASSTHROUGH"
-    if [[ "${!_var}" == "true" && "$X11_PASSTHROUGH" == "false" ]]; then
-        X11_PASSTHROUGH="true"
-    fi
-done
+    case "$subcmd" in
+        provision) cmd_provision "$@" ;;
+        fsck)      cmd_fsck      "$@" ;;
+        start)     cmd_start     "$@" ;;
+        stop)      cmd_stop      "$@" ;;
+        ls)        cmd_ls        "$@" ;;
+        *)
+            printf '[ERROR] Unknown subcommand: %s\n' "$subcmd" >&2
+            printf '[INFO]  Run: %s --help\n' "$_SCRIPT_NAME" >&2
+            exit 1 ;;
+    esac
+}
 
-# ==============================================================================
-# VALIDATION
-# ==============================================================================
-
-# Derive HOST_REAL_HOME_PARENT from HOST_REAL_ROOT_DIR if not explicitly set
-[[ -z "$HOST_REAL_HOME_PARENT" ]] && HOST_REAL_HOME_PARENT="${HOST_REAL_ROOT_DIR}/home"
-
-HOST_REAL_HOME_DIR="${HOST_REAL_HOME_PARENT}/${VIRTUAL_USER_NAME}"
-
-if [[ ${#TARGET_CMD[@]} -eq 0 ]]; then
-    printf '[ERROR] No CMD provided\n' >&2
-    printf '[DIAG]  reason=missing required target command\n' >&2
-    printf '[HINT]  Add -- CMD after flags, e.g.: bwrap-enhanced.sh [FLAGS] -- bash\n' >&2
-    exit 1
-fi
-
-if [[ "$DRY_RUN" != "true" && ! -d "$HOST_REAL_ROOT_DIR" ]]; then
-    printf '[ERROR] --host-real-root path does not exist\n' >&2
-    printf '[DIAG]  path=%s\n' "$HOST_REAL_ROOT_DIR" >&2
-    printf '[HINT]  Create it first (zero side-effects: script will not create dirs):\n' >&2
-    printf '        mkdir -p "%s"\n' "$HOST_REAL_ROOT_DIR" >&2
-    exit 1
-fi
-
-if [[ "$DRY_RUN" != "true" && ! -d "$HOST_REAL_HOME_DIR" ]]; then
-    printf '[ERROR] sandbox home directory does not exist on host\n' >&2
-    printf '[DIAG]  resolved=%s\n' "$HOST_REAL_HOME_DIR" >&2
-    printf '[DIAG]  VIRTUAL_USER_NAME=%s\n' "$VIRTUAL_USER_NAME" >&2
-    printf '[DIAG]  HOST_REAL_HOME_PARENT=%s\n' "$HOST_REAL_HOME_PARENT" >&2
-    printf '[HINT]  Create it first (zero side-effects: script will not create dirs):\n' >&2
-    printf '        mkdir -p "%s"\n' "$HOST_REAL_HOME_DIR" >&2
-    exit 1
-fi
-
-# ==============================================================================
-# DRY-RUN / VALIDATE GATE
-# ==============================================================================
-
-if [[ "$VALIDATE_ONLY" == "true" ]]; then
-    printf '[OK] Validation passed. No conflicts detected.\n'
-    printf '[DIAG] NET=%s ENV=%s X11=%s WAYLAND=%s GNOME=%s KDE=%s\n' \
-        "$NET_PASSTHROUGH" "$ENV_PASSTHROUGH" "$X11_PASSTHROUGH" \
-        "$WAYLAND_PASSTHROUGH" "$GNOME_PASSTHROUGH" "$KDE_PASSTHROUGH"
-    printf '[DIAG] AUDIO=%s A11Y=%s DBUS=%s MISE=%s LOCALBIN=%s\n' \
-        "$AUDIO_PASSTHROUGH" "$A11Y_PASSTHROUGH" "$DBUS_PASSTHROUGH" \
-        "$MISE_PASSTHROUGH" "$LOCAL_BIN_PASSTHROUGH"
-    printf '[DIAG] VIRTUAL_USER=%s\n' "$VIRTUAL_USER_NAME"
-    printf '[DIAG] HOST_REAL_ROOT=%s\n' "$HOST_REAL_ROOT_DIR"
-    printf '[DIAG] HOST_REAL_HOME=%s\n' "$HOST_REAL_HOME_DIR"
-    exit 0
-fi
-
-if [[ "$DRY_RUN" == "true" ]]; then
-    # Build bwrap_args without executing — reuse exec_sandbox in print mode.
-    # We reconstruct the args array here so the user sees the exact argv bwrap
-    # would receive, one token per line.
-    printf '[DRY-RUN] Resolved bwrap_args (one token per line):\n'
-    # Call exec_sandbox with DRY_RUN exported so it prints instead of exec-ing.
-    DRY_RUN="true" exec_sandbox \
-        "$ENV_PASSTHROUGH" \
-        "$VIRTUAL_USER_NAME" \
-        "$HOST_REAL_ROOT_DIR" \
-        "$HOST_REAL_HOME_DIR" \
-        "${TARGET_CMD[@]}"
-    exit 0
-fi
-
-# ==============================================================================
-# INVOKE
-# ==============================================================================
-
-exec_sandbox \
-    "$ENV_PASSTHROUGH" \
-    "$VIRTUAL_USER_NAME" \
-    "$HOST_REAL_ROOT_DIR" \
-    "$HOST_REAL_HOME_DIR" \
-    "${TARGET_CMD[@]}"
+main "$@"
