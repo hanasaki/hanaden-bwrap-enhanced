@@ -36,7 +36,6 @@
 #     stop        stub   Stop a running sandbox (not yet implemented)
 #     ls          stub   List known virtual roots (not yet implemented)
 #
-# -- LOG LEVEL CONTRACT --------------------------------------------------------
 #
 #   FATAL(100) < ERROR(200) < WARN(300) < INFO(400) < DEBUG(500) < TRACE(600)
 #   All output → stderr. Default level: INFO(400).
@@ -416,9 +415,13 @@ cmd_provision() {
     done
 
     # Derive home parent default after root is known
-    [[ -z "$host_real_home_parent" ]] && host_real_home_parent="${host_real_root}/home"
+    if [[ -z "$host_real_home_parent" ]]; then
+        host_real_home_parent="${host_real_root}/home"
+    fi
 
-    [[ "$dry_run" == "false" ]] && _provision_validate "$log_level" "$host_real_root"
+    if [[ "$dry_run" == "false" ]]; then
+        _provision_validate "$log_level" "$host_real_root"
+    fi
     _provision_create_skeleton "$log_level" "$host_real_root" "$host_real_home_parent" "$virtual_user_name" "$dry_run"
 }
 
@@ -478,10 +481,11 @@ _fsck_check_root() {
         _error "$t" "fsck: root exists but is not a directory: ${root}"
         exit 4
     fi
-    [[ "$verbose" == "true" ]] && _info "$t" "fsck: [OK] root is a directory: ${root}"
+    if [[ "$verbose" == "true" ]]; then _info "$t" "fsck: [OK] root is a directory: ${root}"; fi
 }
 
-# _fsck_check_dirs ROOT REPAIR_MODE VERBOSE — echoes exit-bit (0 or 1 or 2)
+# _fsck_check_dirs THRESHOLD ROOT REPAIR_MODE VERBOSE — echoes exit-bit (0, 1, or 2)
+# When repair==interactive, reads y/N answers from fd 9 (opened by caller).
 _fsck_check_dirs() {
     local t="$1" root="$2" repair="$3" verbose="$4"
     local dirs=( usr etc home proc dev tmp run opt var )
@@ -493,17 +497,30 @@ _fsck_check_dirs() {
                 mkdir -p "${root}/${d}"
                 _info "$t" "fsck: repaired: created ${root}/${d}"
                 bit=$(( bit | 2 ))
+            elif [[ "$repair" == "interactive" ]]; then
+                local answer
+                printf '[PROMPT] repair missing dir %s? [y/N] ' "${root}/${d}" >&2
+                read -r answer <&9 || answer="n"
+                if [[ "$answer" == [yY] ]]; then
+                    mkdir -p "${root}/${d}"
+                    _info "$t" "fsck: repaired: created ${root}/${d}"
+                    bit=$(( bit | 2 ))
+                else
+                    _info "$t" "fsck: skipped: ${root}/${d} (user declined)"
+                    bit=$(( bit | 1 ))
+                fi
             else
                 bit=$(( bit | 1 ))
             fi
         else
-            [[ "$verbose" == "true" ]] && _info "$t" "fsck: [OK] dir: ${root}/${d}"
+            if [[ "$verbose" == "true" ]]; then _info "$t" "fsck: [OK] dir: ${root}/${d}"; fi
         fi
     done
     printf '%d' "$bit"
 }
 
-# _fsck_check_symlinks ROOT REPAIR_MODE VERBOSE — echoes exit-bit
+# _fsck_check_symlinks THRESHOLD ROOT REPAIR_MODE VERBOSE — echoes exit-bit
+# When repair==interactive, reads y/N answers from fd 9 (opened by caller).
 _fsck_check_symlinks() {
     local t="$1" root="$2" repair="$3" verbose="$4"
     local symlinks=( "bin:usr/bin" "lib:usr/lib" "lib64:usr/lib64" )
@@ -512,7 +529,7 @@ _fsck_check_symlinks() {
         local link="${pair%%:*}" target="${pair##*:}"
         local link_path="${root}/${link}"
         if [[ -L "$link_path" && "$(readlink "$link_path")" == "$target" ]]; then
-            [[ "$verbose" == "true" ]] && _info "$t" "fsck: [OK] symlink: ${link} -> ${target}"
+            if [[ "$verbose" == "true" ]]; then _info "$t" "fsck: [OK] symlink: ${link} -> ${target}"; fi
             continue
         fi
         _error "$t" "fsck: bad/missing symlink: ${link_path} -> ${target}"
@@ -520,6 +537,18 @@ _fsck_check_symlinks() {
             ln -sfn "$target" "$link_path"
             _info "$t" "fsck: repaired: ${link_path} -> ${target}"
             bit=$(( bit | 2 ))
+        elif [[ "$repair" == "interactive" ]]; then
+            local answer
+            printf '[PROMPT] repair symlink %s -> %s? [y/N] ' "$link_path" "$target" >&2
+            read -r answer <&9 || answer="n"
+            if [[ "$answer" == [yY] ]]; then
+                ln -sfn "$target" "$link_path"
+                _info "$t" "fsck: repaired: ${link_path} -> ${target}"
+                bit=$(( bit | 2 ))
+            else
+                _info "$t" "fsck: skipped: ${link_path} -> ${target} (user declined)"
+                bit=$(( bit | 1 ))
+            fi
         else
             bit=$(( bit | 1 ))
         fi
@@ -541,23 +570,25 @@ _fsck_check_home() {
         _error "$t" "fsck: home path exists but is not a directory: ${home_path}"
         exit 4
     fi
-    [[ "$verbose" == "true" ]] && _info "$t" "fsck: [OK] user home: ${home_path}"
+    if [[ "$verbose" == "true" ]]; then _info "$t" "fsck: [OK] user home: ${home_path}"; fi
     printf '0'
 }
 
-# _fsck_check_unexpected_entries ROOT VERBOSE — warns only, no bit change
+# _fsck_check_unexpected_entries ROOT VERBOSE -- warns only, no bit change
 _fsck_check_unexpected_entries() {
     local t="$1" root="$2" verbose="$3"
     local expected=( usr etc home proc dev tmp run opt var bin lib lib64 )
     while IFS= read -r -d '' entry; do
         local name; name="$(basename "$entry")"
         local found=false
-        for e in "${expected[@]}"; do [[ "$name" == "$e" ]] && found=true && break; done
+        for e in "${expected[@]}"; do
+            if [[ "$name" == "$e" ]]; then found=true; break; fi
+        done
         if [[ "$found" == "false" ]]; then
             _warn "$t" "fsck: unexpected top-level entry: ${entry} (not auto-removed)"
         fi
     done < <(find "$root" -maxdepth 1 -mindepth 1 -print0)
-    [[ "$verbose" == "true" ]] && _info "$t" "fsck: unexpected-entry check complete"
+    if [[ "$verbose" == "true" ]]; then _info "$t" "fsck: unexpected-entry check complete"; fi
 }
 
 cmd_fsck() {
@@ -609,11 +640,20 @@ cmd_fsck() {
         esac
     done
 
-    [[ "$check_only" == "true" ]] && repair_mode="none"
+    if [[ "$check_only" == "true" ]]; then
+        repair_mode="none"
+    fi
 
     local exit_bit=0
 
     _fsck_check_root "$log_level" "$host_real_root" "$verbose"
+
+    # For -r (interactive): open the TTY input source as fd 9 once, here in the
+    # parent process.  All subshell read <&9 calls inherit the same open fd, so
+    # sequential reads consume lines in order without re-opening the file.
+    if [[ "$repair_mode" == "interactive" ]]; then
+        exec 9< "${BWRAP_FSCK_TTY:-/dev/tty}"
+    fi
 
     local bit
     bit="$(_fsck_check_dirs "$log_level" "$host_real_root" "$repair_mode" "$verbose")"
@@ -624,6 +664,10 @@ cmd_fsck() {
 
     bit="$(_fsck_check_home "$log_level" "$host_real_root" "$virtual_user_name" "$verbose")"
     exit_bit=$(( exit_bit | bit ))
+
+    if [[ "$repair_mode" == "interactive" ]]; then
+        exec 9>&-
+    fi
 
     _fsck_check_unexpected_entries "$log_level" "$host_real_root" "$verbose"
 
