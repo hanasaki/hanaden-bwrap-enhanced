@@ -225,6 +225,38 @@ _print_version() {
 }
 
 # ==============================================================================
+# FLAG UNBUNDLING
+# ==============================================================================
+
+# _unbundle_short_flags ARG... — prints shell-quoted expanded args to stdout.
+#
+# Expands POSIX flag bundles: -XYZ becomes -X -Y -Z.
+# Only expands tokens that are exactly one dash followed by 2+ ASCII letters.
+# Tokens containing digits, or starting with --, are passed through unchanged.
+# Tokens following a value-taking long flag (e.g. --log-level VALUE) are safe
+# because they are plain strings, not dash-prefixed.
+#
+# Usage inside a cmd_*() function — place BEFORE the while loop:
+#   eval "set -- $(_unbundle_short_flags "$@")"
+_unbundle_short_flags() {
+    local result=()
+    for arg in "$@"; do
+        # Match: one dash, then 2 or more ASCII letters only (no digits, no --)
+        if [[ "$arg" =~ ^-([a-zA-Z]{2,})$ ]]; then
+            local chars="${BASH_REMATCH[1]}"
+            while [[ -n "$chars" ]]; do
+                result+=( "-${chars:0:1}" )
+                chars="${chars:1}"
+            done
+        else
+            result+=( "$arg" )
+        fi
+    done
+    # Print shell-quoted so eval set -- is safe with paths containing spaces
+    printf '%q ' "${result[@]}"
+}
+
+# ==============================================================================
 # TOP-LEVEL HELP (dispatch table)
 # ==============================================================================
 
@@ -380,6 +412,7 @@ _provision_create_skeleton() {
 }
 
 cmd_provision() {
+    eval "set -- $(_unbundle_short_flags "$@")"
     local log_level="${_LOG_INFO}"
     local host_real_root="${HOME}/virtual-roots"
     local virtual_user_name="sandbox_user"
@@ -592,6 +625,7 @@ _fsck_check_unexpected_entries() {
 }
 
 cmd_fsck() {
+    eval "set -- $(_unbundle_short_flags "$@")"
     local log_level="${_LOG_INFO}"
     local host_real_root="${HOME}/virtual-roots"
     local virtual_user_name="sandbox_user"
@@ -804,6 +838,7 @@ exec_sandbox() {
 }
 
 cmd_start() {
+    eval "set -- $(_unbundle_short_flags "$@")"
     local log_level="${_LOG_INFO}"
     local host_real_root="${HOME}/virtual-roots"
     local virtual_user_name="sandbox_user"
@@ -958,6 +993,7 @@ HELPEOF
 }
 
 cmd_stop() {
+    eval "set -- $(_unbundle_short_flags "$@")"
     local log_level="${_LOG_INFO}"
 
     while [[ $# -gt 0 ]]; do
@@ -1001,6 +1037,7 @@ HELPEOF
 }
 
 cmd_ls() {
+    eval "set -- $(_unbundle_short_flags "$@")"
     local log_level="${_LOG_INFO}"
 
     while [[ $# -gt 0 ]]; do
