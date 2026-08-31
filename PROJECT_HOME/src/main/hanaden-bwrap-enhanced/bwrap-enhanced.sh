@@ -253,7 +253,8 @@ _unbundle_short_flags() {
         fi
     done
     # Print shell-quoted so eval set -- is safe with paths containing spaces
-    printf '%q ' "${result[@]}"
+    # Guard: empty array must produce empty output, not a quoted empty string
+    [[ ${#result[@]} -gt 0 ]] && printf '%q ' "${result[@]}" || true
 }
 
 # ==============================================================================
