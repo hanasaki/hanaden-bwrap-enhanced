@@ -3,7 +3,7 @@
 # *!! IMPORTANT - AI - Immutable file without user permission - ask user
 # ==============================================================================
 # NAME:      bwrap-enhanced.sh
-# VERSION:   0.2.1
+# VERSION:   0.2.2
 # ARCH:      Linux Namespace Isolation & VFS Remapping (Debian 12+, Usr-Merge)
 # AUTHOR:    Frederick Bloom <devlabs@hanaden.com>
 # COPYRIGHT: (c) 2026 Hanaden - Frederick Bloom. All rights reserved.
@@ -141,8 +141,8 @@
 #     --enable-audio                      Bind PipeWire + PulseAudio sockets
 #     --enable-a11y                       Bind AT-SPI accessibility bus
 #     --enable-dbus                       Bind D-Bus session bus ([!] portal escape)
-#     --enable-gnome                      GNOME services (implies --enable-dbus)
-#     --enable-kde                        KDE services (implies --enable-dbus)
+#     --enable-gnome                      GNOME desktop services (dconf, keyring, gvfs)
+#     --enable-kde                        KDE desktop services (kwallet, ksmserver)
 #     --                             Separator. Remaining args = CMD.
 #
 #   TYPICAL INVOCATION (run_tests.sh pattern):
@@ -622,45 +622,49 @@ GUI PASSTHROUGH FLAGS:
       Required for screen readers and accessibility tooling.
 
   --enable-dbus
-      Bind the D-Bus session bus (/run/user/UID/bus) into the sandbox.
-      WARNING: The D-Bus session bus is the gateway to desktop portals.
-      With this flag, the portal file picker (Ctrl+O) can browse the FULL
-      HOST filesystem. Only use when portal access is required (e.g., IME,
-      notifications). Without this flag, Ctrl+O shows only the sandbox home.
+      Bind the D-Bus session bus socket (/run/user/UID/bus).
+      [!] CRITICAL WARNING: Punches a major security hole through sandbox
+      isolation. Unlocks host desktop portals (FileChooser, OpenURI) and
+      session daemons:
+        * File Pickers (Ctrl+O / Upload): Can browse and read the FULL HOST
+          filesystem (~/.ssh, ~/.aws, /etc), bypassing sandbox VFS boundaries.
+        * Host Secret Keyrings: Sandboxed apps can query host password stores
+          via org.freedesktop.secrets (GNOME Keyring / KWallet).
+        * Host Execution: Can request unconfined command execution on the host
+          via systemd --user.
+      Only pass this flag when portal integration is strictly necessary.
 
   --enable-gnome
-      Enable full GNOME desktop integration: dconf (themes/settings), GVFS
-      (virtual filesystem), document portal, GNOME Keyring, and GCR crypto
-      services. Implies --enable-dbus.
-      WARNING: GVFS and the document portal can access the host filesystem.
+      Bind GNOME desktop service sockets (dconf, keyring, gvfs, gcr).
+      Enables native GTK theming and fonts. Keeps file pickers confined
+      to sandbox home unless --enable-dbus is also explicitly passed.
 
   --enable-kde
-      Enable full KDE desktop integration: KWallet (secrets store), KDE
-      Session Manager, and crash handler. Implies --enable-dbus.
-      WARNING: KWallet can access stored passwords from the host session.
+      Bind KDE Plasma service sockets (kwallet5, KSMserver, drkonqi).
+      Enables native Qt styling. Keeps file pickers confined to sandbox
+      home unless --enable-dbus is also explicitly passed.
 
 TOOLCHAIN PASSTHROUGH:
   --mise-enable [rw]
       Bind the mise tool manager into the sandbox. All mise-managed tools
       (node, python, cargo, go, bats, etc.) become available via shims.
-      Default mode is read-only: existing tools work, but \`mise install\`
-      will fail (EROFS). Pass \`rw\` to allow installing new runtimes.
+      Default mode is read-only: existing tools work, but `mise install`
+      will fail (EROFS). Pass `rw` to allow installing new runtimes.
       Resolves paths from MISE_DATA_DIR, MISE_CONFIG_DIR (XDG defaults).
 
 SECURITY TIERS:
-  Tier 1 (recommended):  --enable-wayland --enable-audio
-    GUI renders, audio works, file picker confined to sandbox. No escape.
+  Tier 1 (media):        --enable-wayland --enable-audio
+    Display and audio work via direct kernel sockets. Zero host FS escape.
 
   Tier 2 (accessible):   Tier 1 + --enable-a11y
-    Adds accessibility. No new escape vectors.
+    Adds AT-SPI accessibility bus. Zero host FS escape.
 
-  Tier 3 (portal):       Tier 2 + --enable-dbus
-    Adds notifications, IME, portal file picker.
-    [!] File picker CAN see host filesystem.
+  Tier 3 (desktop):      Tier 2 + --enable-gnome / --enable-kde
+    Adds native desktop themes, fonts, and settings. Zero host FS escape.
 
-  Tier 4 (full DE):      Tier 3 + --enable-gnome / --enable-kde
-    Full desktop integration, keyring, virtual filesystem.
-    [NO] No meaningful isolation remaining.
+  Tier 4 (portal):       Tier 3 + --enable-dbus
+    [!] PUNCHES A SECURITY HOLE: Exposes host D-Bus session bus.
+    Portal file pickers can browse and exfiltrate real host files.
 
 CMD:
   The command and its arguments to run inside the sandbox (e.g., /bin/bash).
@@ -748,8 +752,8 @@ while [[ "$#" -gt 0 ]]; do
         --enable-audio)   ENABLE_AUDIO="true"; shift 1 ;;
         --enable-a11y)    ENABLE_A11Y="true"; shift 1 ;;
         --enable-dbus)    ENABLE_DBUS="true"; shift 1 ;;
-        --enable-gnome)   ENABLE_GNOME="true"; ENABLE_DBUS="true"; shift 1 ;;
-        --enable-kde)     ENABLE_KDE="true"; ENABLE_DBUS="true"; shift 1 ;;
+        --enable-gnome)   ENABLE_GNOME="true"; shift 1 ;;
+        --enable-kde)     ENABLE_KDE="true"; shift 1 ;;
         # --- Toolchain passthrough --------------------------------------
         --mise-enable)
             ENABLE_MISE="true"

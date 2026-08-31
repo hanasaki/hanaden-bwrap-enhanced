@@ -1,0 +1,26 @@
+---
+version: 1
+default-wip-limit: 3
+
+workstreams:
+  governance-cleanup:
+    wip-limit: 3
+    owner: "TBD"
+    type: agent
+  test-engineering:
+    wip-limit: 3
+    owner: "TBD"
+    type: agent
+  process-guardrails:
+    wip-limit: 2
+    owner: "TBD"
+    type: mixed
+  portability:
+    wip-limit: 2
+    owner: "TBD"
+    type: mixed
+
+integration-buffer:
+  wip-limit: 1
+  verification-timeout-hours: 4
+---

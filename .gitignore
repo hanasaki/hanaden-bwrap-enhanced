@@ -28,3 +28,6 @@ __pycache__/
 
 # Ephemeral sandbox homes (never commit)
 /ephemeral/
+
+# Build output root (test reports, JUnit XML, TAP, kcov coverage, timing logs)
+**/target/

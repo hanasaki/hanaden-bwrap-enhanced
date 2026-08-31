@@ -1,172 +1,38 @@
-# mise.toml
-# Global superset toolchain config merged from all variants.
-# See ~/.config/mise/README.md for full tool documentation and URLs.
-
-#[install]
-#lockfile = true # Forces a text-based yarn/pnpm style lockfile
+# mise.toml -- project-level toolchain for bwrap-enhanced 0.4.0
+# Trimmed subset of ~/.config/mise/mise.toml -- only tools this project uses.
+# (c) 2026 Hanaden - Frederick Bloom. All rights reserved.
 
 [settings]
-#credential_command = "gh auth token"
-# shims=yes / no-shims=yes
 all_compile            = false
 asdf_compat            = true
-#disable_backends       = ["asdf","vfox"]
-#disable_backends = [
-#  "asdf", "vfox", "core", "ubi", "http", "conda",
-#  "cargo", "go", "npm", "pipx", "gem", "dotnet", "spm"
-#]
-# Leaves 'core' alive for Python/Node, allows Tier 1, but blocks all legacy/unverified layers
 disable_backends = [
   "vfox", "ubi", "http", "conda",
   "cargo", "npm", "pipx", "gem", "dotnet", "spm"
 ]
-
 experimental           = true
 minimum_release_age    = "25h"
-#npm.package_manager    = "pnpm"
-npm.package_manager    = "pnpm"
 activate_aggressive    = false
 verbose                = false
 jobs                   = 10
 not_found_auto_install = true
-# Crucial: Forces mise to build and load the local venv automatically
-python.uv_venv_auto = "create|source"
-
-[plugins]
-# shims=yes / no-shims=yes
-
-[env]
-# shims=no / no-shims=yes
-# Delegated to direnv's .envrc to ensure compatibility under shims mode.
-# CC                     = "clang"
-# CXX                    = "clang++"
-# _.path                 = ["./node_modules/.bin"]
-CARGO_UNSTABLE_SCRIPT    = "yes"
-
-[shell_alias]
-# shims=no / no-shims=yes
-podman                 = "podman-remote-static-linux_amd64"
-docker                 = "podman"
-mise-tasks-ls-extended = "mise tasks ls -x"
 
 [tools]
-# shims=yes / no-shims=yes
-usage                  = "latest"
-#"aqua:spf13/cobra-cli" = "latest"
-#"go:spf13/cobra-cli"     = "1.10.2"
-"go:github.com/spf13/cobra-cli" = "latest"
+# Test framework
+bats                   = "latest"
 
-# AI
-antigravity-cli        = "latest"
-node                   = "26.5.0"
-#"npm:@anthropic-ai/claude-code" = "latest"
-#"npm:@modelcontextprotocol/inspector" = "latest"
-claude                 = "latest"
-#claude-powerline       = "latest"
-claude-squad           = "latest"
-codex                  = "latest"
-#gemini                 = "latest"
-#gemini-cli             = "latest"
-gcloud                 = "latest"
-#"npm:@google/generative-ai"        = "latest"
-#npm:@openai/codex"                    = "latest"
-# --- Cloud Provider SDK Tools ---
-#"aqua:google/cloud-sdk" = "latest"  # Cloud provider deployment tools managed natively
-ollama                 = "latest"
-opencode               = "latest"
+# AI agent compressed output
 rtk                    = "latest"
 
-# --- DevSecOps & Security Tools ---
-# SBOM & Vulnerability Scanner
-grype                  = "latest"
-fnox                   = "latest"
-syft                   = "latest"
-trivy                  = "latest"     # Vulnerability scanning engine
-
-# Language Runtimes
-golangci-lint          = "latest"
-go                     = "latest"
-groovy                 = "latest"
-java                   = "26.0.1"
-dart                   = "latest"
-python                 = "latest"
-uv                     = "latest"
-rust                   = "nightly"
-shfmt                  = "latest"
-swift-package-list     = "latest"
-swiftformat            = "latest"
-swiftgen               = "latest"
-swiftlint              = "latest"
-zig                    = "latest"
-zigmod                 = "latest"
-
-# Build Tools
-bat-extras             = "latest"
-bats                   = "latest"
-bun                    = "latest"
-gradle                 = "latest"
-hyperfine              = "latest"
-maven                  = "latest"
-mvnd                   = "latest"
-ninja                  = "latest"
-#npm                    = "latest"
-#"pipx:nox"             = "latest"
-pnpm                   = "latest"
-shellspec              = "latest"
-terraform              = "latest"
-process-compose        = "latest"
-#ubi                    = "latest"
-
-# CLI Helpers
-aws-cli                = "latest"
-bat                    = "latest"
-chezmoi                = "latest"
-eza                    = "latest"
-fd                     = "latest"
-fzf                    = "latest"
-gh                     = "latest"
+# JSON construction/validation (test harness)
 jq                     = "latest"
-just                   = "latest"
-zoxide                 = "latest"
-github-cli             = "latest"
-gitu                   = "latest"
-gitui                  = "latest"
-gitversion             = "latest"
-ripgrep-all            = "latest"
-rg                     = "latest"
 
-# DB database
-sqlite                 = "latest"
+# HTML report generation (stdlib only, per TestHarnessSystem spec)
+python                 = "3.13.15"
 
-# Docker CLI Tools
-podman                 = "latest"
-podman-tui             = "latest"
-"docker-cli"           = "latest"
-#"docker-compose"       = "latest"
-"github:docker/compose" = "latest"
-lazydocker             = "latest"
+# Shell formatting
+shfmt                  = "latest"
 
-# Kubernetes - k3s
-"k3s"                  = "latest"
-"k3sup"                = "latest"
-"k0sctl"               = "latest"
-
-# Kubernetes - k8s
-helm                   = "latest"
-minikube               = "latest"
-kubectx                = "latest"
-kubectl                = "latest"
-1password              = "latest"
-"aqua:containerd/containerd" = "latest"
-nerdctl                = "latest"
-
-# CI/CD
-tekton                 = "latest"
-tekton-cli             = "latest"
-direnv                 = "latest"
-#devcontainer-cli       = "latest"
-tfenv                  = "latest"
-lazygit = "0.64.0"
+# Syntax-highlighted viewing (dev convenience)
+bat                    = "latest"
 
 [task_config]
-# shims=yes / no-shims=yes
