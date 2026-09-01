@@ -3,7 +3,7 @@
 # *!! IMPORTANT - AI - Do not modify without explicit user permission
 # ==============================================================================
 # NAME:      bwrap-enhanced-test-harness-runner.sh
-# VERSION:   0.1.0
+# VERSION:   0.2.0
 # AUTHOR:    Frederick Bloom <devlabs@hanaden.com>
 # COPYRIGHT: (c) 2026 Hanaden - Frederick Bloom. All rights reserved.
 # LICENSE:   Proprietary. Unauthorized use, reproduction, or distribution
@@ -31,9 +31,11 @@ set -euo pipefail
 # CONSTANTS
 # ==============================================================================
 readonly _HARNESS_NAME="$(basename "$0")"
-readonly _HARNESS_VERSION="0.1.0"
+readonly _HARNESS_VERSION="0.2.0"
 readonly _HARNESS_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly _SUITES_DIR="${_HARNESS_DIR}/suites"
+readonly _PROJECT_HOME="$(cd "${_HARNESS_DIR}/../../.." && pwd)"
+readonly _LIB_DIR="${_PROJECT_HOME}/src/lib"
 
 # ==============================================================================
 # LOG SYSTEM
@@ -190,14 +192,24 @@ ${_HARNESS_NAME}  --version | -v
     --spec     PATTERN       Run only specs matching this spec glob
     --filter   REGEX         Run only tests whose name matches this regex
     --format   pretty|tap|tap13|junit  (default: pretty)
+    --timed                  Enable timing + JSONL emission to target/test.run.report/
     --log-level NAME|NUMBER  (default: INFO)
     -n, --dry-run            Print bats invocation; do not run
 
   run-all
     --populated-only         Skip empty suites (default: true)
     --format   pretty|tap|tap13|junit  (default: pretty)
+    --timed                  Enable timing + JSONL emission to target/test.run.report/
     --log-level NAME|NUMBER  (default: INFO)
     -n, --dry-run            Print bats invocation; do not run
+
+  report  SUBCOMMAND
+    junit-xml   --input JSONL   Convert JSONL → JUnit XML
+    jacoco-xml  --input JSONL   Convert JSONL → JaCoCo XML
+    html        --junit XML     Generate JUnit HTML site
+                --jacoco XML    Generate JaCoCo HTML site
+                --junit + --jacoco  Generate unified HTML site
+                --output DIR    Output directory (optional)
 
 Log levels: FATAL(100) < ERROR(200) < WARN(300) < INFO(400) < DEBUG(500) < TRACE(600)
 Default: INFO(400). All output goes to stderr; test results go to stdout.
@@ -468,8 +480,8 @@ HELPEOF
 
 cmd_run() {
     local log_level=$_LL_INFO
-    local feat_pat="*" spec_pat="*" bats_filter="" bats_fmt="pretty" dry_run=false
-    local _log_set="" _feat_set="" _spec_set="" _filter_set="" _fmt_set="" _dry_set=""
+    local feat_pat="*" spec_pat="*" bats_filter="" bats_fmt="pretty" dry_run=false timed=false
+    local _log_set="" _feat_set="" _spec_set="" _filter_set="" _fmt_set="" _dry_set="" _timed_set=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -494,6 +506,9 @@ cmd_run() {
                     *) _error "$log_level" "run: --format must be pretty|tap|tap13|junit"; exit 1 ;;
                 esac
                 shift 2 ;;
+            --timed)
+                [[ -n "$_timed_set" ]] && _err_duplicate "$log_level" "--timed"
+                _timed_set=1; timed=true; shift ;;
             -n|--dry-run)
                 [[ -n "$_dry_set" ]] && _err_duplicate "$log_level" "--dry-run"
                 _dry_set=1; dry_run=true; shift ;;
@@ -519,21 +534,72 @@ cmd_run() {
         done
     fi
 
+    # Build scope label for --timed directory name
+    local scope="run"
+    if [[ "$feat_pat" != "*" ]]; then
+        scope="run--feat-${feat_pat}"
+        if [[ "$spec_pat" != "*" ]]; then
+            scope="run--feat-${feat_pat}--spec-${spec_pat}"
+        fi
+    fi
+
     # Build bats argv
     local -a bats_argv
     bats_argv=( bats "--formatter" "$bats_fmt" )
     if [[ -n "$bats_filter" ]]; then
         bats_argv+=( "--filter" "$bats_filter" )
     fi
+
+    # --timed: add dual formatter + timing, prepare output dir
+    local run_dir=""
+    if [[ "$timed" == "true" ]]; then
+        if ! command -v jq &>/dev/null; then
+            _fatal "$log_level" "--timed requires jq in PATH"
+        fi
+        # Source emitter library
+        # shellcheck source=../../lib/test-emit.sh
+        source "${_LIB_DIR}/test-emit.sh"
+        emit_init "$scope" "$_PROJECT_HOME"
+        run_dir="$_EMIT_RUN_DIR"
+        bats_argv+=( "--report-formatter" "junit" "--output" "${run_dir}/_bats-junit-raw" "--timing" )
+        _info "$log_level" "run: --timed enabled → ${run_dir}"
+    fi
+
     bats_argv+=( "${bats_files[@]}" )
 
     if [[ "$dry_run" == "true" ]]; then
         printf '[DRY RUN] %s\n' "${bats_argv[*]}" >&2
+        if [[ -n "$run_dir" ]]; then
+            printf '[DRY RUN] Post-process: bats-junit-to-jsonl.sh → %s/streaming.jsonl\n' "$run_dir" >&2
+        fi
         exit 0
     fi
 
     _info "$log_level" "run: invoking bats"
-    "${bats_argv[@]}"
+    local bats_exit=0
+    "${bats_argv[@]}" || bats_exit=$?
+
+    # --timed: post-process bats JUnit XML → JSONL
+    if [[ "$timed" == "true" ]]; then
+        if [[ -f "${run_dir}/_bats-junit-raw/report.xml" ]]; then
+            _info "$log_level" "run: post-processing bats JUnit XML → JSONL"
+            bash "${_LIB_DIR}/bats-junit-to-jsonl.sh" \
+                "${run_dir}/_bats-junit-raw/report.xml" \
+                "${run_dir}/streaming.jsonl"
+            # Write run metadata
+            local bats_ver
+            bats_ver="$(bats --version 2>/dev/null || echo 'unknown')"
+            source "${_LIB_DIR}/test-emit.sh"  # ensure emit functions available
+            emit_run_metadata "$bats_ver" "$_HARNESS_VERSION" "$scope" \
+                "feat=${feat_pat},spec=${spec_pat}" "${#bats_files[@]}" "$bats_exit"
+            emit_close
+            _info "$log_level" "run: JSONL written → ${run_dir}/streaming.jsonl"
+        else
+            _warn "$log_level" "run: bats did not produce JUnit XML at ${run_dir}/_bats-junit-raw/report.xml"
+        fi
+    fi
+
+    exit "$bats_exit"
 }
 
 # ==============================================================================
@@ -568,8 +634,8 @@ HELPEOF
 
 cmd_run_all() {
     local log_level=$_LL_INFO
-    local populated_only=true bats_fmt="pretty" dry_run=false
-    local _log_set="" _fmt_set="" _dry_set=""
+    local populated_only=true bats_fmt="pretty" dry_run=false timed=false
+    local _log_set="" _fmt_set="" _dry_set="" _timed_set=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -587,6 +653,9 @@ cmd_run_all() {
                     *) _error "$log_level" "run-all: --format must be pretty|tap|tap13|junit"; exit 1 ;;
                 esac
                 shift 2 ;;
+            --timed)
+                [[ -n "$_timed_set" ]] && _err_duplicate "$log_level" "--timed"
+                _timed_set=1; timed=true; shift ;;
             -n|--dry-run)
                 [[ -n "$_dry_set" ]] && _err_duplicate "$log_level" "--dry-run"
                 _dry_set=1; dry_run=true; shift ;;
@@ -616,15 +685,243 @@ cmd_run_all() {
     _info "$log_level" "run-all: ${#bats_files[@]} .bats file(s) found"
 
     local -a bats_argv
-    bats_argv=( bats "--formatter" "$bats_fmt" "${bats_files[@]}" )
+    bats_argv=( bats "--formatter" "$bats_fmt" )
+
+    # --timed: add dual formatter + timing, prepare output dir
+    local run_dir=""
+    if [[ "$timed" == "true" ]]; then
+        if ! command -v jq &>/dev/null; then
+            _fatal "$log_level" "--timed requires jq in PATH"
+        fi
+        # shellcheck source=../../lib/test-emit.sh
+        source "${_LIB_DIR}/test-emit.sh"
+        emit_init "run-all" "$_PROJECT_HOME"
+        run_dir="$_EMIT_RUN_DIR"
+        bats_argv+=( "--report-formatter" "junit" "--output" "${run_dir}/_bats-junit-raw" "--timing" )
+        _info "$log_level" "run-all: --timed enabled → ${run_dir}"
+    fi
+
+    bats_argv+=( "${bats_files[@]}" )
 
     if [[ "$dry_run" == "true" ]]; then
         printf '[DRY RUN] %s\n' "${bats_argv[*]}" >&2
+        if [[ -n "$run_dir" ]]; then
+            printf '[DRY RUN] Post-process: bats-junit-to-jsonl.sh → %s/streaming.jsonl\n' "$run_dir" >&2
+        fi
         exit 0
     fi
 
     _info "$log_level" "run-all: invoking bats"
-    "${bats_argv[@]}"
+    local bats_exit=0
+    "${bats_argv[@]}" || bats_exit=$?
+
+    # --timed: post-process bats JUnit XML → JSONL
+    if [[ "$timed" == "true" ]]; then
+        if [[ -f "${run_dir}/_bats-junit-raw/report.xml" ]]; then
+            _info "$log_level" "run-all: post-processing bats JUnit XML → JSONL"
+            bash "${_LIB_DIR}/bats-junit-to-jsonl.sh" \
+                "${run_dir}/_bats-junit-raw/report.xml" \
+                "${run_dir}/streaming.jsonl"
+            local bats_ver
+            bats_ver="$(bats --version 2>/dev/null || echo 'unknown')"
+            source "${_LIB_DIR}/test-emit.sh"
+            emit_run_metadata "$bats_ver" "$_HARNESS_VERSION" "run-all" \
+                "all" "${#bats_files[@]}" "$bats_exit"
+            emit_close
+            _info "$log_level" "run-all: JSONL written → ${run_dir}/streaming.jsonl"
+        else
+            _warn "$log_level" "run-all: bats did not produce JUnit XML at ${run_dir}/_bats-junit-raw/report.xml"
+        fi
+    fi
+
+    exit "$bats_exit"
+}
+
+# ==============================================================================
+# report — subcommand for XML conversion and HTML generation
+# ==============================================================================
+usage_report() {
+    cat <<HELPEOF
+${_HARNESS_NAME} report SUBCOMMAND [OPTIONS]
+
+  Generate structured reports from JSONL streaming data.
+
+SUBCOMMANDS
+  junit-xml   --input JSONL     Convert JSONL → JUnit XML
+  jacoco-xml  --input JSONL     Convert JSONL → JaCoCo XML
+  html        [--junit XML] [--jacoco XML] [--output DIR]
+              Generate HTML site from JUnit and/or JaCoCo XML.
+              Provide --junit for JUnit-only, --jacoco for JaCoCo-only,
+              or both for a unified report.
+
+OPTIONS
+  -h, --help
+  --log-level NAME|NUMBER  (default: INFO)
+
+EXAMPLES
+  ${_HARNESS_NAME} report junit-xml  --input target/test.run.report/*/streaming.jsonl
+  ${_HARNESS_NAME} report jacoco-xml --input target/test.run.report/*/streaming.jsonl
+  ${_HARNESS_NAME} report html --junit target/test.run.report/*/junit.xml
+  ${_HARNESS_NAME} report html --junit RUN_DIR/junit.xml --jacoco RUN_DIR/jacoco.xml
+HELPEOF
+}
+
+cmd_report() {
+    local log_level=$_LL_INFO
+
+    if [[ $# -eq 0 ]]; then
+        _error "$log_level" "report: subcommand required (junit-xml, jacoco-xml, html)"
+        usage_report >&2
+        exit 1
+    fi
+
+    case "$1" in
+        -h|--help)   usage_report; exit 0 ;;
+        junit-xml)   shift; _cmd_report_junit_xml  "$@" ;;
+        jacoco-xml)  shift; _cmd_report_jacoco_xml "$@" ;;
+        html)        shift; _cmd_report_html       "$@" ;;
+        *)
+            _error "$log_level" "report: unknown subcommand: $1"
+            _info  "$log_level" "report: valid subcommands: junit-xml, jacoco-xml, html"
+            exit 1 ;;
+    esac
+}
+
+_cmd_report_junit_xml() {
+    local log_level=$_LL_INFO input=""
+    local _input_set=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                printf '%s report junit-xml --input <JSONL>\n' "$_HARNESS_NAME"
+                printf '  Convert JSONL streaming records to JUnit XML.\n'
+                exit 0 ;;
+            --input)
+                [[ -n "$_input_set" ]] && _err_duplicate "$log_level" "--input"
+                _input_set=1; input="${2:?'--input requires JSONL path'}"; shift 2 ;;
+            --log-level)
+                log_level="$(_resolve_log_level "${2:?'--log-level requires NAME|NUMBER'}")"; shift 2 ;;
+            *) _err_unknown "$log_level" "report junit-xml" "$1" ;;
+        esac
+    done
+
+    if [[ -z "$input" ]]; then
+        _error "$log_level" "report junit-xml: --input is required"
+        exit 1
+    fi
+    if [[ ! -f "$input" ]]; then
+        _error "$log_level" "report: JSONL file not found: $input"
+        exit 2
+    fi
+
+    _info "$log_level" "report junit-xml: converting $input"
+    bash "${_LIB_DIR}/jsonl-to-junit-xml.sh" "$input"
+}
+
+_cmd_report_jacoco_xml() {
+    local log_level=$_LL_INFO input=""
+    local _input_set=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                printf '%s report jacoco-xml --input <JSONL>\n' "$_HARNESS_NAME"
+                printf '  Convert JSONL streaming records to JaCoCo XML.\n'
+                exit 0 ;;
+            --input)
+                [[ -n "$_input_set" ]] && _err_duplicate "$log_level" "--input"
+                _input_set=1; input="${2:?'--input requires JSONL path'}"; shift 2 ;;
+            --log-level)
+                log_level="$(_resolve_log_level "${2:?'--log-level requires NAME|NUMBER'}")"; shift 2 ;;
+            *) _err_unknown "$log_level" "report jacoco-xml" "$1" ;;
+        esac
+    done
+
+    if [[ -z "$input" ]]; then
+        _error "$log_level" "report jacoco-xml: --input is required"
+        exit 1
+    fi
+    if [[ ! -f "$input" ]]; then
+        _error "$log_level" "report: JSONL file not found: $input"
+        exit 2
+    fi
+
+    _info "$log_level" "report jacoco-xml: converting $input"
+    bash "${_LIB_DIR}/jsonl-to-jacoco-xml.sh" "$input"
+}
+
+_cmd_report_html() {
+    local log_level=$_LL_INFO junit_xml="" jacoco_xml="" output_dir=""
+    local _junit_set="" _jacoco_set="" _output_set=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                printf '%s report html [--junit XML] [--jacoco XML] [--output DIR]\n' "$_HARNESS_NAME"
+                printf '  Generate HTML site from JUnit and/or JaCoCo XML.\n'
+                printf '  Provide --junit for JUnit-only, --jacoco for JaCoCo-only,\n'
+                printf '  or both for a unified report.\n'
+                exit 0 ;;
+            --junit)
+                [[ -n "$_junit_set" ]] && _err_duplicate "$log_level" "--junit"
+                _junit_set=1; junit_xml="${2:?'--junit requires XML path'}"; shift 2 ;;
+            --jacoco)
+                [[ -n "$_jacoco_set" ]] && _err_duplicate "$log_level" "--jacoco"
+                _jacoco_set=1; jacoco_xml="${2:?'--jacoco requires XML path'}"; shift 2 ;;
+            --output)
+                [[ -n "$_output_set" ]] && _err_duplicate "$log_level" "--output"
+                _output_set=1; output_dir="${2:?'--output requires DIR'}"; shift 2 ;;
+            --log-level)
+                log_level="$(_resolve_log_level "${2:?'--log-level requires NAME|NUMBER'}")"; shift 2 ;;
+            *) _err_unknown "$log_level" "report html" "$1" ;;
+        esac
+    done
+
+    if [[ -z "$junit_xml" && -z "$jacoco_xml" ]]; then
+        _error "$log_level" "report html: requires --junit and/or --jacoco"
+        exit 1
+    fi
+
+    # Validate inputs exist
+    if [[ -n "$junit_xml" && ! -f "$junit_xml" ]]; then
+        _error "$log_level" "report: JUnit XML not found: $junit_xml"
+        exit 2
+    fi
+    if [[ -n "$jacoco_xml" && ! -f "$jacoco_xml" ]]; then
+        _error "$log_level" "report: JaCoCo XML not found: $jacoco_xml"
+        exit 2
+    fi
+
+    # Check python3
+    if ! command -v python3 &>/dev/null; then
+        _fatal "$log_level" "report: python3 not found in PATH"
+    fi
+
+    local generators_dir="${_LIB_DIR}/report-generators"
+
+    if [[ -n "$junit_xml" && -n "$jacoco_xml" ]]; then
+        # Unified report
+        local -a py_args=( python3 "${generators_dir}/unified_html_report.py"
+            --junit "$junit_xml" --jacoco "$jacoco_xml" )
+        [[ -n "$output_dir" ]] && py_args+=( --output "$output_dir" )
+        _info "$log_level" "report html: generating unified HTML site"
+        "${py_args[@]}"
+    elif [[ -n "$junit_xml" ]]; then
+        # JUnit-only
+        local -a py_args=( python3 "${generators_dir}/junit_html_report.py"
+            --input "$junit_xml" )
+        [[ -n "$output_dir" ]] && py_args+=( --output "$output_dir" )
+        _info "$log_level" "report html: generating JUnit HTML site"
+        "${py_args[@]}"
+    else
+        # JaCoCo-only
+        local -a py_args=( python3 "${generators_dir}/jacoco_html_report.py"
+            --input "$jacoco_xml" )
+        [[ -n "$output_dir" ]] && py_args+=( --output "$output_dir" )
+        _info "$log_level" "report html: generating JaCoCo HTML site"
+        "${py_args[@]}"
+    fi
 }
 
 # ==============================================================================
@@ -642,6 +939,7 @@ case "$1" in
     list-tests)   shift; cmd_list_tests  "$@" ;;
     run)          shift; cmd_run         "$@" ;;
     run-all)      shift; cmd_run_all     "$@" ;;
+    report)       shift; cmd_report      "$@" ;;
     *)
         _error "$_LL_INFO" "unknown subcommand: $1"
         _info  "$_LL_INFO" "Run: ${_HARNESS_NAME} --help"
