@@ -285,44 +285,6 @@ def discover_runs(base_dir, maxdepth=1):
 # Trend Data — Scan Historical Runs (legacy — used by discover_runs path)
 # ==============================================================================
 
-def load_trend_data(input_path, max_runs=20):
-    """Scan sibling run-all directories for _run-metadata.json."""
-    # Derive report base from input path
-    # input_path is like: .../target/test.run.report/20260901-*.run-all.test.run/junit.xml
-    run_dir = os.path.dirname(os.path.abspath(input_path))
-    report_base = os.path.dirname(run_dir)
-
-    history = []
-    if not os.path.isdir(report_base):
-        return history
-
-    entries = sorted(os.listdir(report_base))
-    for entry in entries:
-        if not entry.endswith(".run-all.test.run"):
-            continue
-        meta_path = os.path.join(report_base, entry, "_run-metadata.json")
-        if not os.path.isfile(meta_path):
-            continue
-        try:
-            with open(meta_path, "r") as f:
-                meta = json.load(f)
-            # Only include if it has the enhanced fields
-            if meta.get("tests_total") is not None and meta.get("tests_total", 0) > 0:
-                history.append({
-                    "timestamp": meta.get("timestamp", ""),
-                    "tests_total": meta.get("tests_total", 0),
-                    "tests_passed": meta.get("tests_passed", 0),
-                    "tests_failed": meta.get("tests_failed", 0),
-                    "tests_skipped": meta.get("tests_skipped", 0),
-                    "total_duration_ms": meta.get("total_duration_ms", 0),
-                    "coverage_pct": meta.get("coverage_pct", "0.0"),
-                    "dir_name": entry,
-                })
-        except (json.JSONDecodeError, KeyError):
-            continue
-
-    # Return last N
-    return history[-max_runs:]
 
 
 # ==============================================================================
@@ -354,14 +316,20 @@ def fmt_ts_short(ts_str):
 # Build JSON Data Blob for Embedding
 # ==============================================================================
 
-def build_data_blob(junit_data, jacoco_data, trend_data):
+def build_data_blob(junit_data, jacoco_data, trend_data, mode="overview", primary_run_name=None, runs_meta=None):
     """Build the JSON data blob embedded in the HTML."""
-    blob = {"has_junit": junit_data is not None, "has_jacoco": jacoco_data is not None}
+    blob = {
+        "has_junit": junit_data is not None,
+        "has_jacoco": jacoco_data is not None,
+        "mode": mode,
+        "primary_run": primary_run_name,
+        "runs_meta": runs_meta or [],
+    }
 
     if junit_data:
         blob["totals"] = junit_data["totals"]
 
-        # Build feat→spec tree
+        # Build feat->spec tree
         tree = {}
         all_tests = []
         for s in junit_data["suites"]:
@@ -433,13 +401,13 @@ CSS_V2 = """
 /* ── Hanaden Dark v2 ── */
 :root {
   --bg-0: #0a0a14; --bg-1: #0f0f1a; --bg-2: #1a1a2e; --bg-3: #16213e;
-  --bg-hover: #232342; --border: #2d2d4a; --border-s: #1e1e3a;
-  --accent: #7c3aed; --accent2: #6366f1;
-  --txt: #e2e8f0; --txt2: #94a3b8; --txt3: #64748b; --txt-h: #f1f5f9;
-  --pass: #22c55e; --fail: #ef4444; --skip: #f59e0b; --err: #f97316;
-  --pass-bg: rgba(34,197,94,.12); --fail-bg: rgba(239,68,68,.12);
-  --skip-bg: rgba(245,158,11,.12);
-  --cov-hi: #22c55e; --cov-md: #f59e0b; --cov-lo: #ef4444;
+  --bg-hover: #232342; --border: #3a3a5a; --border-s: #2a2a44;
+  --accent: #b4a0ff; --accent2: #93a0ff;
+  --txt: #f8fafc; --txt2: #e2e8f0; --txt3: #b0bec5; --txt-h: #ffffff;
+  --pass: #6ee7a0; --fail: #ff6b6b; --skip: #fcd34d; --err: #fdba74;
+  --pass-bg: rgba(110,231,160,.18); --fail-bg: rgba(255,107,107,.25);
+  --skip-bg: rgba(252,211,77,.18);
+  --cov-hi: #6ee7a0; --cov-md: #fcd34d; --cov-lo: #ff6b6b;
   --font: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   --mono: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
 }
@@ -566,9 +534,35 @@ a:hover{text-decoration:underline}
 /* ── SVG common ── */
 svg text{fill:var(--txt3);font-family:var(--mono)}
 
-/* ── Footer ── */
+/* -- Footer -- */
 .footer-bar{padding:.3rem 1rem;background:var(--bg-2);border-top:1px solid var(--border);
   font-size:.65rem;color:var(--txt3);text-align:center;flex-shrink:0}
+
+/* -- Mode Label -- */
+.mode-label{color:var(--accent);font-weight:600;font-size:.75rem}
+
+/* -- Run List in Sidebar -- */
+.run-list-section{border-top:1px solid var(--border);max-height:180px;overflow-y:auto;flex-shrink:0}
+.run-list-section::-webkit-scrollbar{width:6px}
+.run-list-section::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.run-list-title{padding:.35rem .5rem;color:var(--txt2);font-weight:600;font-size:.7rem;
+  text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border-s)}
+.run-item{cursor:pointer;padding:.2rem .5rem;font-size:.7rem;display:flex;
+  justify-content:space-between;align-items:center;color:var(--txt3);
+  border-bottom:1px solid var(--border-s);transition:background .1s}
+.run-item:hover{background:var(--bg-hover);color:var(--txt)}
+.run-item.active{color:var(--accent);background:var(--bg-hover)}
+.run-ts{font-family:var(--mono);font-size:.65rem}
+.run-stats{font-family:var(--mono);font-size:.65rem;color:var(--txt3)}
+
+/* -- Overview Dashboard -- */
+.overview-header{margin-bottom:.75rem}
+.overview-header h2{font-size:1rem;color:var(--txt-h);font-weight:600}
+.run-history-table{margin-top:1rem}
+.run-history-table h3{font-size:.75rem;color:var(--txt2);text-transform:uppercase;
+  letter-spacing:.03em;margin-bottom:.5rem;font-weight:600}
+.run-history-row{cursor:pointer}
+.run-history-row:hover{background:var(--bg-3) !important}
 """
 
 # ==============================================================================
@@ -688,6 +682,55 @@ JS_V2 = """
       rows.forEach(function(r){tbody.appendChild(r)});
     });
   });
+
+  // -- Overview / Detail Mode Switching --
+  var overviewPanel = document.getElementById('overview-panel');
+  var detailPanel = document.getElementById('detail-panel');
+  var modeLabel = document.getElementById('mode-label');
+
+  function showOverview() {
+    if (overviewPanel) overviewPanel.style.display = 'block';
+    if (detailPanel) detailPanel.style.display = 'none';
+    if (modeLabel) modeLabel.textContent = 'Overview';
+    // Clear run-item active states
+    document.querySelectorAll('.run-item').forEach(function(r){ r.classList.remove('active'); });
+    document.querySelectorAll('.run-history-row').forEach(function(r){ r.classList.remove('active'); });
+  }
+
+  function showDetail(runName) {
+    if (overviewPanel) overviewPanel.style.display = 'none';
+    if (detailPanel) detailPanel.style.display = 'block';
+    if (modeLabel) modeLabel.textContent = runName ? runName.substring(0, 25) : 'Detail';
+    // Highlight the matching run-item
+    document.querySelectorAll('.run-item').forEach(function(r){
+      r.classList.toggle('active', r.dataset.run === runName);
+    });
+    document.querySelectorAll('.run-history-row').forEach(function(r){
+      r.classList.toggle('active', r.dataset.run === runName);
+    });
+  }
+
+  // Run history table row clicks -> show detail
+  document.querySelectorAll('.run-history-row').forEach(function(row){
+    row.addEventListener('click', function(){
+      showDetail(row.dataset.run);
+    });
+  });
+
+  // Sidebar run-item clicks -> show detail
+  document.querySelectorAll('.run-item').forEach(function(item){
+    item.addEventListener('click', function(){
+      showDetail(item.dataset.run);
+    });
+  });
+
+  // "All" tree node -> return to overview
+  var allNode = document.querySelector('.tree-all');
+  if (allNode) {
+    allNode.addEventListener('click', function(){
+      showOverview();
+    });
+  }
 })();
 """
 
@@ -733,25 +776,6 @@ def svg_donut(passed, failed, skipped, size=160):
 </svg>'''
 
 
-def svg_hbars(items, width=360, bar_height=18, max_label=18):
-    """Horizontal bar chart. items: [(label, value, color_var)]"""
-    if not items:
-        return '<p style="color:var(--txt3)">No data</p>'
-    max_val = max(v for _, v, _ in items)
-    if max_val == 0:
-        max_val = 1
-    h = len(items) * (bar_height + 4) + 8
-    bars = []
-    for i, (label, val, color) in enumerate(items):
-        y = i * (bar_height + 4) + 4
-        bw = (val / max_val) * (width - 130)
-        lbl = label[:max_label]
-        bars.append(
-            f'<text x="0" y="{y + bar_height - 4}" font-size="10" fill="var(--txt2)">{escape(lbl)}</text>'
-            f'<rect x="120" y="{y}" width="{bw:.0f}" height="{bar_height - 2}" fill="{color}" rx="3"/>'
-            f'<text x="{125 + bw:.0f}" y="{y + bar_height - 5}" font-size="9" fill="var(--txt3)">{val}</text>'
-        )
-    return f'<svg width="{width}" height="{h}" viewBox="0 0 {width} {h}">{"".join(bars)}</svg>'
 
 
 def svg_coverage_bars(packages, width=360, bar_height=18):
@@ -939,37 +963,36 @@ def pbar_html(covered, total):
 def status_icon(status):
     s = status.upper()
     if s == "PASS":
-        return '<span class="status-icon s-pass">✓</span>'
+        return '<span class="status-icon s-pass">PASS</span>'
     elif s in ("FAIL", "ERROR"):
-        return '<span class="status-icon s-fail">✗</span>'
+        return '<span class="status-icon s-fail">FAIL</span>'
     elif s == "SKIP":
-        return '<span class="status-icon s-skip">⊘</span>'
+        return '<span class="status-icon s-skip">SKIP</span>'
     return s
 
 
-def generate_html(junit_data, jacoco_data, trend_data):
+def generate_html(junit_data, jacoco_data, trend_data, mode="overview", primary_run_name=None, runs_meta=None):
     """Generate the complete single-page HTML report."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     has_junit = junit_data is not None
     has_jacoco = jacoco_data is not None
 
-    # ── Summary bar values ──
+    # ── Summary bar values (from detail/latest run) ──
     tests_total = junit_data["totals"]["tests"] if has_junit else 0
     tests_passed = junit_data["totals"]["passed"] if has_junit else 0
     tests_failed = (junit_data["totals"]["failures"] + junit_data["totals"].get("errors", 0)) if has_junit else 0
     tests_skipped = junit_data["totals"]["skipped"] if has_junit else 0
     time_ms = junit_data["totals"]["time_ms"] if has_junit else 0
 
-    cov_pct_str = "—"
+    cov_pct_str = "--"
     if has_jacoco:
         mc = jacoco_data["counters"].get("METHOD", {"missed": 0, "covered": 0})
         mt = _counter_total(mc)
-        cov_pct_str = f"{_counter_pct(mc):.1f}%" if mt else "—"
+        cov_pct_str = f"{_counter_pct(mc):.1f}%" if mt else "--"
 
     # ── Sidebar tree ──
-    tree_html = '<div class="tree-all active" data-feat="" data-spec="">🏠 All</div>'
+    tree_html = '<div class="tree-all active" data-feat="" data-spec="">All</div>'
     if has_junit:
-        # Build feat→spec structure
         feats = {}
         for s in junit_data["suites"]:
             f, sp = s["feat"], s["spec"]
@@ -983,37 +1006,88 @@ def generate_html(junit_data, jacoco_data, trend_data):
         for feat_name in sorted(feats.keys()):
             feat_tests = sum(v["tests"] for v in feats[feat_name].values())
             feat_fails = sum(v["failed"] for v in feats[feat_name].values())
-            fail_badge = f' <span class="tree-fail-count">{feat_fails}✗</span>' if feat_fails else ''
+            fail_badge = f' <span class="tree-fail-count">{feat_fails}x</span>' if feat_fails else ''
             tree_html += f'''<div class="tree-feat" data-feat="{escape(feat_name)}">
-  <span class="arrow">▸</span> {escape(feat_name)}
+  <span class="arrow">&#9656;</span> {escape(feat_name)}
   <span class="tree-count">{feat_tests}{fail_badge}</span>
 </div>
 <div class="tree-specs">'''
             for spec_name in sorted(feats[feat_name].keys()):
                 sd = feats[feat_name][spec_name]
-                sf = f' <span class="tree-fail-count">{sd["failed"]}✗</span>' if sd["failed"] else ''
+                sf = f' <span class="tree-fail-count">{sd["failed"]}x</span>' if sd["failed"] else ''
                 tree_html += f'<div class="tree-spec" data-feat="{escape(feat_name)}" data-spec="{escape(spec_name)}">{escape(spec_name)} <span class="tree-count">{sd["tests"]}{sf}</span></div>'
             tree_html += '</div>'
 
-    # ── Dashboard tab ──
+    # ── Run list for sidebar ──
+    run_list_html = ''
+    if runs_meta:
+        run_list_html = '<div class="run-list-section"><div class="run-list-title">Run History</div>'
+        for rm in reversed(runs_meta or []):
+            active_cls = ' active' if rm['dir_name'] == primary_run_name and mode == 'detail' else ''
+            ts_short = rm.get('timestamp', rm['dir_name'])[:19]
+            fail_n = rm.get('tests_failed', 0)
+            fail_badge = f'<span class="tree-fail-count">{fail_n}</span>' if fail_n else ''
+            run_list_html += f'<div class="run-item{active_cls}" data-run="{escape(rm["dir_name"])}" title="{escape(rm["dir_name"])}">'
+            run_list_html += f'<span class="run-ts">{escape(ts_short)}</span>'
+            run_list_html += f'<span class="run-stats">{rm.get("tests_total",0)}t {fail_badge}</span>'
+            run_list_html += '</div>'
+        run_list_html += '</div>'
+
+    # ── Overview Dashboard (aggregate trends) ──
+    overview_html = ''
+    if len(trend_data) >= 2:
+        overview_html = f'''
+<div class="overview-header"><h2>Aggregate Overview &mdash; {len(trend_data)} runs</h2></div>
+<div class="chart-grid">
+  <div class="chart-box"><h3>Pass Rate Trend</h3>{svg_trend_line(trend_data, width=420, height=160)}</div>
+  <div class="chart-box"><h3>Test Count &amp; Duration</h3>{svg_duration_trend(trend_data, width=420, height=160)}</div>
+  <div class="chart-box"><h3>Failures Over Time</h3>{svg_failures_trend(trend_data, width=420, height=140)}</div>
+  <div class="chart-box"><h3>Latest Run Summary</h3>{svg_donut(tests_passed, tests_failed, tests_skipped) if has_junit else '<p style="color:var(--txt3)">No test data</p>'}</div>
+</div>
+<div class="run-history-table">
+  <h3>Run History</h3>
+  <div class="tbl-wrap">
+  <table data-sortable>
+  <thead><tr><th>Run</th><th class="ar">Tests</th><th class="ar">Pass</th><th class="ar">Fail</th><th class="ar">Duration</th></tr></thead>
+  <tbody>'''
+        for rm in reversed(runs_meta or []):
+            ts_short = rm.get('timestamp', rm['dir_name'])[:19]
+            fail_cls = ' class="s-fail"' if rm.get('tests_failed', 0) > 0 else ''
+            overview_html += f'''<tr class="run-history-row" data-run="{escape(rm['dir_name'])}">
+<td class="mn">{escape(ts_short)}</td>
+<td class="ar mn" data-sv="{rm.get('tests_total',0)}">{rm.get('tests_total',0)}</td>
+<td class="ar mn s-pass" data-sv="{rm.get('tests_passed',0)}">{rm.get('tests_passed',0)}</td>
+<td class="ar mn{' s-fail' if rm.get('tests_failed',0) else ''}" data-sv="{rm.get('tests_failed',0)}">{rm.get('tests_failed',0)}</td>
+<td class="ar mn" data-sv="{rm.get('total_duration_ms',0)}">{fmt_dur(rm.get('total_duration_ms',0))}</td>
+</tr>'''
+        overview_html += '</tbody></table></div></div>'
+    elif len(trend_data) == 1:
+        overview_html = f'''
+<div class="overview-header"><h2>Single Run Overview</h2>
+<p style="color:var(--txt3)">Run additional test executions with <code>run-all --timed</code> to see trends.</p></div>
+<div class="chart-grid">
+  <div class="chart-box"><h3>Test Results</h3>{svg_donut(tests_passed, tests_failed, tests_skipped) if has_junit else '<p style="color:var(--txt3)">No test data</p>'}</div>
+  <div class="chart-box"><h3>Run Info</h3><p class="mn" style="color:var(--txt2)">{tests_total} tests, {fmt_dur(time_ms)}</p></div>
+</div>'''
+    else:
+        overview_html = '<p style="color:var(--txt3);padding:1rem">No run data available. Run tests with <code>run-all --timed</code>.</p>'
+
+    # ── Detail Dashboard (single-run) ──
     donut_svg = svg_donut(tests_passed, tests_failed, tests_skipped) if has_junit else '<p style="color:var(--txt3)">No test data</p>'
 
-    # Timing by feature
     timing_items = []
     if has_junit:
         feat_times = {}
         for s in junit_data["suites"]:
             feat_times[s["feat"]] = feat_times.get(s["feat"], 0) + int(s["time"] * 1000)
         timing_items = [(f, ms, "var(--accent)") for f, ms in sorted(feat_times.items(), key=lambda x: -x[1])[:8]]
-    timing_svg = svg_hbars([(l, v, c) for l, v, c in timing_items], width=340) if timing_items else '<p style="color:var(--txt3)">No timing data</p>'
-    # Relabel values as formatted durations for display
+
+    timing_svg = '<p style="color:var(--txt3)">No timing data</p>'
     if timing_items:
-        timing_svg_items = [(l, v, c) for l, v, c in timing_items]
-        # Rebuild with formatted values in labels
-        h = len(timing_svg_items) * 22 + 8
+        max_v = max(v for _, v, _ in timing_items) or 1
+        h = len(timing_items) * 22 + 8
         bars = []
-        max_v = max(v for _, v, _ in timing_svg_items) or 1
-        for i, (label, val, color) in enumerate(timing_svg_items):
+        for i, (label, val, color) in enumerate(timing_items):
             y = i * 22 + 4
             bw = (val / max_v) * 210
             bars.append(
@@ -1023,7 +1097,6 @@ def generate_html(junit_data, jacoco_data, trend_data):
             )
         timing_svg = f'<svg width="340" height="{h}" viewBox="0 0 340 {h}">{"".join(bars)}</svg>'
 
-    # Coverage by feature
     cov_svg = '<p style="color:var(--txt3)">No coverage data</p>'
     if has_jacoco:
         cov_svg = svg_coverage_bars(
@@ -1032,13 +1105,24 @@ def generate_html(junit_data, jacoco_data, trend_data):
              for p in jacoco_data["packages"]],
             width=340
         )
+    elif has_junit:
+        # Use test pass-rate per feature as coverage proxy
+        feat_cov = {}
+        for s in junit_data["suites"]:
+            f = s["feat"]
+            if f not in feat_cov:
+                feat_cov[f] = {"passed": 0, "total": 0}
+            feat_cov[f]["passed"] += s["passed"]
+            feat_cov[f]["total"] += s["tests"]
+        cov_items = [{"name": f, "methods_covered": d["passed"], "methods_total": d["total"]}
+                     for f, d in sorted(feat_cov.items())]
+        cov_svg = svg_coverage_bars(cov_items, width=340)
 
-    # Trend sparkline
-    trend_spark = '<p style="color:var(--txt3)">Need ≥2 run-all runs for trends</p>'
+    trend_spark = '<p style="color:var(--txt3)">Need 2+ runs for trends</p>'
     if len(trend_data) >= 2:
         trend_spark = svg_trend_line(trend_data, width=340, height=100)
 
-    dashboard_html = f'''
+    detail_dashboard_html = f'''
 <div class="chart-grid">
   <div class="chart-box"><h3>Test Results</h3>{donut_svg}</div>
   <div class="chart-box"><h3>Timing by Feature</h3>{timing_svg}</div>
@@ -1084,10 +1168,29 @@ def generate_html(junit_data, jacoco_data, trend_data):
 <td class="mn">{len(pkg['classes'])}</td>
 </tr>'''
 
+    if not cov_rows and has_junit:
+        # Show pass-rate per feature as coverage proxy when no JaCoCo
+        for s_feat in sorted(set(s["feat"] for s in junit_data["suites"])):
+            f_tests = sum(s["tests"] for s in junit_data["suites"] if s["feat"] == s_feat)
+            f_pass = sum(s["passed"] for s in junit_data["suites"] if s["feat"] == s_feat)
+            f_fail = f_tests - f_pass
+            pbar = pbar_html(f_pass, f_tests)
+            specs_n = len(set(s["spec"] for s in junit_data["suites"] if s["feat"] == s_feat))
+            cov_rows += f'''<tr>
+<td>{escape(s_feat)}</td>
+<td class="mn">{f_pass}/{f_tests}</td>
+<td data-sv="{(f_pass/f_tests*100) if f_tests else 0:.1f}">{pbar}</td>
+<td class="mn">{f_fail} fail</td>
+<td class="mn">{specs_n} specs</td>
+</tr>'''
+
+    cov_label = "Package" if has_jacoco else "Feature"
+    cov_c3 = "Lines" if has_jacoco else "Failures"
+    cov_c4 = "Classes" if has_jacoco else "Specs"
     cov_html = f'''
 <div class="tbl-wrap">
 <table data-sortable>
-<thead><tr><th>Package</th><th>Methods</th><th>Coverage</th><th>Lines</th><th>Classes</th></tr></thead>
+<thead><tr><th>{cov_label}</th><th>Pass/Total</th><th>Coverage</th><th>{cov_c3}</th><th>{cov_c4}</th></tr></thead>
 <tbody id="cov-tbody">{cov_rows}</tbody>
 </table>
 </div>'''
@@ -1109,27 +1212,33 @@ def generate_html(junit_data, jacoco_data, trend_data):
 </details>'''
 
     if not fail_items:
-        fail_items = '<p style="color:var(--pass);padding:1rem">✓ No failures</p>'
+        fail_items = '<p style="color:var(--pass);padding:1rem">No failures</p>'
 
     # ── Trends tab ──
     trends_html = ""
     if len(trend_data) >= 2:
         trends_html = f'''
 <div class="trend-chart"><h3>Pass Rate Trend (last {len(trend_data)} runs)</h3>{svg_trend_line(trend_data, width=700, height=160)}</div>
-<div class="trend-chart"><h3>Test Count & Duration</h3>{svg_duration_trend(trend_data, width=700, height=140)}</div>
+<div class="trend-chart"><h3>Test Count &amp; Duration</h3>{svg_duration_trend(trend_data, width=700, height=140)}</div>
 <div class="trend-chart"><h3>Failures Over Time</h3>{svg_failures_trend(trend_data, width=700, height=120)}</div>'''
     else:
-        trends_html = '<p style="color:var(--txt3);padding:1rem">Need ≥2 run-all executions to show trends. Run the full suite with <code>run-all --timed</code> multiple times.</p>'
+        trends_html = '<p style="color:var(--txt3);padding:1rem">Need 2+ run-all executions to show trends. Run the full suite with <code>run-all --timed</code> multiple times.</p>'
 
     # ── Assemble ──
     fail_badge = f'<span class="badge">{fail_count}</span>' if fail_count else ''
+    mode_indicator = "Overview" if mode == "overview" else escape(primary_run_name or "")
+    initial_dash = overview_html if mode == "overview" else detail_dashboard_html
+
+    # Build data blob
+    data_blob = build_data_blob(junit_data, jacoco_data, trend_data, mode, primary_run_name, runs_meta)
+    data_json = json.dumps(data_blob, separators=(',', ':'))
 
     return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Test Report — bwrap-enhanced</title>
+<title>Test Report -- bwrap-enhanced</title>
 <meta name="description" content="Test results and coverage report for bwrap-enhanced">
 <meta name="generator" content="merged_html_report.py v0.4.0 -- hanaden-bwrap-enhanced test harness tooling">
 <style>{CSS_V2}</style>
@@ -1139,17 +1248,19 @@ def generate_html(junit_data, jacoco_data, trend_data):
 <!-- Summary Bar -->
 <div class="summary-bar">
   <span class="project">bwrap-enhanced</span>
-  <span class="sep">│</span>
+  <span class="sep">|</span>
+  <span id="mode-label" class="mode-label">{mode_indicator}</span>
+  <span class="sep">|</span>
   <span>{tests_total} tests</span>
-  <span class="sep">│</span>
-  <span class="pass-n">{tests_passed} ✓</span>
-  <span class="sep">│</span>
-  <span class="fail-n">{tests_failed} ✗</span>
-  <span class="sep">│</span>
-  <span class="skip-n">{tests_skipped} ⊘</span>
-  <span class="sep">│</span>
+  <span class="sep">|</span>
+  <span class="pass-n">{tests_passed} pass</span>
+  <span class="sep">|</span>
+  <span class="fail-n">{tests_failed} fail</span>
+  <span class="sep">|</span>
+  <span class="skip-n">{tests_skipped} skip</span>
+  <span class="sep">|</span>
   <span class="cov-n">{cov_pct_str} cov</span>
-  <span class="sep">│</span>
+  <span class="sep">|</span>
   <span>{fmt_dur(time_ms)}</span>
   <span id="filter-indicator" style="display:none;margin-left:auto;color:var(--accent);font-size:.7rem">filter</span>
 </div>
@@ -1160,11 +1271,12 @@ def generate_html(junit_data, jacoco_data, trend_data):
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-filter">
-      <input type="text" id="sidebar-filter" placeholder="Filter features…" autocomplete="off"/>
+      <input type="text" id="sidebar-filter" placeholder="Filter features..." autocomplete="off"/>
     </div>
     <div class="sidebar-tree">
       {tree_html}
     </div>
+    {run_list_html}
   </div>
 
   <!-- Content -->
@@ -1177,7 +1289,10 @@ def generate_html(junit_data, jacoco_data, trend_data):
       <div class="tab" data-tab="trends">Trends</div>
     </div>
 
-    <div id="pane-dashboard" class="tab-pane active">{dashboard_html}</div>
+    <div id="pane-dashboard" class="tab-pane active">
+      <div id="overview-panel" style="display:{'block' if mode == 'overview' else 'none'}">{overview_html}</div>
+      <div id="detail-panel" style="display:{'block' if mode == 'detail' else 'none'}">{detail_dashboard_html}</div>
+    </div>
     <div id="pane-tests" class="tab-pane">{tests_html}</div>
     <div id="pane-coverage" class="tab-pane">{cov_html}</div>
     <div id="pane-failures" class="tab-pane">{fail_items}</div>
@@ -1188,11 +1303,12 @@ def generate_html(junit_data, jacoco_data, trend_data):
 
 <!-- Footer -->
 <div class="footer-bar">
-  merged_html_report.py v0.4.0 -- hanaden-bwrap-enhanced test harness tooling · Generated {now}
+  merged_html_report.py v0.4.0 -- hanaden-bwrap-enhanced test harness tooling &middot; Generated {now}
   <br>
   (c) 2026 Hanaden - Frederick Bloom. All rights reserved.
 </div>
 
+<script>window.__DATA = {data_json};</script>
 <script>{JS_V2}</script>
 </body>
 </html>'''
@@ -1208,7 +1324,7 @@ def main():
     )
     parser.add_argument("--dir-scan", required=True, help="Base directory to scan for *.test.run/ directories")
     parser.add_argument("--maxdepth", type=int, default=1, help="Max directory depth for discovery (default: 1)")
-    parser.add_argument("--primary", default=None, help="Which run to display initially (default: latest run-all)")
+    parser.add_argument("--primary", default=None, help="Which run to display initially (default: overview)")
     parser.add_argument("-o", "--output", default="./", help="Base output directory; site written to [DIR]/site/ (default: ./)")
     args = parser.parse_args()
 
@@ -1222,31 +1338,38 @@ def main():
         print(f"[WARN] No *.test.run/ directories found under {args.dir_scan}", file=sys.stderr)
         sys.exit(0)
 
-    # Determine primary run
+    # Determine mode and primary run
+    mode = "overview"  # default: aggregate overview
     primary_run = None
     if args.primary:
+        mode = "detail"
         for r in runs:
             if r['dir_name'] == args.primary:
                 primary_run = r
                 break
         if not primary_run:
-            print(f"[WARN] --primary '{args.primary}' not found; using latest", file=sys.stderr)
-    if not primary_run:
-        # Default: latest run-all by dir name (lexicographic = timestamp order)
-        run_all_runs = [r for r in runs if 'run-all' in r['dir_name']]
-        primary_run = run_all_runs[-1] if run_all_runs else runs[-1]
+            print(f"[WARN] --primary '{args.primary}' not found; falling back to overview", file=sys.stderr)
+            mode = "overview"
 
-    # Parse primary run's data files
+    # For detail view and tests/coverage/failures tabs, use the primary or latest run
+    detail_run = primary_run
+    if not detail_run:
+        run_all_runs = [r for r in runs if 'run-all' in r['dir_name']]
+        detail_run = run_all_runs[-1] if run_all_runs else runs[-1]
+
+    # Parse the detail run's data files
     junit_data = None
     jacoco_data = None
-    primary_path = primary_run['path']
+    detail_path = detail_run['path']
 
-    # Look for streaming.jsonl → derive JUnit/JaCoCo XML paths
-    junit_xml = os.path.join(primary_path, 'junit.xml')
-    jacoco_xml = os.path.join(primary_path, 'jacoco.xml')
+    junit_xml = os.path.join(detail_path, 'junit.xml')
+    junit_xml_alt = os.path.join(detail_path, '_bats-junit-raw', 'report.xml')
+    jacoco_xml = os.path.join(detail_path, 'jacoco.xml')
 
     if os.path.isfile(junit_xml):
         junit_data = parse_junit_xml(junit_xml)
+    elif os.path.isfile(junit_xml_alt):
+        junit_data = parse_junit_xml(junit_xml_alt)
     if os.path.isfile(jacoco_xml):
         jacoco_data = parse_jacoco_xml(jacoco_xml)
 
@@ -1266,8 +1389,21 @@ def main():
                 'dir_name': r['dir_name'],
             })
 
+    # Build runs metadata list for sidebar
+    runs_meta = []
+    for r in runs:
+        meta = r.get('metadata', {})
+        runs_meta.append({
+            'dir_name': r['dir_name'],
+            'timestamp': meta.get('timestamp', meta.get('timestamp_start', r['dir_name'][:15])),
+            'tests_total': meta.get('tests_total', 0),
+            'tests_passed': meta.get('tests_passed', 0),
+            'tests_failed': meta.get('tests_failed', 0),
+            'total_duration_ms': meta.get('total_duration_ms', 0),
+        })
+
     # Generate HTML
-    html = generate_html(junit_data, jacoco_data, trend_data)
+    html = generate_html(junit_data, jacoco_data, trend_data, mode, detail_run['dir_name'], runs_meta)
 
     # Write to [output]/site/
     site_dir = os.path.join(args.output, 'site')
@@ -1277,7 +1413,7 @@ def main():
         f.write(html)
 
     # Summary
-    parts = [f"{len(runs)} run(s) discovered"]
+    parts = [f"{len(runs)} run(s) discovered", f"mode={mode}"]
     if junit_data:
         parts.append(f"{junit_data['totals']['tests']} tests")
     if jacoco_data:
