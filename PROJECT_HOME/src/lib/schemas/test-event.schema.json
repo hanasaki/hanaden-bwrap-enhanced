@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hanaden.ai/schemas/test-event/0.1.0",
+  "title": "Hanaden Test Event (JUnit-compatible)",
+  "description": "A single JSONL record representing a test execution event. One of: suite_started, test_case, suite_finished.",
+  "type": "object",
+  "required": ["type", "trace_id", "timestamp_unix_ms"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["suite_started", "test_case", "suite_finished"]
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "32-char hex trace ID linking all events in one harness invocation",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "timestamp_unix_ms": {
+      "type": "integer",
+      "description": "Unix epoch milliseconds when the event was recorded"
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/definitions/suite_started" },
+    { "$ref": "#/definitions/test_case" },
+    { "$ref": "#/definitions/suite_finished" }
+  ],
+  "definitions": {
+    "suite_started": {
+      "properties": {
+        "type": { "const": "suite_started" },
+        "suite_name": {
+          "type": "string",
+          "description": "Name of the test suite (bats filename)"
+        },
+        "test_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of test cases in this suite"
+        }
+      },
+      "required": ["type", "trace_id", "timestamp_unix_ms", "suite_name", "test_count"]
+    },
+    "test_case": {
+      "properties": {
+        "type": { "const": "test_case" },
+        "span_id": {
+          "type": "string",
+          "description": "16-char hex span ID unique to this test case",
+          "pattern": "^[0-9a-f]{16}$"
+        },
+        "vector_id": {
+          "type": "string",
+          "description": "Structured test ID (e.g. PF-BIN-001)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Full test name including ID and human description"
+        },
+        "feat": {
+          "type": "string",
+          "description": "Feature area (maps to JUnit classname prefix)"
+        },
+        "spec": {
+          "type": "string",
+          "description": "Specification (maps to JUnit classname suffix)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PASS", "FAIL", "SKIP", "ERROR"],
+          "description": "Test outcome"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Test execution time in milliseconds"
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Failure/error summary (present only on FAIL/ERROR)"
+        },
+        "error_output": {
+          "type": "string",
+          "description": "Full failure output or stack trace (present only on FAIL/ERROR)"
+        }
+      },
+      "required": [
+        "type", "trace_id", "timestamp_unix_ms",
+        "span_id", "vector_id", "description",
+        "feat", "spec", "status", "duration_ms"
+      ]
+    },
+    "suite_finished": {
+      "properties": {
+        "type": { "const": "suite_finished" },
+        "suite_name": { "type": "string" },
+        "tests_run": { "type": "integer", "minimum": 0 },
+        "tests_passed": { "type": "integer", "minimum": 0 },
+        "tests_failed": { "type": "integer", "minimum": 0 },
+        "tests_skipped": { "type": "integer", "minimum": 0 },
+        "total_duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Wall-clock time for the entire suite in milliseconds"
+        }
+      },
+      "required": [
+        "type", "trace_id", "timestamp_unix_ms",
+        "suite_name", "tests_run", "tests_passed",
+        "tests_failed", "tests_skipped", "total_duration_ms"
+      ]
+    }
+  }
+}

@@ -31,7 +31,9 @@ set -euo pipefail
 # CONSTANTS
 # ==============================================================================
 readonly _HARNESS_NAME="$(basename "$0")"
-readonly _HARNESS_VERSION="0.2.0"
+readonly _HARNESS_VERSION="0.4.0"
+readonly _HARNESS_SHORTNAME="hanaden-bwrap-enhanced test harness tooling"
+readonly _HARNESS_COPYRIGHT="(c) 2026 Hanaden - Frederick Bloom. All rights reserved."
 readonly _HARNESS_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly _SUITES_DIR="${_HARNESS_DIR}/suites"
 readonly _PROJECT_HOME="$(cd "${_HARNESS_DIR}/../../.." && pwd)"
@@ -160,13 +162,18 @@ _print_version() {
     printf '%s v%s\n' "$_HARNESS_NAME" "$_HARNESS_VERSION"
 }
 
+_print_banner() {
+    printf '%s v%s -- %s\n' "$_HARNESS_NAME" "$_HARNESS_VERSION" "$_HARNESS_SHORTNAME" >&2
+    printf '%s\n' "$_HARNESS_COPYRIGHT" >&2
+}
+
 # ==============================================================================
 # TOP-LEVEL HELP
 # ==============================================================================
 usage_top() {
     cat <<HELPEOF
-${_HARNESS_NAME}  v${_HARNESS_VERSION}  --  bwrap-enhanced Test Harness Runner
-(c) 2026 Hanaden - Frederick Bloom. All rights reserved.
+${_HARNESS_NAME}  v${_HARNESS_VERSION}  --  ${_HARNESS_SHORTNAME}
+${_HARNESS_COPYRIGHT}
 
 This is the ONLY supported way to discover and run the bwrap-enhanced test suite.
 
@@ -193,6 +200,7 @@ ${_HARNESS_NAME}  --version | -v
     --filter   REGEX         Run only tests whose name matches this regex
     --format   pretty|tap|tap13|junit  (default: pretty)
     --timed                  Enable timing + JSONL emission to target/test.run.report/
+    -j, --jobs N             Parallel bats execution (default: 25% of cores, >=1, <=6)
     --log-level NAME|NUMBER  (default: INFO)
     -n, --dry-run            Print bats invocation; do not run
 
@@ -200,16 +208,20 @@ ${_HARNESS_NAME}  --version | -v
     --populated-only         Skip empty suites (default: true)
     --format   pretty|tap|tap13|junit  (default: pretty)
     --timed                  Enable timing + JSONL emission to target/test.run.report/
+    -j, --jobs N             Parallel bats execution (default: 25% of cores, >=1, <=6)
     --log-level NAME|NUMBER  (default: INFO)
     -n, --dry-run            Print bats invocation; do not run
 
   report  SUBCOMMAND
     junit-xml   --input JSONL   Convert JSONL → JUnit XML
     jacoco-xml  --input JSONL   Convert JSONL → JaCoCo XML
-    html        --junit XML     Generate JUnit HTML site
-                --jacoco XML    Generate JaCoCo HTML site
-                --junit + --jacoco  Generate unified HTML site
-                --output DIR    Output directory (optional)
+    html        --dir-scan DIR  Generate self-contained HTML report site
+                [-o, --output DIR]  Output base dir (default: ./)
+                [--maxdepth N]      Discovery depth (default: 1)
+                [--primary NAME]    Initial run to display
+
+  json-schema-list             List all embedded JSON schemas
+  json-schema-emit NAME        Emit the named schema to stdout
 
 Log levels: FATAL(100) < ERROR(200) < WARN(300) < INFO(400) < DEBUG(500) < TRACE(600)
 Default: INFO(400). All output goes to stderr; test results go to stdout.
@@ -460,6 +472,8 @@ OPTIONS
   --filter   REGEX         Pass --filter REGEX to bats (match by test name)
                            Example: --filter 'BOOL-NET-0'
   --format   pretty|tap|tap13|junit   Bats formatter (default: pretty)
+  -j, --jobs N             Parallel bats execution (default: 25% of cores, >=1, <=6)
+  --timed                  Enable timing + JSONL emission
   --log-level NAME|NUMBER  (default: INFO)
   -n, --dry-run            Print the bats invocation; do not run
 
@@ -475,13 +489,20 @@ EXAMPLES
   ${_HARNESS_NAME} run --filter 'BOOL-NET-001'
   ${_HARNESS_NAME} run --feat Dispatch --format tap
   ${_HARNESS_NAME} run --dry-run
+  ${_HARNESS_NAME} run -j 4
 HELPEOF
 }
 
 cmd_run() {
-    local log_level=$_LL_INFO
+    local log_level=$_LL_INFOParalle
     local feat_pat="*" spec_pat="*" bats_filter="" bats_fmt="pretty" dry_run=false timed=false
-    local _log_set="" _feat_set="" _spec_set="" _filter_set="" _fmt_set="" _dry_set="" _timed_set=""
+    local _log_set="" _feat_set="" _spec_set="" _filter_set="" _fmt_set="" _dry_set="" _timed_set="" _jobs_set=""
+
+    # Default jobs: 25% of cores, clamped to [1, 6]
+    local _nproc; _nproc="$(nproc 2>/dev/null || echo 4)"
+    local jobs=$(( _nproc / 4 ))
+    (( jobs < 1 )) && jobs=1
+    (( jobs > 6 )) && jobs=6
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -509,6 +530,9 @@ cmd_run() {
             --timed)
                 [[ -n "$_timed_set" ]] && _err_duplicate "$log_level" "--timed"
                 _timed_set=1; timed=true; shift ;;
+            -j|--jobs)
+                [[ -n "$_jobs_set" ]] && _err_duplicate "$log_level" "--jobs"
+                _jobs_set=1; jobs="${2:?'--jobs requires N'}"; shift 2 ;;
             -n|--dry-run)
                 [[ -n "$_dry_set" ]] && _err_duplicate "$log_level" "--dry-run"
                 _dry_set=1; dry_run=true; shift ;;
@@ -545,7 +569,7 @@ cmd_run() {
 
     # Build bats argv
     local -a bats_argv
-    bats_argv=( bats "--formatter" "$bats_fmt" )
+    bats_argv=( bats "--formatter" "$bats_fmt" "-j" "$jobs" )
     if [[ -n "$bats_filter" ]]; then
         bats_argv+=( "--filter" "$bats_filter" )
     fi
@@ -585,7 +609,8 @@ cmd_run() {
             _info "$log_level" "run: post-processing bats JUnit XML → JSONL"
             bash "${_LIB_DIR}/bats-junit-to-jsonl.sh" \
                 "${run_dir}/_bats-junit-raw/report.xml" \
-                "${run_dir}/streaming.jsonl"
+                "${run_dir}/streaming.jsonl" \
+                "${_PROJECT_HOME}"
             # Write run metadata
             local bats_ver
             bats_ver="$(bats --version 2>/dev/null || echo 'unknown')"
@@ -616,6 +641,8 @@ OPTIONS
   --populated-only         Skip suites with no .bats files (default: true)
   --no-populated-only      Include empty suites (will produce no tests)
   --format   pretty|tap|tap13|junit   Bats formatter (default: pretty)
+  -j, --jobs N             Parallel bats execution (default: 25% of cores, >=1, <=6)
+  --timed                  Enable timing + JSONL emission
   --log-level NAME|NUMBER  (default: INFO)
   -n, --dry-run            Print the bats invocation; do not run
 
@@ -629,13 +656,20 @@ EXAMPLES
   ${_HARNESS_NAME} run-all --format tap
   ${_HARNESS_NAME} run-all --dry-run
   ${_HARNESS_NAME} run-all --log-level DEBUG
+  ${_HARNESS_NAME} run-all -j 2
 HELPEOF
 }
 
 cmd_run_all() {
     local log_level=$_LL_INFO
     local populated_only=true bats_fmt="pretty" dry_run=false timed=false
-    local _log_set="" _fmt_set="" _dry_set="" _timed_set=""
+    local _log_set="" _fmt_set="" _dry_set="" _timed_set="" _jobs_set=""
+
+    # Default jobs: 25% of cores, clamped to [1, 6]
+    local _nproc; _nproc="$(nproc 2>/dev/null || echo 4)"
+    local jobs=$(( _nproc / 4 ))
+    (( jobs < 1 )) && jobs=1
+    (( jobs > 6 )) && jobs=6
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -656,6 +690,9 @@ cmd_run_all() {
             --timed)
                 [[ -n "$_timed_set" ]] && _err_duplicate "$log_level" "--timed"
                 _timed_set=1; timed=true; shift ;;
+            -j|--jobs)
+                [[ -n "$_jobs_set" ]] && _err_duplicate "$log_level" "--jobs"
+                _jobs_set=1; jobs="${2:?'--jobs requires N'}"; shift 2 ;;
             -n|--dry-run)
                 [[ -n "$_dry_set" ]] && _err_duplicate "$log_level" "--dry-run"
                 _dry_set=1; dry_run=true; shift ;;
@@ -685,7 +722,7 @@ cmd_run_all() {
     _info "$log_level" "run-all: ${#bats_files[@]} .bats file(s) found"
 
     local -a bats_argv
-    bats_argv=( bats "--formatter" "$bats_fmt" )
+    bats_argv=( bats "--formatter" "$bats_fmt" "-j" "$jobs" )
 
     # --timed: add dual formatter + timing, prepare output dir
     local run_dir=""
@@ -721,7 +758,8 @@ cmd_run_all() {
             _info "$log_level" "run-all: post-processing bats JUnit XML → JSONL"
             bash "${_LIB_DIR}/bats-junit-to-jsonl.sh" \
                 "${run_dir}/_bats-junit-raw/report.xml" \
-                "${run_dir}/streaming.jsonl"
+                "${run_dir}/streaming.jsonl" \
+                "${_PROJECT_HOME}"
             local bats_ver
             bats_ver="$(bats --version 2>/dev/null || echo 'unknown')"
             source "${_LIB_DIR}/test-emit.sh"
@@ -749,10 +787,10 @@ ${_HARNESS_NAME} report SUBCOMMAND [OPTIONS]
 SUBCOMMANDS
   junit-xml   --input JSONL     Convert JSONL → JUnit XML
   jacoco-xml  --input JSONL     Convert JSONL → JaCoCo XML
-  html        [--junit XML] [--jacoco XML] [--output DIR]
-              Generate HTML site from JUnit and/or JaCoCo XML.
-              Provide --junit for JUnit-only, --jacoco for JaCoCo-only,
-              or both for a unified report.
+  html        --dir-scan DIR    Generate self-contained HTML report site
+              [-o, --output DIR]   Output base dir (default: ./)
+              [--maxdepth N]       Discovery depth (default: 1)
+              [--primary NAME]     Initial run to display
 
 OPTIONS
   -h, --help
@@ -761,8 +799,8 @@ OPTIONS
 EXAMPLES
   ${_HARNESS_NAME} report junit-xml  --input target/test.run.report/*/streaming.jsonl
   ${_HARNESS_NAME} report jacoco-xml --input target/test.run.report/*/streaming.jsonl
-  ${_HARNESS_NAME} report html --junit target/test.run.report/*/junit.xml
-  ${_HARNESS_NAME} report html --junit RUN_DIR/junit.xml --jacoco RUN_DIR/jacoco.xml
+  ${_HARNESS_NAME} report html --dir-scan target/test.run.report/
+  ${_HARNESS_NAME} report html --dir-scan target/test.run.report/ -o target/reports/
 HELPEOF
 }
 
@@ -852,24 +890,32 @@ _cmd_report_jacoco_xml() {
 }
 
 _cmd_report_html() {
-    local log_level=$_LL_INFO junit_xml="" jacoco_xml="" output_dir=""
-    local _junit_set="" _jacoco_set="" _output_set=""
+    local log_level=$_LL_INFO dir_scan="" maxdepth=1 primary="" output_dir="./"
+    local _dirscan_set="" _maxdepth_set="" _primary_set="" _output_set=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -h|--help)
-                printf '%s report html [--junit XML] [--jacoco XML] [--output DIR]\n' "$_HARNESS_NAME"
-                printf '  Generate HTML site from JUnit and/or JaCoCo XML.\n'
-                printf '  Provide --junit for JUnit-only, --jacoco for JaCoCo-only,\n'
-                printf '  or both for a unified report.\n'
+                printf '%s report html [OPTIONS]\n' "$_HARNESS_NAME"
+                printf '  Generate a self-contained HTML report site.\n'
+                printf '\n'
+                printf 'OPTIONS\n'
+                printf '  --dir-scan DIR   Base directory to scan for *.test.run/ dirs (required)\n'
+                printf '  --maxdepth  N    Max directory depth for discovery (default: 1)\n'
+                printf '  --primary NAME   Which run to show initially (default: latest run-all)\n'
+                printf '  -o, --output DIR Output base directory (default: ./)\n'
+                printf '                   Site written to [DIR]/site/\n'
                 exit 0 ;;
-            --junit)
-                [[ -n "$_junit_set" ]] && _err_duplicate "$log_level" "--junit"
-                _junit_set=1; junit_xml="${2:?'--junit requires XML path'}"; shift 2 ;;
-            --jacoco)
-                [[ -n "$_jacoco_set" ]] && _err_duplicate "$log_level" "--jacoco"
-                _jacoco_set=1; jacoco_xml="${2:?'--jacoco requires XML path'}"; shift 2 ;;
-            --output)
+            --dir-scan)
+                [[ -n "$_dirscan_set" ]] && _err_duplicate "$log_level" "--dir-scan"
+                _dirscan_set=1; dir_scan="${2:?'--dir-scan requires DIR'}"; shift 2 ;;
+            --maxdepth)
+                [[ -n "$_maxdepth_set" ]] && _err_duplicate "$log_level" "--maxdepth"
+                _maxdepth_set=1; maxdepth="${2:?'--maxdepth requires N'}"; shift 2 ;;
+            --primary)
+                [[ -n "$_primary_set" ]] && _err_duplicate "$log_level" "--primary"
+                _primary_set=1; primary="${2:?'--primary requires NAME'}"; shift 2 ;;
+            -o|--output)
                 [[ -n "$_output_set" ]] && _err_duplicate "$log_level" "--output"
                 _output_set=1; output_dir="${2:?'--output requires DIR'}"; shift 2 ;;
             --log-level)
@@ -878,18 +924,13 @@ _cmd_report_html() {
         esac
     done
 
-    if [[ -z "$junit_xml" && -z "$jacoco_xml" ]]; then
-        _error "$log_level" "report html: requires --junit and/or --jacoco"
+    if [[ -z "$dir_scan" ]]; then
+        _error "$log_level" "report html: --dir-scan is required"
         exit 1
     fi
 
-    # Validate inputs exist
-    if [[ -n "$junit_xml" && ! -f "$junit_xml" ]]; then
-        _error "$log_level" "report: JUnit XML not found: $junit_xml"
-        exit 2
-    fi
-    if [[ -n "$jacoco_xml" && ! -f "$jacoco_xml" ]]; then
-        _error "$log_level" "report: JaCoCo XML not found: $jacoco_xml"
+    if [[ ! -d "$dir_scan" ]]; then
+        _error "$log_level" "report html: --dir-scan directory not found: $dir_scan"
         exit 2
     fi
 
@@ -899,29 +940,242 @@ _cmd_report_html() {
     fi
 
     local generators_dir="${_LIB_DIR}/report-generators"
+    local -a py_args=( python3 "${generators_dir}/merged_html_report.py"
+        --dir-scan "$dir_scan"
+        --maxdepth "$maxdepth"
+        -o "$output_dir" )
 
-    if [[ -n "$junit_xml" && -n "$jacoco_xml" ]]; then
-        # Unified report
-        local -a py_args=( python3 "${generators_dir}/unified_html_report.py"
-            --junit "$junit_xml" --jacoco "$jacoco_xml" )
-        [[ -n "$output_dir" ]] && py_args+=( --output "$output_dir" )
-        _info "$log_level" "report html: generating unified HTML site"
-        "${py_args[@]}"
-    elif [[ -n "$junit_xml" ]]; then
-        # JUnit-only
-        local -a py_args=( python3 "${generators_dir}/junit_html_report.py"
-            --input "$junit_xml" )
-        [[ -n "$output_dir" ]] && py_args+=( --output "$output_dir" )
-        _info "$log_level" "report html: generating JUnit HTML site"
-        "${py_args[@]}"
-    else
-        # JaCoCo-only
-        local -a py_args=( python3 "${generators_dir}/jacoco_html_report.py"
-            --input "$jacoco_xml" )
-        [[ -n "$output_dir" ]] && py_args+=( --output "$output_dir" )
-        _info "$log_level" "report html: generating JaCoCo HTML site"
-        "${py_args[@]}"
+    [[ -n "$primary" ]] && py_args+=( --primary "$primary" )
+
+    local site_dir="${output_dir}/site"
+    _info "$log_level" "report html: scanning $dir_scan (maxdepth=$maxdepth) → ${site_dir}/"
+    "${py_args[@]}"
+}
+
+# ==============================================================================
+# EMBEDDED JSON SCHEMAS — self-contained, no external file access
+# ==============================================================================
+# The harness carries its own schemas. Use json-schema-list / json-schema-emit
+# to inspect or export them. Other tools can consume the emitted files.
+
+_SCHEMA_NAMES=( "test-event" "coverage-event" )
+
+_emit_schema_test_event() {
+    cat <<'SCHEMA_EOF'
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hanaden.ai/schemas/test-event/0.1.0",
+  "title": "Hanaden Test Event (JUnit-compatible)",
+  "description": "A single JSONL record representing a test execution event. One of: suite_started, test_case, suite_finished.",
+  "type": "object",
+  "required": ["type", "trace_id", "timestamp_unix_ms"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["suite_started", "test_case", "suite_finished"]
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "32-char hex trace ID linking all events in one harness invocation",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "timestamp_unix_ms": {
+      "type": "integer",
+      "description": "Unix epoch milliseconds when the event was recorded"
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/definitions/suite_started" },
+    { "$ref": "#/definitions/test_case" },
+    { "$ref": "#/definitions/suite_finished" }
+  ],
+  "definitions": {
+    "suite_started": {
+      "properties": {
+        "type": { "const": "suite_started" },
+        "suite_name": {
+          "type": "string",
+          "description": "Name of the test suite (bats filename)"
+        },
+        "test_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of test cases in this suite"
+        }
+      },
+      "required": ["type", "trace_id", "timestamp_unix_ms", "suite_name", "test_count"]
+    },
+    "test_case": {
+      "properties": {
+        "type": { "const": "test_case" },
+        "span_id": {
+          "type": "string",
+          "description": "16-char hex span ID unique to this test case",
+          "pattern": "^[0-9a-f]{16}$"
+        },
+        "vector_id": {
+          "type": "string",
+          "description": "Structured test ID (e.g. PF-BIN-001)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Full test name including ID and human description"
+        },
+        "feat": {
+          "type": "string",
+          "description": "Feature area (maps to JUnit classname prefix)"
+        },
+        "spec": {
+          "type": "string",
+          "description": "Specification (maps to JUnit classname suffix)"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PASS", "FAIL", "SKIP", "ERROR"],
+          "description": "Test outcome"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Test execution time in milliseconds"
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Failure/error summary (present only on FAIL/ERROR)"
+        },
+        "error_output": {
+          "type": "string",
+          "description": "Full failure output or stack trace (present only on FAIL/ERROR)"
+        }
+      },
+      "required": [
+        "type", "trace_id", "timestamp_unix_ms",
+        "span_id", "vector_id", "description",
+        "feat", "spec", "status", "duration_ms"
+      ]
+    },
+    "suite_finished": {
+      "properties": {
+        "type": { "const": "suite_finished" },
+        "suite_name": { "type": "string" },
+        "tests_run": { "type": "integer", "minimum": 0 },
+        "tests_passed": { "type": "integer", "minimum": 0 },
+        "tests_failed": { "type": "integer", "minimum": 0 },
+        "tests_skipped": { "type": "integer", "minimum": 0 },
+        "total_duration_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Wall-clock time for the entire suite in milliseconds"
+        }
+      },
+      "required": [
+        "type", "trace_id", "timestamp_unix_ms",
+        "suite_name", "tests_run", "tests_passed",
+        "tests_failed", "tests_skipped", "total_duration_ms"
+      ]
+    }
+  }
+}
+SCHEMA_EOF
+}
+
+_emit_schema_coverage_event() {
+    cat <<'SCHEMA_EOF'
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hanaden.ai/schemas/coverage-event/0.1.0",
+  "title": "Hanaden Coverage Event (JaCoCo-compatible)",
+  "description": "A single JSONL record representing a coverage measurement. Maps to JaCoCo's package→class→method→counter hierarchy via timing-as-coverage.",
+  "type": "object",
+  "required": [
+    "type", "trace_id",
+    "feat", "spec",
+    "methods_covered", "methods_total",
+    "lines_covered", "lines_total"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "coverage_record"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "32-char hex trace ID linking to the same run",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "feat": {
+      "type": "string",
+      "description": "Feature/suite name → maps to JaCoCo <package>"
+    },
+    "spec": {
+      "type": "string",
+      "description": "Spec/class name → maps to JaCoCo <class>"
+    },
+    "methods_covered": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of test methods that PASSED (maps to METHOD counter covered)"
+    },
+    "methods_total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total test methods in this class (maps to METHOD counter total)"
+    },
+    "lines_covered": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of assertion lines in passing tests (maps to LINE counter covered)"
+    },
+    "lines_total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of all assertion lines (maps to LINE counter total)"
+    }
+  },
+  "additionalProperties": false
+}
+SCHEMA_EOF
+}
+
+# ==============================================================================
+# json-schema-list / json-schema-emit — Introspect embedded schemas
+# ==============================================================================
+
+cmd_json_schema_list() {
+    for name in "${_SCHEMA_NAMES[@]}"; do
+        printf '%s\n' "$name"
+    done
+}
+
+cmd_json_schema_emit() {
+    local log_level=$_LL_INFO
+    if [[ $# -eq 0 ]]; then
+        _error "$log_level" "json-schema-emit: requires SCHEMA_NAME"
+        _info  "$log_level" "Available schemas: ${_SCHEMA_NAMES[*]}"
+        exit 1
     fi
+
+    case "$1" in
+        -h|--help)
+            printf '%s json-schema-emit SCHEMA_NAME\n' "$_HARNESS_NAME"
+            printf '  Emit the named embedded JSON schema to stdout.\n'
+            printf '\n'
+            printf 'AVAILABLE SCHEMAS\n'
+            for name in "${_SCHEMA_NAMES[@]}"; do
+                printf '  %s\n' "$name"
+            done
+            exit 0 ;;
+    esac
+
+    local schema_name="$1"
+    case "$schema_name" in
+        test-event)      _emit_schema_test_event ;;
+        coverage-event)  _emit_schema_coverage_event ;;
+        *)
+            _error "$log_level" "json-schema-emit: unknown schema: $schema_name"
+            _info  "$log_level" "Available schemas: ${_SCHEMA_NAMES[*]}"
+            exit 1 ;;
+    esac
 }
 
 # ==============================================================================
@@ -933,15 +1187,22 @@ if [[ $# -eq 0 ]]; then
 fi
 
 case "$1" in
-    --help|-h)    usage_top;    exit 0 ;;
-    --version|-v) _print_version; exit 0 ;;
-    list-suites)  shift; cmd_list_suites "$@" ;;
-    list-tests)   shift; cmd_list_tests  "$@" ;;
-    run)          shift; cmd_run         "$@" ;;
-    run-all)      shift; cmd_run_all     "$@" ;;
-    report)       shift; cmd_report      "$@" ;;
+    --help|-h)         usage_top;              exit 0 ;;
+    --version|-v)      _print_version;         exit 0 ;;
     *)
-        _error "$_LL_INFO" "unknown subcommand: $1"
-        _info  "$_LL_INFO" "Run: ${_HARNESS_NAME} --help"
-        exit 1 ;;
+        _print_banner
+        case "$1" in
+            list-suites)       shift; cmd_list_suites      "$@" ;;
+            list-tests)        shift; cmd_list_tests       "$@" ;;
+            run)               shift; cmd_run              "$@" ;;
+            run-all)           shift; cmd_run_all          "$@" ;;
+            report)            shift; cmd_report           "$@" ;;
+            json-schema-list)  shift; cmd_json_schema_list "$@" ;;
+            json-schema-emit)  shift; cmd_json_schema_emit "$@" ;;
+            *)
+                _error "$_LL_INFO" "unknown subcommand: $1"
+                _info  "$_LL_INFO" "Run: ${_HARNESS_NAME} --help"
+                exit 1 ;;
+        esac
+        ;;
 esac

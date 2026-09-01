@@ -5,8 +5,10 @@
 # VERSION:   0.1.0
 # PURPOSE:   Convert bats-generated JUnit XML (with --timing) to JSONL
 #            streaming records conforming to TestRunReportSchema.feat-0.0.1.
+#            When project-root is provided, all absolute paths in suite/test
+#            names are stripped to project-relative paths (e.g. src/test/...).
 #
-# USAGE:     bats-junit-to-jsonl.sh <bats-junit-xml> [output-jsonl]
+# USAGE:     bats-junit-to-jsonl.sh <bats-junit-xml> [output-jsonl] [project-root]
 #            If output-jsonl is omitted, writes to stdout.
 #
 # DEPENDENCIES: xmllint (xpath extraction), jq (JSON construction)
@@ -36,12 +38,13 @@ readonly _SCRIPT_NAME="$(basename "$0")"
 # VALIDATION
 # ==============================================================================
 if [[ $# -lt 1 ]]; then
-    printf 'Usage: %s <bats-junit-xml> [output-jsonl]\n' "$_SCRIPT_NAME" >&2
+    printf 'Usage: %s <bats-junit-xml> [output-jsonl] [project-root]\n' "$_SCRIPT_NAME" >&2
     exit 1
 fi
 
 readonly INPUT_XML="$1"
 readonly OUTPUT_JSONL="${2:-/dev/stdout}"
+readonly PROJECT_ROOT="${3:-}"
 
 if [[ ! -f "$INPUT_XML" ]]; then
     printf '[ERROR] %s: input file not found: %s\n' "$_SCRIPT_NAME" "$INPUT_XML" >&2
@@ -129,6 +132,15 @@ def now_ms():
     import time
     return int(time.time() * 1000)
 
+# Strip project root prefix from absolute paths → project-relative
+project_root = '$PROJECT_ROOT'
+def strip_root(path):
+    if project_root and path.startswith(project_root):
+        rel = path[len(project_root):]
+        # Remove leading / so it becomes 'src/test/...' not '/src/test/...'
+        return rel.lstrip('/')
+    return path
+
 trace_id = '$TRACE_ID'
 input_xml = '$INPUT_XML'
 
@@ -147,7 +159,8 @@ else:
     sys.exit(2)
 
 for suite in suites:
-    suite_name = suite.get('name', 'unknown')
+    suite_name_raw = suite.get('name', 'unknown')
+    suite_name = strip_root(suite_name_raw)
     suite_tests = int(suite.get('tests', '0'))
     suite_failures = int(suite.get('failures', '0'))
     suite_errors = int(suite.get('errors', '0'))
@@ -155,8 +168,7 @@ for suite in suites:
     suite_time = float(suite.get('time', '0'))
     suite_timestamp = suite.get('timestamp', '')
 
-    # Derive feat/spec from suite name
-    # Bats typically uses the filename as the suite name
+    # Derive feat/spec from suite name (now project-relative)
     feat = suite_name
     spec = suite_name
 
@@ -178,12 +190,13 @@ for suite in suites:
     testcases = suite.findall('testcase')
     for tc in testcases:
         tc_name = tc.get('name', '')
-        tc_classname = tc.get('classname', suite_name)
+        tc_classname_raw = tc.get('classname', suite_name_raw)
+        tc_classname = strip_root(tc_classname_raw)
         tc_time = float(tc.get('time', '0'))
         duration_ms = int(tc_time * 1000)
         total_duration_ms += duration_ms
 
-        # Parse feat/spec from classname
+        # Parse feat/spec from classname (now project-relative)
         if '.' in tc_classname:
             parts = tc_classname.split('.', 1)
             tc_feat = parts[0]
@@ -237,18 +250,18 @@ for suite in suites:
             'timestamp_unix_ms': now_ms(),
         }
         if error_msg:
-            record['error'] = error_msg
+            record['error_message'] = error_msg
         if output_text:
-            record['output'] = output_text
+            record['error_output'] = output_text
 
         # Capture system-out/system-err if present
         sysout = tc.find('system-out')
         syserr = tc.find('system-err')
         if sysout is not None and sysout.text:
-            record['output'] = sysout.text
+            record['error_output'] = sysout.text
         if syserr is not None and syserr.text:
-            record.setdefault('output', '')
-            record['output'] += syserr.text
+            record.setdefault('error_output', '')
+            record['error_output'] += syserr.text
 
         records.append(json.dumps(record))
 

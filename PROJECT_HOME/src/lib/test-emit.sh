@@ -320,7 +320,8 @@ emit_suite_finished() {
 # ==============================================================================
 
 # emit_run_metadata BATS_VERSION HARNESS_VERSION SCOPE FILTERS TEST_COUNT EXIT_CODE
-#   Writes _run-metadata.json (not JSONL — this is a standalone JSON file)
+#   Writes _run-metadata.json (not JSONL — this is a standalone JSON file).
+#   Aggregates test results and coverage from streaming.jsonl for trending.
 emit_run_metadata() {
     local bats_version="$1"
     local harness_version="$2"
@@ -329,17 +330,59 @@ emit_run_metadata() {
     local test_count="$5"
     local exit_code="$6"
 
+    # Aggregate stats from streaming.jsonl if it exists
+    local tests_total=0 tests_passed=0 tests_failed=0 tests_skipped=0
+    local total_duration_ms=0 suites_count=0
+    local methods_covered=0 methods_total=0 coverage_pct=0
+
+    if [[ -f "${_EMIT_JSONL_PATH}" ]] && command -v jq &>/dev/null; then
+        # Count tests by status from test_case records
+        tests_total=$(jq -r 'select(.type=="test_case") | .status' "$_EMIT_JSONL_PATH" | wc -l)
+        tests_passed=$(jq -r 'select(.type=="test_case") | select(.status=="PASS") | .status' "$_EMIT_JSONL_PATH" | wc -l)
+        tests_failed=$(jq -r 'select(.type=="test_case") | select(.status=="FAIL" or .status=="ERROR") | .status' "$_EMIT_JSONL_PATH" | wc -l)
+        tests_skipped=$(jq -r 'select(.type=="test_case") | select(.status=="SKIP") | .status' "$_EMIT_JSONL_PATH" | wc -l)
+
+        # Sum duration from suite_finished records
+        total_duration_ms=$(jq -s '[.[] | select(.type=="suite_finished") | .total_duration_ms] | add // 0' "$_EMIT_JSONL_PATH")
+
+        # Count suites
+        suites_count=$(jq -r 'select(.type=="suite_started") | .suite_name' "$_EMIT_JSONL_PATH" | wc -l)
+
+        # Aggregate coverage from coverage_record records
+        methods_covered=$(jq -s '[.[] | select(.type=="coverage_record") | .methods_covered] | add // 0' "$_EMIT_JSONL_PATH")
+        methods_total=$(jq -s '[.[] | select(.type=="coverage_record") | .methods_total] | add // 0' "$_EMIT_JSONL_PATH")
+
+        if [[ "$methods_total" -gt 0 ]]; then
+            # Integer percentage * 10 for one decimal place
+            coverage_pct=$(( (methods_covered * 1000) / methods_total ))
+        fi
+    fi
+
+    # Format coverage as float string "89.8"
+    local cov_int=$(( coverage_pct / 10 ))
+    local cov_frac=$(( coverage_pct % 10 ))
+    local coverage_pct_str="${cov_int}.${cov_frac}"
+
     jq -n \
         --arg bats_version "$bats_version" \
         --arg harness_version "$harness_version" \
         --arg scope "$scope" \
         --arg filters "$filters" \
-        --argjson test_count "$test_count" \
+        --argjson test_file_count "$test_count" \
         --argjson exit_code "$exit_code" \
         --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)" \
         --arg hostname "$(hostname -s 2>/dev/null || echo 'unknown')" \
         --arg trace_id "$_EMIT_TRACE_ID" \
         --arg run_dir "$_EMIT_RUN_DIR" \
+        --argjson tests_total "$tests_total" \
+        --argjson tests_passed "$tests_passed" \
+        --argjson tests_failed "$tests_failed" \
+        --argjson tests_skipped "$tests_skipped" \
+        --argjson total_duration_ms "$total_duration_ms" \
+        --argjson suites_count "$suites_count" \
+        --argjson methods_covered "$methods_covered" \
+        --argjson methods_total "$methods_total" \
+        --arg coverage_pct "$coverage_pct_str" \
         '{
             timestamp: $timestamp,
             hostname: $hostname,
@@ -348,8 +391,17 @@ emit_run_metadata() {
             harness_version: $harness_version,
             scope: $scope,
             filters: $filters,
-            test_count: $test_count,
+            test_file_count: $test_file_count,
             exit_code: $exit_code,
-            run_dir: $run_dir
+            run_dir: $run_dir,
+            tests_total: $tests_total,
+            tests_passed: $tests_passed,
+            tests_failed: $tests_failed,
+            tests_skipped: $tests_skipped,
+            total_duration_ms: $total_duration_ms,
+            suites_count: $suites_count,
+            methods_covered: $methods_covered,
+            methods_total: $methods_total,
+            coverage_pct: $coverage_pct
         }' > "${_EMIT_RUN_DIR}/_run-metadata.json"
 }
