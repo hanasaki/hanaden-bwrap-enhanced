@@ -6,23 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Technical Overview — Vuniverse | Hanaden</title>
   <meta name="description" content="Vuniverse (bwrap-enhanced) technical overview: VFS topology, mount namespace architecture, CLI reference, security model, test harness, and SDLC specifications. By Frederick Bloom.">
-  <link rel="stylesheet" href="../shared/style.css">
+  <link rel="stylesheet" href="../../shared/style.css">
 </head>
 <body>
   <nav class="nav">
     <div class="nav__inner">
-      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
       <ul class="nav__links">
         <li><a href="index.html" class="active">Overview</a></li>
         <li><a href="architecture.html">Architecture</a></li>
         <li><a href="cli-reference.html">CLI</a></li>
         <li><a href="security-model.html">Security</a></li>
         <li><a href="test-harness.html">Test Harness</a></li>
-        <li><a href="sdlc.html">SDLC</a></li>
-        <li><a href="sdlc-history.html">History</a></li>
+        <li><a href="../project-sdlc/index.html">SDLC</a></li>
+        <li><a href="../project-sdlc/versions.html">Spec Versions</a></li>
+        <li><a href="releases.html">Releases</a></li>
+        <li><a href="../project-sdlc/versions.html">History</a></li>
       </ul>
       <div class="nav__mode-switch">
-        <a href="../business/index.html" class="nav__mode-btn">Business</a>
+        <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
         <a href="index.html" class="nav__mode-btn active">Technical</a>
       </div>
       <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
@@ -131,13 +133,13 @@ graph LR
             <p class="text-muted mb-0" style="font-size: 0.8rem;">bats-core pipeline, JSONL events, JUnit/JaCoCo/HTML reports.</p>
             <span class="badge badge--green" style="margin-top: 0.5rem;">Testing</span>
           </a>
-          <a href="sdlc.html" class="card" style="text-decoration: none; padding: var(--space-md);">
+          <a href="../project-sdlc/index.html" class="card" style="text-decoration: none; padding: var(--space-md);">
             <div class="card__icon card__icon--purple" style="font-size: 1.2rem; margin-bottom: 0.5rem;">📋</div>
             <h3 style="font-size: 0.95rem;">SDLC</h3>
             <p class="text-muted mb-0" style="font-size: 0.8rem;">6-layer spec hierarchy: STRAT→DRIV→MOTI→ARCH→FEAT→SPEC.</p>
             <span class="badge badge--purple" style="margin-top: 0.5rem;">Process</span>
           </a>
-          <a href="../business/index.html" class="card" style="text-decoration: none; padding: var(--space-md); opacity: 0.7;">
+          <a href="../../business/project-core/index.html" class="card" style="text-decoration: none; padding: var(--space-md); opacity: 0.7;">
             <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">📊</div>
             <h3 style="font-size: 0.95rem; color: var(--text-muted);">Business View</h3>
             <p class="text-muted mb-0" style="font-size: 0.8rem;">Switch to business-focused overview.</p>
@@ -241,7 +243,7 @@ graph TD
     </aside>
   </div>
 
-  <script src="../shared/mermaid.min.js"></script>
-  <script src="../shared/nav.js"></script>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
 </body>
 </html>

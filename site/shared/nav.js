@@ -4,16 +4,19 @@
   'use strict';
 
   // --- Path helpers ---
-  // Detect if we're in a subdir (business/ or technical/)
+  // Compute site root from nav.js script src path
+  // Script is always at shared/nav.js relative to site root
   var scriptTags = document.querySelectorAll('script[src*="nav.js"]');
-  var prefix = '';
+  var siteRoot = '';
   if (scriptTags.length > 0) {
     var src = scriptTags[0].getAttribute('src');
-    if (src.indexOf('../') === 0) prefix = '../';
+    // Remove 'shared/nav.js' to get the relative path to site root
+    siteRoot = src.replace('shared/nav.js', '').replace(/\/+$/, '');
+    if (siteRoot) siteRoot += '/';
   }
 
   // --- Detect which subsite we're in ---
-  var path = window.location.pathname + window.location.href;
+  var path = window.location.pathname;
   var inBusiness = path.indexOf('/business/') !== -1;
   var inTechnical = path.indexOf('/technical/') !== -1;
   var isHub = !inBusiness && !inTechnical;
@@ -25,12 +28,10 @@
     var existing = document.querySelector('.footer');
     if (existing) existing.remove();
 
-    var hubRoot = prefix || '';
-    var bizRoot = inBusiness ? '' : (prefix ? '' : 'business/');
-    var techRoot = inTechnical ? '' : (prefix ? '' : 'technical/');
-    if (inBusiness) { bizRoot = ''; techRoot = '../technical/'; }
-    if (inTechnical) { techRoot = ''; bizRoot = '../business/'; }
-    if (isHub) { bizRoot = 'business/'; techRoot = 'technical/'; hubRoot = ''; }
+    // All footer links are absolute from site root
+    var bizCore = siteRoot + 'business/project-core/';
+    var techCore = siteRoot + 'technical/project-core/';
+    var techSdlc = siteRoot + 'technical/project-sdlc/';
 
     var footer = document.createElement('footer');
     footer.className = 'footer footer--compact';
@@ -43,14 +44,14 @@
             '<span class="footer__by">by Frederick Bloom</span>' +
           '</div>' +
           '<div class="footer__links-col">' +
-            '<a href="' + bizRoot + 'index.html">Overview</a>' +
-            '<a href="' + bizRoot + 'features.html">Features</a>' +
-            '<a href="' + bizRoot + 'security.html">Security</a>' +
-            '<a href="' + bizRoot + 'pricing.html">Licensing</a>' +
-            '<a href="' + techRoot + 'architecture.html">Architecture</a>' +
-            '<a href="' + techRoot + 'cli-reference.html">CLI</a>' +
-            '<a href="' + techRoot + 'test-harness.html">Test Harness</a>' +
-            '<a href="' + techRoot + 'sdlc.html">SDLC</a>' +
+            '<a href="' + bizCore + 'index.html">Overview</a>' +
+            '<a href="' + bizCore + 'features.html">Features</a>' +
+            '<a href="' + bizCore + 'security.html">Security</a>' +
+            '<a href="' + bizCore + 'pricing.html">Licensing</a>' +
+            '<a href="' + techCore + 'architecture.html">Architecture</a>' +
+            '<a href="' + techCore + 'cli-reference.html">CLI</a>' +
+            '<a href="' + techCore + 'test-harness.html">Test Harness</a>' +
+            '<a href="' + techSdlc + 'index.html">SDLC</a>' +
           '</div>' +
         '</div>' +
         '<div class="footer__bottom">' +

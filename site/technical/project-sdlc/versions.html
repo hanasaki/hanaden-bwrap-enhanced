@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SDLC History & Versions — Vuniverse Technical | Hanaden</title>
   <meta name="description" content="Version history of the Vuniverse SDLC Engine specification. Changelogs, design changes, and rationale for each version.">
-  <link rel="stylesheet" href="../shared/style.css">
+  <link rel="stylesheet" href="../../shared/style.css">
   <style>
     .version-list { list-style: none; padding: 0; margin: 0; }
     .version-item {
@@ -40,18 +40,18 @@
 <body>
   <nav class="nav">
     <div class="nav__inner">
-      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
       <ul class="nav__links">
-        <li><a href="index.html">Overview</a></li>
-        <li><a href="architecture.html">Architecture</a></li>
-        <li><a href="cli-reference.html">CLI</a></li>
-        <li><a href="security-model.html">Security</a></li>
-        <li><a href="test-harness.html">Test Harness</a></li>
-        <li><a href="sdlc.html">SDLC</a></li>
-        <li><a href="sdlc-history.html" class="active">History</a></li>
+        <li><a href="../project-core/index.html">Overview</a></li>
+        <li><a href="../project-core/architecture.html">Architecture</a></li>
+        <li><a href="../project-core/cli-reference.html">CLI</a></li>
+        <li><a href="../project-core/security-model.html">Security</a></li>
+        <li><a href="../project-core/test-harness.html">Test Harness</a></li>
+        <li><a href="index.html">SDLC</a></li>
+        <li><a href="versions.html" class="active">History</a></li>
       </ul>
       <div class="nav__mode-switch">
-        <a href="../business/index.html" class="nav__mode-btn">Business</a>
+        <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
         <a href="index.html" class="nav__mode-btn active">Technical</a>
       </div>
       <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
@@ -111,7 +111,7 @@
               </tbody>
             </table>
           </div>
-          <p style="margin-top: var(--space-sm);"><a href="sdlc.html" class="text-green" style="font-size: 0.85rem;">View all 6 diagrams rendered live →</a></p>
+          <p style="margin-top: var(--space-sm);"><a href="index.html" class="text-green" style="font-size: 0.85rem;">View all 6 diagrams rendered live →</a></p>
         </section>
       </div>
 
@@ -181,6 +181,11 @@
     <aside class="page-sidebar">
       <div class="page-sidebar__heading">Versions</div>
       <ul class="version-list">
+        <li class="version-item" onclick="showVersion('003-006', this)">
+          <div><span class="version-item__ver">v0.0.3–0.0.6</span> <span class="version-item__badge version-item__badge--warn">⚠</span></div>
+          <div class="version-item__date">Experimental</div>
+          <div class="version-item__summary">AI iterations (some TDD corruption)</div>
+        </li>
         <li class="version-item active" onclick="showVersion('002', this)">
           <div><span class="version-item__ver">v0.0.2</span> <span class="version-item__badge version-item__badge--baseline">Baseline</span></div>
           <div class="version-item__date">2026-08-30</div>
@@ -190,11 +195,6 @@
           <div><span class="version-item__ver">v0.0.1</span></div>
           <div class="version-item__date">2026-08-18</div>
           <div class="version-item__summary">Original engine specification</div>
-        </li>
-        <li class="version-item" onclick="showVersion('003-006', this)">
-          <div><span class="version-item__ver">v0.0.3–0.0.6</span> <span class="version-item__badge version-item__badge--warn">⚠</span></div>
-          <div class="version-item__date">Experimental</div>
-          <div class="version-item__summary">AI iterations (some TDD corruption)</div>
         </li>
       </ul>
     </aside>
@@ -209,7 +209,7 @@
   }
   </script>
 
-  <script src="../shared/mermaid.min.js"></script>
-  <script src="../shared/nav.js"></script>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
 </body>
 </html>

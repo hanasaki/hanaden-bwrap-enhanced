@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Releases — Vuniverse Technical | Hanaden</title>
+  <meta name="description" content="Vuniverse release history. Version changelog from initial-baseline through v0.4.0 — sandbox hardening, GUI isolation, security doctrine, test harness.">
+  <link rel="stylesheet" href="../../shared/style.css">
+  <style>
+    .version-list { list-style: none; padding: 0; margin: 0; }
+    .version-item {
+      padding: var(--space-sm) var(--space-md);
+      border-left: 3px solid var(--border-subtle);
+      margin-bottom: 2px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.82rem;
+    }
+    .version-item:hover { background: rgba(59, 245, 169, 0.05); border-left-color: var(--accent-green); }
+    .version-item.active { background: rgba(59, 245, 169, 0.08); border-left-color: var(--accent-green); }
+    .version-item__ver { font-weight: 700; color: var(--text-bright); }
+    .version-item__date { font-size: 0.72rem; color: var(--text-dim); }
+    .version-item__summary { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .version-item__badge { display: inline-block; font-size: 0.65rem; padding: 1px 6px; border-radius: 3px; margin-left: 4px; }
+    .version-item__badge--current { background: var(--accent-green); color: var(--bg-deepspace); }
+    .version-item__badge--wip { background: rgba(124, 58, 237, 0.2); color: #a78bfa; }
+    .version-detail { display: none; }
+    .version-detail.active { display: block; }
+    .change-entry { padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); }
+    .change-entry:last-child { border-bottom: none; }
+    .change-entry__type { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+    .change-entry__type--added { color: var(--accent-green); }
+    .change-entry__type--changed { color: var(--accent-purple); }
+    .change-entry__type--fixed { color: var(--accent-cyan); }
+    .change-entry__type--removed { color: var(--accent-red, #f87171); }
+    .change-entry__type--stats { color: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Test Harness</a></li>
+        <li><a href="../project-sdlc/index.html">SDLC</a></li>
+        <li><a href="../project-sdlc/versions.html">Spec Versions</a></li>
+        <li><a href="releases.html" class="active">Releases</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-lg);">
+        <div class="section-header__eyebrow">Project History</div>
+        <h1>Vuniverse <span class="gradient">Releases</span></h1>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 600px;">
+          Product release history — what changed in each version of the rootless namespace-isolated sandbox.
+        </p>
+      </div>
+
+      <!-- v0.4.0-baseline-mvp -->
+      <div id="detail-040" class="version-detail active">
+        <section class="mb-2xl">
+          <h2>v0.4.0-baseline-mvp <span class="badge badge--purple" style="font-size: 0.7rem;">In Progress</span></h2>
+          <p class="text-muted" style="font-size: 0.8rem;">2026-09-01 · Test-Proven Sandbox</p>
+          <p class="text-muted" style="font-size: 0.82rem;">Comprehensive automated verification, hardened filesystem checks, unified reporting. The sandbox proves itself through 875 tests.</p>
+
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Test harness: 875 <code>@test</code> declarations across 53 <code>.bats</code> files. JSONL event pipeline with JUnit/JaCoCo/HTML reporting.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Merged HTML dashboard: tab/sidebar navigation, coverage fallback, high-contrast theme for test results.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">SDLC Engine Specification v0.0.2 imported — generic deterministic orchestrator with 6 mermaid diagrams.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--changed">Changed</div>
+            <p class="text-muted" style="font-size: 0.82rem;"><code>bwrap-enhanced.sh</code>: fsck hardening with logging at <code>caller:line</code> granularity.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--changed">Changed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Compliance audit: embedded JSON schemas, tooling banner across all harness output.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--fixed">Fixed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Deleted 43 fake/redundant test specs. Fixed 83 tests to use <code>start</code> subcommand correctly.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--fixed">Fixed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">VirtualRootBind and ZeroSideEffects tests — corrected subcommand usage and skeleton output matching.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--stats">Stats</div>
+            <p class="text-muted" style="font-size: 0.82rem;">711 files changed · 55,341 insertions · 7,572 deletions (from v0.2.1)</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- v0.2.1 -->
+      <div id="detail-021" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.2.1</h2>
+          <p class="text-muted" style="font-size: 0.8rem;">2026-08-25 · Stabilization</p>
+          <p class="text-muted" style="font-size: 0.82rem;">Third-party license compliance organized, boot script cruft removed.</p>
+
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--changed">Changed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Third-party license corpus reorganized into structured collection with CLA reference comparison matrix.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--removed">Removed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Legacy boot specification cruft cleaned out.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--fixed">Fixed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Mermaid syntax error in Copyleft Strength Hierarchy diagram.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- v0.2.0 -->
+      <div id="detail-020" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.2.0</h2>
+          <p class="text-muted" style="font-size: 0.8rem;">2026-08-21 · Security Doctrine</p>
+          <p class="text-muted" style="font-size: 0.82rem;">The Immutable Principle crystallizes into formal governance. Enterprise licensing framework established.</p>
+
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">3-Clause Immutable Principle doctrine formalized: External Construction, External Enforcement, Zero Self-Policing — synchronized across all agent rules.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Dual licensing framework: AGPL-3.0-only for open source + Enterprise license. Constitution document written.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">VFS topology diagrams — namespace isolation architecture fully documented.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--changed">Changed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">All source and test scripts enforced as pure ASCII — no encoding ambiguity in any file.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--stats">Stats</div>
+            <p class="text-muted" style="font-size: 0.82rem;">14 commits across 5 feature branches merged.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- v0.1.0 -->
+      <div id="detail-010" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.1.0</h2>
+          <p class="text-muted" style="font-size: 0.8rem;">2026-08-18 · GUI Sandbox</p>
+          <p class="text-muted" style="font-size: 0.82rem;">The sandbox gains graphical application isolation, selective passthrough, and toolchain integration.</p>
+
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;"><code>--enable-x11</code>: Read-only bind of <code>XAUTHORITY</code> into sandbox — GUI applications can now display.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;"><code>--enable-wayland</code>, <code>--enable-audio</code>: selective socket passthrough replacing blanket <code>/run/user</code> bind.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;"><code>--mise-enable</code>: mise shim passthrough for toolchain access inside the sandbox.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">SDLC hierarchy templates: GoalStrategy, DriverMotivation, Feature, Architecture, Specification — all with TDD state tracking.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">SDLC Engine Specification v0.0.1 imported — event-sourced state machine with guards, breakers, parallel execution.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--fixed">Fixed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">X11 authentication — sandbox GUI apps now authenticate correctly via read-only XAUTHORITY bind.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--stats">Stats</div>
+            <p class="text-muted" style="font-size: 0.82rem;">22 commits from initial-baseline.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- initial-baseline -->
+      <div id="detail-init" class="version-detail">
+        <section class="mb-2xl">
+          <h2>initial-baseline</h2>
+          <p class="text-muted" style="font-size: 0.8rem;">2026-08-16 · Genesis</p>
+          <p class="text-muted" style="font-size: 0.82rem;">The project is born — rootless namespace-isolated sandbox wrapping bubblewrap.</p>
+
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;"><code>bwrap-enhanced.sh</code> — rootless namespace-isolated sandbox wrapping <code>bwrap</code> (bubblewrap).</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">SDLC hierarchy skeleton — project structure with layer-based document organization.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--stats">Stats</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Initial commit.</p>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">Versions</div>
+      <ul class="version-list">
+        <li class="version-item active" onclick="showVersion('040', this)">
+          <div><span class="version-item__ver">v0.4.0</span> <span class="version-item__badge version-item__badge--wip">In Progress</span></div>
+          <div class="version-item__date">2026-09-01</div>
+          <div class="version-item__summary">Test-Proven Sandbox</div>
+        </li>
+        <li class="version-item" onclick="showVersion('021', this)">
+          <div><span class="version-item__ver">v0.2.1</span></div>
+          <div class="version-item__date">2026-08-25</div>
+          <div class="version-item__summary">Stabilization</div>
+        </li>
+        <li class="version-item" onclick="showVersion('020', this)">
+          <div><span class="version-item__ver">v0.2.0</span></div>
+          <div class="version-item__date">2026-08-21</div>
+          <div class="version-item__summary">Security Doctrine</div>
+        </li>
+        <li class="version-item" onclick="showVersion('010', this)">
+          <div><span class="version-item__ver">v0.1.0</span></div>
+          <div class="version-item__date">2026-08-18</div>
+          <div class="version-item__summary">GUI Sandbox</div>
+        </li>
+        <li class="version-item" onclick="showVersion('init', this)">
+          <div><span class="version-item__ver">initial</span></div>
+          <div class="version-item__date">2026-08-16</div>
+          <div class="version-item__summary">Genesis</div>
+        </li>
+      </ul>
+    </aside>
+  </div>
+
+  <script>
+  function showVersion(id, el) {
+    document.querySelectorAll('.version-detail').forEach(function(d) { d.classList.remove('active'); });
+    document.querySelectorAll('.version-item').forEach(function(v) { v.classList.remove('active'); });
+    document.getElementById('detail-' + id).classList.add('active');
+    el.classList.add('active');
+  }
+  </script>
+
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>
