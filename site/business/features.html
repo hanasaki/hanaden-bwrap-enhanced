@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features — Vuniverse by Hanaden | Frederick Bloom</title>
+  <meta name="description" content="Vuniverse feature highlights: namespace isolation, zero side effects, GUI passthrough, toolchain integration, and deterministic TDD.">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="features.html" class="active">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html">Licensing</a></li>
+        <li><a href="sdlc.html">Process</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../technical/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Capabilities</div>
+        <h1>Everything You Need to <span class="gradient">Contain</span></h1>
+        <p>Comprehensive containment without compromising functionality.</p>
+      </div>
+
+      <!-- Namespace Isolation -->
+      <section id="namespace" class="mb-2xl">
+        <div class="card">
+          <div class="card__icon card__icon--green" style="display: inline-flex;">🔒</div>
+          <h3>Mount Namespace Isolation</h3>
+          <p>Every sandbox gets its own virtual filesystem. The contained process sees a complete Linux
+          environment — <code>/usr</code>, <code>/bin</code>, <code>/etc</code> — but it's all read-only from the host.
+          The process literally cannot see files outside its boundaries.</p>
+          <ul class="feature-list">
+            <li>Read-only root with host <code>/usr</code>, <code>/lib</code>, <code>/bin</code> bind-mounted</li>
+            <li>Private <code>/tmp</code>, <code>/var/tmp</code>, <code>/dev/shm</code> via <code>tmpfs</code></li>
+            <li>Controlled egress via explicit bind-mounts</li>
+            <li>Synthetic identity: <code>/etc/passwd</code>, <code>/etc/group</code> injected via memory FDs</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Zero Side Effects -->
+      <section id="zero-fx" class="mb-2xl">
+        <div class="card">
+          <div class="card__icon card__icon--cyan" style="display: inline-flex;">💨</div>
+          <h3>Zero Side Effects</h3>
+          <p>Vuniverse never writes to the host during sandbox creation. No temp files,
+          no PID files, no lock files. Everything via file descriptors.</p>
+          <ul class="feature-list">
+            <li><code>/etc/passwd</code> and <code>/etc/group</code> via <code>/dev/fd/N</code> — zero disk writes</li>
+            <li>All <code>tmpfs</code> mounts vanish when sandbox exits</li>
+            <li>No startup artifacts left on host even on crash</li>
+            <li>Fail-fast on misconfiguration — never silently degrades</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- GUI -->
+      <section id="gui" class="mb-2xl">
+        <div class="card">
+          <div class="card__icon card__icon--purple" style="display: inline-flex;">🖥</div>
+          <h3>Desktop GUI Passthrough</h3>
+          <p>Run full graphical applications inside the sandbox — browsers, editors, IDEs.</p>
+          <ul class="feature-list">
+            <li><strong>Wayland</strong> — native compositor socket</li>
+            <li><strong>X11</strong> — XWayland compatibility</li>
+            <li><strong>PipeWire</strong> — audio passthrough</li>
+            <li><strong>Accessibility</strong> — AT-SPI bus for screen readers</li>
+            <li><strong>D-Bus portals</strong> — file picker, notifications (opt-in only)</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Toolchain -->
+      <section id="toolchain" class="mb-2xl">
+        <div class="card">
+          <div class="card__icon card__icon--green" style="display: inline-flex;">🔧</div>
+          <h3>Developer Toolchain Integration</h3>
+          <p>Pass through specific tools without exposing the entire host. Privilege grading: <code>absent &lt; ro &lt; rw</code>.</p>
+          <ul class="feature-list">
+            <li><strong>mise</strong> — runtime version manager (ro/rw)</li>
+            <li><strong>~/.local/bin</strong> — custom tooling (ro/rw)</li>
+            <li>Network passthrough flag for connected workloads</li>
+            <li>Environment variable passthrough (explicit opt-in)</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- CLI -->
+      <section id="cli" class="mb-2xl">
+        <div class="card">
+          <div class="card__icon card__icon--purple" style="display: inline-flex;">⌨</div>
+          <h3>Professional CLI Interface</h3>
+          <p>Multi-subcommand dispatcher following <code>git</code>/<code>systemctl</code> pattern.</p>
+          <ul class="feature-list">
+            <li><code>provision</code> — create virtual root skeletons</li>
+            <li><code>fsck</code> — verify and repair sandbox integrity</li>
+            <li><code>start</code> — launch isolated processes</li>
+            <li>Dry-run and validate modes for safe testing</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- TDD -->
+      <section id="tdd" class="mb-2xl">
+        <div class="card">
+          <div class="card__icon card__icon--green" style="display: inline-flex;">✓</div>
+          <h3>Deterministic TDD Verification</h3>
+          <p>Every feature backed by executable specifications — real behavioral verification.</p>
+          <ul class="feature-list">
+            <li>875 test assertions across 42 feature suites</li>
+            <li>Structured test IDs traceable to SDLC specifications</li>
+            <li>JUnit/JaCoCo/HTML reporting pipeline</li>
+            <li>Parallel execution with configurable job count</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <div class="text-center" style="padding: var(--space-xl) 0;">
+        <a href="../technical/architecture.html" class="btn btn--secondary">Technical Architecture →</a>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar TOC -->
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">On This Page</div>
+      <ul class="page-sidebar__links">
+        <li><a href="#namespace">Namespace Isolation</a></li>
+        <li><a href="#zero-fx">Zero Side Effects</a></li>
+        <li><a href="#gui">GUI Passthrough</a></li>
+        <li><a href="#toolchain">Toolchain Integration</a></li>
+        <li><a href="#cli">CLI Interface</a></li>
+        <li><a href="#tdd">TDD Verification</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>

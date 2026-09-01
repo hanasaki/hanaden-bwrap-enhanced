@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLI Reference — Vuniverse Technical | Hanaden</title>
+  <meta name="description" content="Complete CLI reference for bwrap-enhanced: provision, fsck, start subcommands. All flags, grading system, exit codes, and usage examples.">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html" class="active">CLI</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Test Harness</a></li>
+        <li><a href="sdlc.html">SDLC</a></li>
+        <li><a href="sdlc-history.html">History</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="../business/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <section id="header" class="section pt-nav" style="padding-top: calc(var(--nav-height) + 3rem);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header__eyebrow">CLI Reference</div>
+        <h1><code style="font-size: inherit; background: none; border: none; padding: 0;">bwrap-enhanced.sh</code> <span class="gradient">Contract</span></h1>
+        <p>Multi-subcommand dispatcher following the <code>git</code> / <code>systemctl</code> pattern.
+        <code>--help</code> is always the single source of truth.</p>
+      </div>
+
+      <!-- Top-level -->
+      <pre><code><span class="kw">bwrap-enhanced.sh</span>  SUBCOMMAND  [OPTIONS]  [ARGS]
+<span class="kw">bwrap-enhanced.sh</span>  <span class="flag">--help</span> | <span class="flag">-h</span>       <span class="cmt"># dispatch table (all subcommands), exit 0</span>
+<span class="kw">bwrap-enhanced.sh</span>  <span class="flag">--version</span> | <span class="flag">-v</span>    <span class="cmt"># version string, exit 0</span></code></pre>
+    </div>
+  </section>
+
+  <!-- Subcommand Table -->
+  <section id="subcommands" class="section section--alt">
+    <div class="container">
+      <h2 class="mb-lg">Subcommands</h2>
+      <div class="table-wrap mb-2xl">
+        <table>
+          <thead>
+            <tr><th>Subcommand</th><th>Status</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="text-green">provision</code></td>
+              <td><span class="badge badge--green">full</span></td>
+              <td>Create virtual root skeleton (NOT idempotent)</td>
+            </tr>
+            <tr>
+              <td><code class="text-green">fsck</code></td>
+              <td><span class="badge badge--green">full</span></td>
+              <td>Check / repair virtual root integrity</td>
+            </tr>
+            <tr>
+              <td><code class="text-green">start</code></td>
+              <td><span class="badge badge--green">full</span></td>
+              <td>Launch a process inside the sandbox</td>
+            </tr>
+            <tr>
+              <td><code class="text-muted">stop</code></td>
+              <td><span class="badge badge--amber">stub</span></td>
+              <td>Stop a running sandbox (not yet implemented)</td>
+            </tr>
+            <tr>
+              <td><code class="text-muted">ls</code></td>
+              <td><span class="badge badge--amber">stub</span></td>
+              <td>List known virtual roots (not yet implemented)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <p><strong>Stubs:</strong> Have full <code>--help</code> and option parsing but exit
+        <code>[ERROR] not yet implemented</code> at execution time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- provision -->
+  <section id="provision" class="section">
+    <div class="container">
+      <h2 class="mb-lg"><code class="text-green">provision</code> — Create Virtual Root Skeleton</h2>
+      <pre><code><span class="kw">bwrap-enhanced.sh</span> <span class="flag">provision</span> [OPTIONS]
+
+  <span class="flag">--host-real-root</span>        <span class="val">PATH</span>         <span class="cmt">(default: ~/virtual-roots; MUST NOT exist)</span>
+  <span class="flag">--virtual-user-name</span>     <span class="val">NAME</span>         <span class="cmt">(default: sandbox_user)</span>
+  <span class="flag">--host-real-home-parent</span> <span class="val">PATH</span>         <span class="cmt">(default: HOST_REAL_ROOT/home)</span>
+  <span class="flag">--log-level</span>             <span class="val">NAME|NUMBER</span>  <span class="cmt">(default: INFO)</span>
+  <span class="flag">-n, --dry-run</span>                        <span class="cmt">(show what would be created)</span></code></pre>
+
+      <h4 class="mt-xl mb-md">Creates</h4>
+      <div class="diagram">
+        <pre><code>HOST_REAL_ROOT/
+├── home/
+│   └── sandbox_user/    ← writable egress directory
+├── tmp/                 ← placeholder (tmpfs at runtime)
+└── .vuniverse-meta/     ← sandbox metadata</code></pre>
+      </div>
+
+      <div class="callout callout--red">
+        <p><strong>NOT idempotent.</strong> If <code>--host-real-root</code> already exists, <code>provision</code>
+        will fail with a non-zero exit code. Use <code>fsck</code> to validate and repair existing roots.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- fsck -->
+  <section id="fsck" class="section section--alt">
+    <div class="container">
+      <h2 class="mb-lg"><code class="text-green">fsck</code> — Check / Repair Virtual Root</h2>
+      <pre><code><span class="kw">bwrap-enhanced.sh</span> <span class="flag">fsck</span> [ROOT_PATH] [OPTIONS]
+
+  <span class="flag">--host-real-root</span>        <span class="val">PATH</span>         <span class="cmt">(default: ~/virtual-roots)</span>
+  <span class="flag">--virtual-user-name</span>     <span class="val">NAME</span>         <span class="cmt">(default: sandbox_user)</span>
+  <span class="flag">--log-level</span>             <span class="val">NAME|NUMBER</span>  <span class="cmt">(default: INFO)</span>
+  <span class="flag">-n</span>                                   <span class="cmt">(check only — no repairs)</span>
+  <span class="flag">-a</span>                                   <span class="cmt">(auto-repair)</span>
+  <span class="flag">-r</span>                                   <span class="cmt">(interactive)</span>
+  <span class="flag">-f</span>                                   <span class="cmt">(force)</span>
+  <span class="flag">-v</span>                                   <span class="cmt">(verbose)</span></code></pre>
+    </div>
+  </section>
+
+  <!-- start -->
+  <section id="start" class="section">
+    <div class="container">
+      <h2 class="mb-lg"><code class="text-green">start</code> — Launch Isolated Process</h2>
+      <pre><code><span class="kw">bwrap-enhanced.sh</span> <span class="flag">start</span> [OPTIONS] <span class="flag">--</span> <span class="val">CMD [ARG...]</span>
+
+  <span class="flag">--host-real-root</span>        <span class="val">PATH</span>         <span class="cmt">(default: ~/virtual-roots; MUST exist)</span>
+  <span class="flag">--virtual-user-name</span>     <span class="val">NAME</span>         <span class="cmt">(default: sandbox_user)</span>
+  <span class="flag">--host-real-home-parent</span> <span class="val">PATH</span>         <span class="cmt">(default: HOST_REAL_ROOT/home)</span>
+  <span class="flag">--log-level</span>             <span class="val">NAME|NUMBER</span>  <span class="cmt">(default: INFO)</span>
+  <span class="flag">-n, --dry-run</span>                        <span class="cmt">(resolve + print bwrap argv; no exec)</span>
+  <span class="flag">--validate</span>                           <span class="cmt">(validate flags + paths; no exec)</span>
+
+  <span class="cmt"># Boolean passthroughs (default: false → default deny)</span>
+  <span class="flag">--net-passthrough</span>       <span class="val">[true|false]</span>
+  <span class="flag">--env-passthrough</span>       <span class="val">[true|false]</span>
+  <span class="flag">--x11-passthrough</span>       <span class="val">[true|false]</span>  <span class="cmt">(implied by wayland/gnome/kde)</span>
+  <span class="flag">--wayland-passthrough</span>   <span class="val">[true|false]</span>  <span class="cmt">(implies x11)</span>
+  <span class="flag">--gnome-passthrough</span>     <span class="val">[true|false]</span>  <span class="cmt">(implies x11)</span>
+  <span class="flag">--kde-passthrough</span>       <span class="val">[true|false]</span>  <span class="cmt">(implies x11)</span>
+  <span class="flag">--audio-passthrough</span>     <span class="val">[true|false]</span>
+  <span class="flag">--a11y-passthrough</span>      <span class="val">[true|false]</span>
+  <span class="flag">--dbus-passthrough</span>      <span class="val">[true|false]</span>  <span class="cmt">(NEVER implied — always explicit)</span>
+
+  <span class="cmt"># Graded passthroughs (absent < ro < rw)</span>
+  <span class="flag">--mise-passthrough</span>      <span class="val">[ro|rw]</span>      <span class="cmt">(default: off; bare = ro)</span>
+  <span class="flag">--local-bin-passthrough</span> <span class="val">[ro|rw]</span>      <span class="cmt">(default: off; bare = ro)</span></code></pre>
+
+      <h4 class="mt-xl mb-md">Flag Grading System</h4>
+      <div class="callout callout--green">
+        <p><strong>Privilege escalation ordering:</strong></p>
+        <pre style="background: transparent; border: none; padding: 0; margin: 0.5rem 0 0;"><code><span class="text-green">absent</span>  &lt;  <span class="text-cyan">ro</span>  &lt;  <span class="text-red">rw</span>      <span class="cmt">(privilege escalation order)</span>
+
+bare boolean flag = <span class="val">true</span>   <span class="cmt">(most restrictive ON state)</span>
+bare graded flag  = <span class="val">ro</span>     <span class="cmt">(most restrictive ON state)</span>
+flag absent       = <span class="val">false</span>  <span class="cmt">= default deny</span>
+--flag false      = <span class="text-red">[ERROR]</span>  <span class="cmt">(false is implicit; omit the flag)</span></code></pre>
+      </div>
+    </div>
+  </section>
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vuniverse by Hanaden — Rootless Namespace-Isolated Sandbox | Frederick Bloom</title>
+  <meta name="description" content="Vuniverse (bwrap-enhanced) by Hanaden &amp; Frederick Bloom. Rootless, namespace-isolated, zero-side-effect sandbox for AI agents, developers, and desktop applications.">
+  <link rel="stylesheet" href="shared/style.css">
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <main class="hero hero--full">
+    <div class="hero__bg">
+      <img src="shared/img/vuniverse-hero.svg" alt="" loading="eager" style="opacity: 0.6;">
+    </div>
+
+    <div class="hero__content" style="animation: fadeInUp 0.8s ease forwards; max-width: 1100px; width: 100%;">
+
+      <!-- Horizontal layout: branding left, portals right -->
+      <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
+
+        <!-- Left: branding + tagline -->
+        <div style="flex: 1 1 400px; text-align: left; min-width: 320px;">
+          <div style="margin-bottom: var(--space-md); width: 80px; height: 60px;">
+            <img src="shared/img/vuniverse-logo.svg" alt="Vuniverse logo" width="80" height="60" style="opacity: 0.9;">
+          </div>
+          <h1 class="hero__title" style="text-align: left;">
+            <span class="gradient">Vuniverse</span>
+          </h1>
+          <p style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.2rem; letter-spacing: 0.12em; text-transform: uppercase; text-align: left;">
+            powered by bwrap-enhanced
+          </p>
+          <p style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.05em; color: var(--accent-green); margin-bottom: 0.5rem; text-align: left;">
+            Rootless &middot; Namespace-Isolated &middot; Inescapable
+          </p>
+          <p style="color: var(--text-secondary); font-size: 0.88rem; max-width: 480px; line-height: 1.5; text-align: left;">
+            The production-grade sandbox that drops any process — AI agent, developer workflow,
+            or desktop app — into an inescapable virtual universe.
+            Zero root. Zero daemons. Zero side effects.
+          </p>
+        </div>
+
+        <!-- Right: compact portal cards -->
+        <div style="flex: 0 0 280px; display: flex; flex-direction: column; gap: 0.75rem;">
+          <a href="business/index.html" class="card card--portal card--business" id="portal-business" style="padding: var(--space-md); text-align: left;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+              <span style="font-size: 1.1rem;">📊</span>
+              <h2 style="font-size: 1rem; margin: 0;">For Decision Makers</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin-bottom: 0.5rem;">
+              Security posture, licensing, and business value.
+            </p>
+            <span class="btn btn--primary" style="pointer-events: none; font-size: 0.75rem; padding: 4px 12px;">
+              Business →
+            </span>
+          </a>
+
+          <a href="technical/index.html" class="card card--portal card--technical" id="portal-technical" style="padding: var(--space-md); text-align: left;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+              <span style="font-size: 1.1rem;">⌘</span>
+              <h2 style="font-size: 1rem; margin: 0;">For Engineers</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin-bottom: 0.5rem;">
+              Architecture, CLI, security model, test harness.
+            </p>
+            <span class="btn btn--secondary" style="pointer-events: none; font-size: 0.75rem; padding: 4px 12px;">
+              Technical →
+            </span>
+          </a>
+        </div>
+
+      </div>
+
+      <div class="stats mt-xl" style="animation: fadeIn 1.2s ease 0.5s forwards; opacity: 0;">
+        <div class="stat">
+          <div class="stat__value">875</div>
+          <div class="stat__label">Tests</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value">42</div>
+          <div class="stat__label">Features</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value">0</div>
+          <div class="stat__label">Root Required</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value" style="color: var(--accent-purple);">1</div>
+          <div class="stat__label">Bash Script</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="shared/mermaid.min.js"></script>
+  <script src="shared/nav.js"></script>
+</body>
+</html>

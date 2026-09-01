@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Licensing — Vuniverse by Hanaden | Frederick Bloom</title>
+  <meta name="description" content="Vuniverse licensing: AGPL-3.0 open source and commercial licensing for enterprise, SaaS, and proprietary deployments.">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html" class="active">Licensing</a></li>
+        <li><a href="sdlc.html">Process</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../technical/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Licensing</div>
+        <h1>Open Source. <span class="gradient">Dual Licensed.</span></h1>
+        <p>Free under AGPL-3.0-only. Commercial licenses for proprietary, SaaS, and enterprise.</p>
+      </div>
+
+      <section id="tiers" class="mb-2xl">
+        <div class="grid grid-2" style="gap: 1.5rem;">
+          <div class="tier">
+            <div class="tier__name">Open Source</div>
+            <div class="tier__price">Free</div>
+            <p class="text-muted" style="font-size: 0.85rem; margin-bottom: var(--space-md);">
+              Full access under AGPL-3.0-only.
+            </p>
+            <ul class="tier__features">
+              <li>Full source code access</li>
+              <li>All security tiers (0–4)</li>
+              <li>All CLI subcommands</li>
+              <li>Test harness &amp; reporting</li>
+              <li>Community support</li>
+              <li class="excluded">Proprietary use</li>
+              <li class="excluded">SaaS without disclosure</li>
+            </ul>
+            <a href="#" class="btn btn--ghost" style="width: 100%; justify-content: center;">View AGPL-3.0 →</a>
+          </div>
+          <div class="tier tier--featured">
+            <div class="tier__name">Commercial</div>
+            <div class="tier__price">Contact</div>
+            <p class="text-muted" style="font-size: 0.85rem; margin-bottom: var(--space-md);">
+              Proprietary use without AGPL disclosure.
+            </p>
+            <ul class="tier__features">
+              <li>Full source code access</li>
+              <li>All security tiers (0–4)</li>
+              <li>Proprietary use permitted</li>
+              <li>SaaS deployment permitted</li>
+              <li>Priority support &amp; SLA</li>
+              <li>Custom feature development</li>
+            </ul>
+            <a href="mailto:devlabs@hanaden.com" class="btn btn--primary" style="width: 100%; justify-content: center;">Contact Sales →</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="mb-xl">
+        <h2>FAQ</h2>
+        <div class="card mb-md" style="padding: var(--space-md);">
+          <h4 style="font-size: 0.95rem;">Can I use Vuniverse in my commercial product?</h4>
+          <p class="text-muted mb-0" style="font-size: 0.85rem;">Yes — under either license. AGPL requires source disclosure; commercial does not.</p>
+        </div>
+        <div class="card mb-md" style="padding: var(--space-md);">
+          <h4 style="font-size: 0.95rem;">What counts as a "derivative work"?</h4>
+          <p class="text-muted mb-0" style="font-size: 0.85rem;">Calling <code>bwrap-enhanced.sh</code> as an external command is generally not derivative. Modifying source code triggers AGPL.</p>
+        </div>
+        <div class="card mb-md" style="padding: var(--space-md);">
+          <h4 style="font-size: 0.95rem;">Do I need a CLA to contribute?</h4>
+          <p class="text-muted mb-0" style="font-size: 0.85rem;">Yes. CLA grants Frederick Bloom / Hanaden dual-licensing rights without transferring copyright.</p>
+        </div>
+        <div class="card mb-md" style="padding: var(--space-md);">
+          <h4 style="font-size: 0.95rem;">Is there a trial?</h4>
+          <p class="text-muted mb-0" style="font-size: 0.85rem;">The open source version is fully functional. Evaluate under AGPL, then contact for commercial terms.</p>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">On This Page</div>
+      <ul class="page-sidebar__links">
+        <li><a href="#tiers">License Tiers</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>

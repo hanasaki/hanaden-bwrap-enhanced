@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Development Process — Vuniverse Business | Hanaden</title>
+  <meta name="description" content="Vuniverse SDLC: how structured development lifecycle management delivers quality, reduces risk, and accelerates delivery. Business-focused overview of the deterministic SDLC engine by Frederick Bloom.">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html">Licensing</a></li>
+        <li><a href="sdlc.html" class="active">Process</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../technical/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-lg);">
+        <div class="section-header__eyebrow">Development Process</div>
+        <h1>Built With <span class="gradient">Discipline</span></h1>
+        <p style="color: var(--text-secondary); font-size: 0.88rem; max-width: 600px; line-height: 1.5;">
+          Vuniverse is developed using a deterministic SDLC engine — a structured, self-correcting
+          process that ensures quality isn't an afterthought but an engineering guarantee.
+        </p>
+      </div>
+
+      <!-- Why it matters -->
+      <section id="value" class="mb-2xl">
+        <h2>Why This Matters</h2>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎯</div>
+            <h4 style="font-size: 0.9rem;">Requirements Traceability</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Every feature traces back to a business driver. Every test traces back to a spec. No orphaned code, no guesswork.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔄</div>
+            <h4 style="font-size: 0.9rem;">Self-Correcting Quality</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">When tests find problems in code, they also surface problems in requirements and strategy. Quality improves at every level, not just the code.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🛡</div>
+            <h4 style="font-size: 0.9rem;">Anti-Fixation Safeguards</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Automated guards prevent tunnel vision, stale assumptions, and "we've always done it this way" thinking — at every layer of the process.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- How it works (simplified) -->
+      <section id="process" class="mb-2xl">
+        <h2>How It Works</h2>
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: var(--space-md);">
+          Development flows through a structured hierarchy. Each layer feeds back into the ones above it —
+          creating a continuously improving system where learning from code improves strategy.
+        </p>
+        <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    classDef strat fill:#0d47a1,color:#fff,stroke:#7070ff,stroke-width:2px
+    classDef driv fill:#1565c0,color:#fff,stroke:#ff7070,stroke-width:2px
+    classDef moti fill:#1e88e5,color:#fff,stroke:#70ff70,stroke-width:2px
+    classDef feat fill:#2e7d32,color:#d0f0ff,stroke:#70d0ff,stroke-width:2px
+    classDef spec fill:#c62828,color:#e8e8e8,stroke:#888,stroke-width:2px
+    classDef test fill:#37474f,color:#fff,stroke:#ff1744,stroke-width:3px
+
+    S1["🎯 Strategy\nWhy does this project exist?"]:::strat
+    S2["📊 Problem\nWhat problem are we solving?"]:::driv
+    S3["💡 Approach\nHow do we solve it?"]:::moti
+    S4["✨ Features\nWhat to build?"]:::feat
+    S5["📋 Specifications\nExact behavior defined"]:::spec
+    S6["🧪 Tests\nAutomated verification"]:::test
+
+    S1 -->|Declares intent| S2
+    S2 -->|Defines problem| S3
+    S3 -->|Proposes solution| S4
+    S4 -->|Decomposes into| S5
+    S5 -->|Generates| S6
+
+    S6 -.->|"If code breaks → fix code"| S5
+    S6 -.->|"If design flawed → redesign"| S4
+    S6 -.->|"If approach wrong → rethink"| S3
+    S6 -.->|"If problem changed → redefine"| S2
+    S6 -.->|"If strategy invalid → pivot"| S1
+
+    style S1 fill:#0d47a1,stroke:#7070ff
+    style S6 fill:#37474f,stroke:#ff1744
+        </div>
+        <p class="text-muted" style="font-size: 0.8rem; margin-top: var(--space-sm);">
+          <strong>The key insight:</strong> Tests don't just verify code. They verify the entire chain —
+          from specifications to strategy. When tests reveal a problem beyond the code,
+          feedback escalates upward and the process self-corrects.
+        </p>
+      </section>
+
+      <!-- ROI -->
+      <section id="roi" class="mb-2xl">
+        <h2>Business Value</h2>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 style="font-size: 0.9rem;" class="text-green">Reduced Rework</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">
+              Problems caught early — at the requirement level — cost 10-100× less to fix than problems found in production.
+              The feedback loop catches them <em>before</em> they cascade.
+            </p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 style="font-size: 0.9rem;" class="text-purple">Predictable Delivery</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">
+              Every work item follows the same deterministic path. No hidden state, no surprise blockers.
+              Parallelism is maximized through dependency-aware scheduling.
+            </p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 style="font-size: 0.9rem;" class="text-cyan">Auditable Compliance</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">
+              Every decision is traceable in an immutable event log. Every state transition is replayable.
+              Full audit trail from strategy to deployment.
+            </p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 style="font-size: 0.9rem;" class="text-red">Resilient Operations</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">
+              Emergency breakers automatically detect death spirals — reactive firefighting, tunnel vision,
+              unsustainable pressure — and force a reset before damage compounds.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Continuous improvement -->
+      <section id="improvement" class="mb-2xl">
+        <h2>Continuous Self-Improvement</h2>
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: var(--space-md);">
+          The process doesn't just build software — it improves itself. Emergency breakers that trip
+          lead to lessons learned, stronger guards, and lower thresholds. Every failure makes the system
+          more resilient.
+        </p>
+        <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    classDef healthy fill:#2e7d32,color:#fff,stroke:#00c853,stroke-width:2px
+    classDef reset fill:#006064,color:#fff,stroke:#00e5ff,stroke-width:2px
+    classDef breaker fill:#e65100,color:#fff,stroke:#ff6d00,stroke-width:2px
+
+    BUILD["Build & Test"]:::healthy
+    DETECT["Problem Detected"]:::breaker
+    LEARN["Lessons Learned"]:::reset
+    IMPROVE["Stronger Guards"]:::reset
+    BUILD -->|"Feedback"| DETECT
+    DETECT -->|"Analyze"| LEARN
+    LEARN -->|"Improve"| IMPROVE
+    IMPROVE -->|"Re-arm"| BUILD
+        </div>
+      </section>
+
+      <!-- Standards -->
+      <section id="standards" class="mb-2xl">
+        <h2>Industry Standards</h2>
+        <p class="text-muted" style="font-size: 0.85rem;">
+          The SDLC engine is designed in compliance with industry-recognized standards:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Standard</th><th>What It Governs</th></tr></thead>
+            <tbody>
+              <tr><td>IEEE 1044:2009</td><td>Anomaly classification and resolution</td></tr>
+              <tr><td>ISO/IEC 12207:2017</td><td>Software lifecycle processes</td></tr>
+              <tr><td>ISO/IEC 15288:2023</td><td>System lifecycle processes</td></tr>
+              <tr><td>TOGAF 10</td><td>Enterprise architecture framework</td></tr>
+              <tr><td>SAFe 6.0</td><td>Scaled agile practices</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="technical" class="mb-2xl">
+        <h2>Go Deeper</h2>
+        <p class="text-muted" style="font-size: 0.85rem;">
+          For the full technical specification with all 6 architectural diagrams, engine core internals,
+          and parallel execution topology:
+        </p>
+        <a href="../technical/sdlc.html" class="card" style="display: inline-block; text-decoration: none; padding: var(--space-md); margin-top: var(--space-sm);">
+          <span class="text-green">⌘</span> View Technical SDLC Specification →
+        </a>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">On This Page</div>
+      <ul class="page-sidebar__links">
+        <li><a href="#value">Why This Matters</a></li>
+        <li><a href="#process">How It Works</a></li>
+        <li><a href="#roi">Business Value</a></li>
+        <li><a href="#improvement">Self-Improvement</a></li>
+        <li><a href="#standards">Standards</a></li>
+        <li><a href="#technical">Go Deeper</a></li>
+      </ul>
+    </aside>
+  </div>
+
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>

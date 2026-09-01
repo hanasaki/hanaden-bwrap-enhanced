@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDLC History & Versions — Vuniverse Technical | Hanaden</title>
+  <meta name="description" content="Version history of the Vuniverse SDLC Engine specification. Changelogs, design changes, and rationale for each version.">
+  <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    .version-list { list-style: none; padding: 0; margin: 0; }
+    .version-item {
+      padding: var(--space-sm) var(--space-md);
+      border-left: 3px solid var(--border-subtle);
+      margin-bottom: 2px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.82rem;
+    }
+    .version-item:hover { background: rgba(59, 245, 169, 0.05); border-left-color: var(--accent-green); }
+    .version-item.active { background: rgba(59, 245, 169, 0.08); border-left-color: var(--accent-green); }
+    .version-item__ver { font-weight: 700; color: var(--text-bright); }
+    .version-item__date { font-size: 0.72rem; color: var(--text-dim); }
+    .version-item__summary { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .version-item__badge { display: inline-block; font-size: 0.65rem; padding: 1px 6px; border-radius: 3px; margin-left: 4px; }
+    .version-item__badge--baseline { background: var(--accent-green); color: var(--bg-deepspace); }
+    .version-item__badge--warn { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .version-item__badge--latest { background: rgba(124, 58, 237, 0.2); color: #a78bfa; }
+    .version-detail { display: none; }
+    .version-detail.active { display: block; }
+    .change-entry { padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); }
+    .change-entry:last-child { border-bottom: none; }
+    .change-entry__type { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+    .change-entry__type--added { color: var(--accent-green); }
+    .change-entry__type--changed { color: var(--accent-purple); }
+    .change-entry__type--fixed { color: var(--accent-cyan); }
+    .change-entry__type--warning { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Test Harness</a></li>
+        <li><a href="sdlc.html">SDLC</a></li>
+        <li><a href="sdlc-history.html" class="active">History</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="../business/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-lg);">
+        <div class="section-header__eyebrow">Version History</div>
+        <h1>SDLC Engine <span class="gradient">Changelog</span></h1>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 600px;">
+          Evolution of the Generic SDLC Deterministic Orchestrator Workflow Engine Specification.
+          Select a version from the sidebar to view its changelog.
+        </p>
+      </div>
+
+      <!-- Version detail panes -->
+      <div id="detail-002" class="version-detail active">
+        <section class="mb-2xl">
+          <h2>v0.0.2 <span class="badge badge--green" style="font-size: 0.7rem;">Baseline</span></h2>
+          <p class="text-muted" style="font-size: 0.8rem;">2026-08-30 · Frederick Bloom + Claude (Cursor AI)</p>
+
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">First-class workstream kanban with exclusive-ownership parallel subagent model</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Merge-point fan-in events on the existing event bus — agents fan out for parallel work, merge back at defined sync points</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--fixed">Fixed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Layer/containment corrections: ARCH is peer of FEAT (not parent), MOTI.parent → DRIV (containment), FEAT/ARCH.parent → MOTI</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--fixed">Fixed</div>
+            <p class="text-muted" style="font-size: 0.82rem;">TDD transition corrections: NOT_STARTED → GREEN explicitly forbidden. Must pass through RED first.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--changed">Rationale</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Does not replace 0.0.1 event, RGB, process, or TDD core — additive only. UUID prefix reused from 0.0.1 by explicit user ruling (identity continuity).</p>
+          </div>
+
+          <h3 style="margin-top: var(--space-lg);">Key Diagrams (6)</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>§</th><th>Diagram</th><th>Content</th></tr></thead>
+              <tbody>
+                <tr><td>§2</td><td>Artifact Hierarchy + RGB</td><td>CORP-STRAT → T-DRIV → T-MOTI → FEAT/ARCH → SPEC → TEST with feedback arrows</td></tr>
+                <tr><td>§3</td><td>Anti-Fixation Guards</td><td>Guards per layer: strategy sunset, problem reframing, solution diversity, adversarial review, mutation test, anti-reward-hack</td></tr>
+                <tr><td>§4</td><td>Emergency Breakers</td><td>Healthy loop → death spiral → breaker trip → system reset → stronger guards</td></tr>
+                <tr><td>§5</td><td>Engine Core</td><td>Event Store → State Machine → Transition Evaluator cycle + Node/Guard/Breaker registries</td></tr>
+                <tr><td>§6</td><td>Star Topology</td><td>Hub + Agent Pool + Kanban Boards + Shared Backlogs + Component Registry + Dependency Graph</td></tr>
+                <tr><td>§7</td><td>Harvesting Lifecycle</td><td>Pattern Detection → Extraction → Promotion → Spawn Child SDLC</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top: var(--space-sm);"><a href="sdlc.html" class="text-green" style="font-size: 0.85rem;">View all 6 diagrams rendered live →</a></p>
+        </section>
+      </div>
+
+      <div id="detail-001" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.1 <span class="badge badge--purple" style="font-size: 0.7rem;">Superseded</span></h2>
+          <p class="text-muted" style="font-size: 0.8rem;">2026-08-18 · Frederick Bloom + Claude (Cursor AI)</p>
+
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Initial Release</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Original engine specification: loops, RGB feedback, breakers, harvest, event-sourced core</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">6-layer node type taxonomy: CORP-STRAT, T-DRIV, T-MOTI, FEAT, ARCH, SPEC, TEST_CODE</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">6 mermaid diagrams covering artifact hierarchy, guards, breakers, engine core, parallel execution, harvesting</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Added</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Interface contracts: INode, IGuard, IBreaker, IEventStore, IStateProjection</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--changed">Rationale</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Project-agnostic, instantiable for any codebase. Designed to be generic for any level of sub-agent or team orchestration.</p>
+          </div>
+        </section>
+      </div>
+
+      <div id="detail-003-006" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.3 — v0.0.6 <span class="badge badge--amber" style="font-size: 0.7rem;">⚠ Experimental</span></h2>
+          <p class="text-muted" style="font-size: 0.8rem;">2026-08 · Various AI iterations</p>
+
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--warning">Status</div>
+            <p class="text-muted" style="font-size: 0.82rem;">These versions are experimental iterations where AI agents attempted to extend the parallel agent model and other enhancements.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--warning">Known Issue</div>
+            <p class="text-muted" style="font-size: 0.82rem;">Some versions corrupted the core TDD RED→GREEN cycle while adding parallel execution features. The baseline v0.0.2 remains the authoritative spec.</p>
+          </div>
+          <div class="change-entry">
+            <div class="change-entry__type change-entry__type--added">Notable</div>
+            <p class="text-muted" style="font-size: 0.82rem;">v0.0.5.1 (by Antigravity/Google DeepMind) attempted a system-of-systems restructure with restored TDD+RGB recursive loop clarity, 8 bounded subsystems, and DRY schema consolidation.</p>
+          </div>
+
+          <div class="table-wrap" style="margin-top: var(--space-md);">
+            <table>
+              <thead><tr><th>Version</th><th>Lines</th><th>Diagrams</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>0.0.3</td><td>2,062</td><td>15</td><td><span class="text-red">TDD may be corrupted</span></td></tr>
+                <tr><td>0.0.4</td><td>2,328</td><td>15</td><td><span class="text-red">TDD may be corrupted</span></td></tr>
+                <tr><td>0.0.5</td><td>3,785</td><td>38</td><td><span class="text-red">Parallel additions corrupted TDD</span></td></tr>
+                <tr><td>0.0.5.1</td><td>2,525</td><td>11</td><td><span class="text-purple">Restored TDD+RGB clarity</span></td></tr>
+                <tr><td>0.0.6</td><td>2,816</td><td>14</td><td><span class="text-muted">Draft</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">Versions</div>
+      <ul class="version-list">
+        <li class="version-item active" onclick="showVersion('002', this)">
+          <div><span class="version-item__ver">v0.0.2</span> <span class="version-item__badge version-item__badge--baseline">Baseline</span></div>
+          <div class="version-item__date">2026-08-30</div>
+          <div class="version-item__summary">Kanban + merge-point + TDD corrections</div>
+        </li>
+        <li class="version-item" onclick="showVersion('001', this)">
+          <div><span class="version-item__ver">v0.0.1</span></div>
+          <div class="version-item__date">2026-08-18</div>
+          <div class="version-item__summary">Original engine specification</div>
+        </li>
+        <li class="version-item" onclick="showVersion('003-006', this)">
+          <div><span class="version-item__ver">v0.0.3–0.0.6</span> <span class="version-item__badge version-item__badge--warn">⚠</span></div>
+          <div class="version-item__date">Experimental</div>
+          <div class="version-item__summary">AI iterations (some TDD corruption)</div>
+        </li>
+      </ul>
+    </aside>
+  </div>
+
+  <script>
+  function showVersion(id, el) {
+    document.querySelectorAll('.version-detail').forEach(function(d) { d.classList.remove('active'); });
+    document.querySelectorAll('.version-item').forEach(function(v) { v.classList.remove('active'); });
+    document.getElementById('detail-' + id).classList.add('active');
+    el.classList.add('active');
+  }
+  </script>
+
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>

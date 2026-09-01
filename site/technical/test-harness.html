@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Harness — Vuniverse Technical | Hanaden</title>
+  <meta name="description" content="Vuniverse test harness architecture: bats-core pipeline, JSONL event stream, JSON schemas, JUnit/JaCoCo/HTML SPA report generation.">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html" class="active">Test Harness</a></li>
+        <li><a href="sdlc.html">SDLC</a></li>
+        <li><a href="sdlc-history.html">History</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="../business/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <section id="header" class="section pt-nav" style="padding-top: calc(var(--nav-height) + 3rem);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header__eyebrow">Test Harness</div>
+        <h1>The <span class="gradient">Pipeline</span></h1>
+        <p>A complete test execution, normalization, and reporting pipeline. From <code>.bats</code> files
+        to JUnit XML, JSONL event streams, JaCoCo coverage, and a self-contained HTML SPA report.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pipeline Architecture -->
+  <section id="pipeline" class="section section--alt">
+    <div class="container">
+      <h2 class="mb-lg">Pipeline Architecture</h2>
+      <div class="diagram mb-2xl">
+        <div class="diagram__label">Test Execution Pipeline</div>
+        <pre><code>                                ┌→ <span class="text-cyan">JUnit XML</span>    <span class="cmt">(CI: Jenkins/GitLab)</span>
+<span class="text-green">bats</span> ──→ <span class="text-purple">JUnit XML</span> ──→ <span class="text-green">JSONL</span> ──┼→ <span class="text-cyan">JaCoCo XML</span>   <span class="cmt">(CI: coverage gates)</span>
+                                └→ <span class="text-cyan">HTML SPA</span>     <span class="cmt">(humans: file:// open, git hosting)</span></code></pre>
+      </div>
+
+      <div class="table-wrap mb-2xl">
+        <table>
+          <thead>
+            <tr><th>Stage</th><th>Input</th><th>Output</th><th>Tool</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge--green">Execute</span></td>
+              <td><code>.bats</code> files</td>
+              <td>JUnit XML</td>
+              <td><code>bats --report-formatter junit --timing</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--purple">Normalize</span></td>
+              <td>JUnit XML</td>
+              <td><code>streaming.jsonl</code></td>
+              <td><code>bats-junit-to-jsonl.sh</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--cyan">Report: JUnit</span></td>
+              <td><code>streaming.jsonl</code></td>
+              <td><code>junit.xml</code></td>
+              <td><code>jsonl-to-junit-xml.py</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--cyan">Report: JaCoCo</span></td>
+              <td><code>streaming.jsonl</code></td>
+              <td><code>jacoco.xml</code></td>
+              <td><code>jsonl-to-jacoco-xml.py</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--cyan">Report: HTML</span></td>
+              <td><code>streaming.jsonl</code> × N</td>
+              <td><code>index.html</code> + <code>report.tar.gz</code></td>
+              <td><code>merged_html_report.py</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Suites Layout -->
+  <section id="suites" class="section">
+    <div class="container">
+      <h2 class="mb-lg">Test Suite Layout</h2>
+      <div class="diagram mb-xl">
+        <div class="diagram__label">Directory Convention</div>
+        <pre><code>PROJECT_HOME/src/test/hanaden-bwrap-enhanced/suites/
+  <span class="text-green">&lt;FEAT&gt;</span>.feat/
+    <span class="text-purple">&lt;SPEC&gt;</span>.spec/
+      <span class="text-cyan">test_&lt;name&gt;.bats</span>
+
+<span class="cmt">Example:</span>
+  suites/
+    <span class="text-green">BwrapPreflight</span>.feat/
+      <span class="text-purple">BwrapBinaryPresent</span>.spec/
+        <span class="text-cyan">test_bwrap_binary_present.bats</span>    → PF-BIN-001, PF-BIN-002, PF-BIN-004
+      <span class="text-purple">BwrapMinimalSmoke</span>.spec/
+        <span class="text-cyan">test_bwrap_minimal_smoke.bats</span>     → PF-SMOKE-001 … PF-SMOKE-005
+    <span class="text-green">AudioPassthrough</span>.feat/
+      <span class="text-purple">PipewireSocketBind</span>.spec/
+        <span class="text-cyan">test_pipewire_socket_bind.bats</span>    → AUDIO-PW-001</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- JSONL Schema -->
+  <section id="jsonl" class="section section--alt">
+    <div class="container">
+      <h2 class="mb-lg">JSONL Event Schema</h2>
+      <p class="mb-xl">All test events are normalized into a JSONL stream conforming to the
+      <code>test-event.schema.json</code> schema. Three event types:</p>
+
+      <div class="grid grid-3" style="gap: 1.5rem;">
+        <div class="card">
+          <span class="badge badge--green mb-md">suite_started</span>
+          <pre style="font-size: 0.75rem;"><code>{
+  "<span class="str">type</span>": "<span class="val">suite_started</span>",
+  "<span class="str">trace_id</span>": "<span class="val">460c378c…</span>",
+  "<span class="str">suite_name</span>": "<span class="val">…/test_*.bats</span>",
+  "<span class="str">test_count</span>": <span class="val">3</span>,
+  "<span class="str">timestamp_unix_ms</span>": <span class="val">1788259997584</span>
+}</code></pre>
+        </div>
+        <div class="card">
+          <span class="badge badge--purple mb-md">test_case</span>
+          <pre style="font-size: 0.75rem;"><code>{
+  "<span class="str">type</span>": "<span class="val">test_case</span>",
+  "<span class="str">vector_id</span>": "<span class="val">PF-BIN-001</span>",
+  "<span class="str">description</span>": "<span class="val">bwrap present on PATH</span>",
+  "<span class="str">feat</span>": "<span class="val">BwrapPreflight</span>",
+  "<span class="str">spec</span>": "<span class="val">BwrapBinaryPresent</span>",
+  "<span class="str">status</span>": "<span class="val">PASS</span>",
+  "<span class="str">duration_ms</span>": <span class="val">16</span>,
+  "<span class="str">span_id</span>": "<span class="val">054aaf30…</span>"
+}</code></pre>
+        </div>
+        <div class="card">
+          <span class="badge badge--green mb-md">suite_finished</span>
+          <pre style="font-size: 0.75rem;"><code>{
+  "<span class="str">type</span>": "<span class="val">suite_finished</span>",
+  "<span class="str">tests_run</span>": <span class="val">3</span>,
+  "<span class="str">tests_passed</span>": <span class="val">3</span>,
+  "<span class="str">tests_failed</span>": <span class="val">0</span>,
+  "<span class="str">tests_skipped</span>": <span class="val">0</span>,
+  "<span class="str">total_duration_ms</span>": <span class="val">73</span>
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HTML SPA Report -->
+  <section id="html-report" class="section">
+    <div class="container">
+      <h2 class="mb-lg">HTML SPA Report</h2>
+      <p class="mb-xl">The <code>merged_html_report.py</code> generator (3,131 lines) scans run directories, embeds all JSONL
+      data as inline <code>&lt;script&gt;</code> blocks, and produces a single self-contained <code>index.html</code>.</p>
+
+      <div class="grid grid-3" style="gap: 0.75rem;">
+        <div class="card" style="padding: var(--space-md);">
+          <h4 class="text-green" style="font-size: 0.9rem;">Dashboard View</h4>
+          <p class="text-muted mb-0" style="font-size: 0.82rem;">Aggregate pass/fail/skip metrics, trend charts, timing breakdowns. All data from JSONL.</p>
+        </div>
+        <div class="card" style="padding: var(--space-md);">
+          <h4 class="text-red" style="font-size: 0.9rem;">Failure Analysis</h4>
+          <p class="text-muted mb-0" style="font-size: 0.82rem;">Expandable diagnostic output per failed test. stdout/stderr capture with timestamps.</p>
+        </div>
+        <div class="card" style="padding: var(--space-md);">
+          <h4 class="text-purple" style="font-size: 0.9rem;">Coverage Matrix</h4>
+          <p class="text-muted mb-0" style="font-size: 0.82rem;">Per-suite feature coverage breakdown with spec-level traceability.</p>
+        </div>
+      </div>
+
+      <div class="card mt-lg" style="padding: var(--space-md);">
+        <h4 style="font-size: 0.9rem;">Report Generator Stack</h4>
+        <pre style="font-size: 0.75rem; overflow-x: auto;"><code>src/lib/report-generators/
+├── merged_html_report.py    (3,131 lines — SPA dashboard)
+├── junit_html_report.py     (JUnit XML → HTML)
+├── jacoco_html_report.py    (JaCoCo XML → HTML coverage)
+├── unified_html_report.py   (Combined view)
+└── _html_templates.py       (Shared HTML/CSS/JS templates)</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Run Metadata -->
+  <section id="metadata" class="section section--alt">
+    <div class="container">
+      <h2 class="mb-lg">Run Metadata Schema</h2>
+      <p class="mb-lg">Each timed run produces a <code>_run-metadata.json</code> with aggregate statistics:</p>
+      <pre><code>{
+  "<span class="str">harness_version</span>": "<span class="val">0.2.0</span>",
+  "<span class="str">bats_version</span>": "<span class="val">Bats 1.12.0</span>",
+  "<span class="str">scope</span>": "<span class="val">run-all</span>",
+  "<span class="str">suite_count</span>": <span class="val">53</span>,
+  "<span class="str">tests_total</span>": <span class="val">826</span>,
+  "<span class="str">tests_passed</span>": <span class="val">742</span>,
+  "<span class="str">tests_failed</span>": <span class="val">84</span>,
+  "<span class="str">coverage_lines_covered</span>": <span class="val">5936</span>,
+  "<span class="str">coverage_lines_total</span>": <span class="val">6608</span>,
+  "<span class="str">total_duration_ms</span>": <span class="val">92000</span>,
+  "<span class="str">timestamp_start</span>": "<span class="val">2026-09-01T10:51:09Z</span>",
+  "<span class="str">timestamp_end</span>": "<span class="val">2026-09-01T10:52:41Z</span>"
+}</code></pre>
+    </div>
+  </section>
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>

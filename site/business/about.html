@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Vuniverse by Hanaden | Frederick Bloom</title>
+  <meta name="description" content="About Vuniverse, Hanaden, and Frederick Bloom. Project history, mission, and philosophy behind rootless namespace-isolated containment.">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html">Licensing</a></li>
+        <li><a href="sdlc.html">Process</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../technical/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">About</div>
+        <h1><span class="gradient">Vuniverse</span> by Frederick Bloom</h1>
+      </div>
+
+      <section id="creator" class="mb-2xl">
+        <div class="card" style="padding: var(--space-xl);">
+          <h2 class="text-green" style="font-size: 1.3rem;">Frederick Bloom</h2>
+          <p class="text-muted" style="font-style: italic;">Creator &amp; Principal Engineer — Hanaden</p>
+          <p>Vuniverse emerged from a practical need: as autonomous AI coding agents became central to
+          workflows, the lack of robust, rootless containment was an unacceptable security gap.</p>
+          <p>Existing solutions — Docker, VMs, chroot — require root access, heavyweight infrastructure,
+          or trust-based isolation. Vuniverse solves this with Linux user namespaces: kernel-enforced
+          isolation without elevated privileges.</p>
+        </div>
+      </section>
+
+      <section id="mission" class="mb-2xl">
+        <h2>Mission</h2>
+        <div class="callout callout--green">
+          <p><em>Build the simplest possible containment boundary that provides the strongest
+          possible isolation — using only unprivileged Linux kernel primitives.</em></p>
+        </div>
+      </section>
+
+      <section id="principles" class="mb-2xl">
+        <h2>Guiding Principles</h2>
+        <div class="grid grid-2" style="gap: 1rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green">Security by Invisibility</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Don't deny access. Remove visibility. No "permission denied" — just absence.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple">Zero Side Effects</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">No temp files, no PID files, no state dirs. Clean in, clean out.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-cyan">Fail Fast, Never Degrade</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">If a constraint can't be satisfied, abort. Security failures are always loud.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-bright">TDD from Day One</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Every invariant encoded as executable spec. Tests verify behavior, not code.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="timeline" class="mb-2xl">
+        <h2>Project Timeline</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Version</th><th>Milestone</th><th>Key Changes</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge--green">v0.1</span></td><td>Foundation</td><td>Core sandbox, provision + start, basic VFS</td></tr>
+              <tr><td><span class="badge badge--green">v0.2</span></td><td>Hardening</td><td>Zero side effects, FD identity, fail-fast</td></tr>
+              <tr><td><span class="badge badge--purple">v0.3</span></td><td>Refactor</td><td>6-layer SDLC, breaking changes, fsck</td></tr>
+              <tr><td><span class="badge badge--purple">v0.4</span></td><td>Test Harness</td><td>Full pipeline, JUnit/JaCoCo/HTML, 875 assertions</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="contact">
+        <h2>Contact</h2>
+        <div class="card" style="padding: var(--space-md);">
+          <p style="margin-bottom: var(--space-xs);"><strong>Email:</strong> <a href="mailto:devlabs@hanaden.com">devlabs@hanaden.com</a></p>
+          <p style="margin-bottom: var(--space-xs);"><strong>License:</strong> AGPL-3.0-only + Commercial</p>
+          <p class="mb-0"><strong>Copyright:</strong> &copy; 2026-* Frederick Bloom</p>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">On This Page</div>
+      <ul class="page-sidebar__links">
+        <li><a href="#creator">Frederick Bloom</a></li>
+        <li><a href="#mission">Mission</a></li>
+        <li><a href="#principles">Principles</a></li>
+        <li><a href="#timeline">Timeline</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Overview — Vuniverse | Hanaden</title>
+  <meta name="description" content="Vuniverse (bwrap-enhanced) technical overview: VFS topology, mount namespace architecture, CLI reference, security model, test harness, and SDLC specifications. By Frederick Bloom.">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html" class="active">Overview</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Test Harness</a></li>
+        <li><a href="sdlc.html">SDLC</a></li>
+        <li><a href="sdlc-history.html">History</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="../business/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <!-- Page layout with sidebar -->
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <!-- Header -->
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">⌘ Technical Documentation</div>
+        <h1><span class="gradient">Vuniverse</span> Internals</h1>
+        <p style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase;">
+          powered by bwrap-enhanced
+        </p>
+        <p style="color: var(--text-secondary); font-size: 0.88rem; max-width: 600px; line-height: 1.5;">
+          Mount namespace isolation. Zero-side-effect VFS construction. FD-injected identity.
+          Single-script deployment with kernel-enforced containment boundaries.
+        </p>
+      </div>
+
+      <!-- Quick Metrics -->
+      <section id="metrics" class="mb-2xl">
+        <h2>At a Glance</h2>
+        <div class="stats mb-lg">
+          <div class="stat"><div class="stat__value">875</div><div class="stat__label">Tests</div></div>
+          <div class="stat"><div class="stat__value">42</div><div class="stat__label">Features</div></div>
+          <div class="stat"><div class="stat__value">53</div><div class="stat__label">Test Files</div></div>
+          <div class="stat"><div class="stat__value" style="color: var(--accent-cyan);">6</div><div class="stat__label">SDLC Layers</div></div>
+          <div class="stat"><div class="stat__value">5</div><div class="stat__label">Security Tiers</div></div>
+        </div>
+        <div style="max-width: 700px;">
+          <pre><code><span class="cmt"># Provision a new virtual root</span>
+<span class="kw">bwrap-enhanced.sh</span> <span class="flag">provision</span> \
+  <span class="flag">--host-real-root</span> <span class="str">~/my-sandbox</span>
+
+<span class="cmt"># Launch isolated shell (Tier 0 — max isolation)</span>
+<span class="kw">bwrap-enhanced.sh</span> <span class="flag">start</span> \
+  <span class="flag">--host-real-root</span> <span class="str">~/my-sandbox</span> \
+  <span class="flag">--</span> <span class="str">/bin/bash</span>
+
+<span class="cmt"># Sandboxed Firefox (Tier 1 — GUI + Audio)</span>
+<span class="kw">bwrap-enhanced.sh</span> <span class="flag">start</span> \
+  <span class="flag">--host-real-root</span> <span class="str">~/my-sandbox</span> \
+  <span class="flag">--wayland-passthrough</span> \
+  <span class="flag">--audio-passthrough</span> \
+  <span class="flag">--</span> <span class="str">firefox</span></code></pre>
+        </div>
+      </section>
+
+      <!-- Security Tiers — Mermaid -->
+      <section id="tiers" class="mb-2xl">
+        <h2>Security Tier Model</h2>
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: var(--space-md);">
+          Progressive trust escalation — each tier adds specific host passthrough capabilities.
+          Data sourced from <code>bwrap-enhanced.sh</code> lines 655-668.
+        </p>
+        <div class="mermaid">
+graph LR
+    T0["🔒 Tier 0\nBase Sandbox\nMax Isolation"]
+    T1["🖥 Tier 1\n+ Wayland + Audio\nHigh Trust"]
+    T2["♿ Tier 2\n+ Accessibility\nHigh Trust"]
+    T3["📂 Tier 3\n+ D-Bus Portals\nMedium Trust"]
+    T4["🖥 Tier 4\n+ DE Services\n⚠ Low Trust"]
+
+    T0 -->|"--enable-wayland\n--enable-audio"| T1
+    T1 -->|"--enable-a11y"| T2
+    T2 -->|"--enable-dbus"| T3
+    T3 -->|"--enable-gnome\n--enable-kde"| T4
+
+    style T0 fill:#0d3320,stroke:#3bf5a9,color:#3bf5a9
+    style T1 fill:#0d3320,stroke:#3bf5a9,color:#e2e8f0
+    style T2 fill:#1a1040,stroke:#7c3aed,color:#e2e8f0
+    style T3 fill:#3b1a00,stroke:#f59e0b,color:#e2e8f0
+    style T4 fill:#3b0d0d,stroke:#ef4444,color:#e2e8f0
+        </div>
+      </section>
+
+      <!-- Documentation Index -->
+      <section id="docs" class="mb-2xl">
+        <h2>Documentation</h2>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <a href="architecture.html" class="card" style="text-decoration: none; padding: var(--space-md);">
+            <div class="card__icon card__icon--green" style="font-size: 1.2rem; margin-bottom: 0.5rem;">🏗</div>
+            <h3 style="font-size: 0.95rem;">Architecture</h3>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">VFS topology, mount order, namespace isolation, init sequence.</p>
+            <span class="badge badge--green" style="margin-top: 0.5rem;">Core</span>
+          </a>
+          <a href="cli-reference.html" class="card" style="text-decoration: none; padding: var(--space-md);">
+            <div class="card__icon card__icon--purple" style="font-size: 1.2rem; margin-bottom: 0.5rem;">⌨</div>
+            <h3 style="font-size: 0.95rem;">CLI Reference</h3>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Subcommands: provision, fsck, start. All flags, exit codes.</p>
+            <span class="badge badge--purple" style="margin-top: 0.5rem;">Reference</span>
+          </a>
+          <a href="security-model.html" class="card" style="text-decoration: none; padding: var(--space-md);">
+            <div class="card__icon card__icon--red" style="font-size: 1.2rem; margin-bottom: 0.5rem;">🛡</div>
+            <h3 style="font-size: 0.95rem;">Security Model</h3>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Constitution, invariants, threat model, tier privileges.</p>
+            <span class="badge badge--red" style="margin-top: 0.5rem;">Security</span>
+          </a>
+          <a href="test-harness.html" class="card" style="text-decoration: none; padding: var(--space-md);">
+            <div class="card__icon card__icon--cyan" style="font-size: 1.2rem; margin-bottom: 0.5rem;">🧪</div>
+            <h3 style="font-size: 0.95rem;">Test Harness</h3>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">bats-core pipeline, JSONL events, JUnit/JaCoCo/HTML reports.</p>
+            <span class="badge badge--green" style="margin-top: 0.5rem;">Testing</span>
+          </a>
+          <a href="sdlc.html" class="card" style="text-decoration: none; padding: var(--space-md);">
+            <div class="card__icon card__icon--purple" style="font-size: 1.2rem; margin-bottom: 0.5rem;">📋</div>
+            <h3 style="font-size: 0.95rem;">SDLC</h3>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">6-layer spec hierarchy: STRAT→DRIV→MOTI→ARCH→FEAT→SPEC.</p>
+            <span class="badge badge--purple" style="margin-top: 0.5rem;">Process</span>
+          </a>
+          <a href="../business/index.html" class="card" style="text-decoration: none; padding: var(--space-md); opacity: 0.7;">
+            <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">📊</div>
+            <h3 style="font-size: 0.95rem; color: var(--text-muted);">Business View</h3>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Switch to business-focused overview.</p>
+            <span class="badge badge--amber" style="margin-top: 0.5rem;">Switch</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- VFS Topology -->
+      <section id="vfs" class="mb-2xl">
+        <h2>VFS Topology</h2>
+        <div class="mermaid">
+graph TD
+    ROOT["/ (virtual root — read-only)"]
+    USR["usr/ ← ro bind host /usr"]
+    LIB["lib/ ← ro bind host /lib"]
+    LIB64["lib64/ ← ro bind host /lib64"]
+    BIN["bin/ ← symlink → usr/bin"]
+    SBIN["sbin/ ← symlink → usr/sbin"]
+    ETC["etc/"]
+    PASSWD["passwd ← FD-injected"]
+    GROUP["group ← FD-injected"]
+    RESOLV["resolv.conf ← ro bind"]
+    HOME["home/"]
+    SANDBOX["sandbox_user/ ← rw bind"]
+    TMP["tmp/ ← tmpfs (evaporates)"]
+    DEV["dev/ ← devtmpfs (minimal)"]
+    PROC["proc/ ← procfs (filtered)"]
+
+    ROOT --> USR
+    ROOT --> LIB
+    ROOT --> LIB64
+    ROOT --> BIN
+    ROOT --> SBIN
+    ROOT --> ETC
+    ROOT --> HOME
+    ROOT --> TMP
+    ROOT --> DEV
+    ROOT --> PROC
+    ETC --> PASSWD
+    ETC --> GROUP
+    ETC --> RESOLV
+    HOME --> SANDBOX
+
+    style ROOT fill:#0d3320,stroke:#3bf5a9,color:#3bf5a9
+    style USR fill:#111827,stroke:#22d3ee,color:#e2e8f0
+    style LIB fill:#111827,stroke:#22d3ee,color:#e2e8f0
+    style LIB64 fill:#111827,stroke:#22d3ee,color:#e2e8f0
+    style BIN fill:#111827,stroke:#22d3ee,color:#e2e8f0
+    style SBIN fill:#111827,stroke:#22d3ee,color:#e2e8f0
+    style ETC fill:#1a1040,stroke:#7c3aed,color:#e2e8f0
+    style PASSWD fill:#1a1040,stroke:#7c3aed,color:#e2e8f0
+    style GROUP fill:#1a1040,stroke:#7c3aed,color:#e2e8f0
+    style RESOLV fill:#111827,stroke:#64748b,color:#94a3b8
+    style HOME fill:#0d3320,stroke:#3bf5a9,color:#e2e8f0
+    style SANDBOX fill:#0d3320,stroke:#3bf5a9,color:#3bf5a9
+    style TMP fill:#3b0d0d,stroke:#ef4444,color:#e2e8f0
+    style DEV fill:#111827,stroke:#64748b,color:#94a3b8
+    style PROC fill:#111827,stroke:#64748b,color:#94a3b8
+        </div>
+      </section>
+
+      <!-- SDLC Layers -->
+      <section id="sdlc-layers" class="mb-2xl">
+        <h2>SDLC Specification Hierarchy</h2>
+        <div class="mermaid">
+graph TD
+    STRAT["🎯 STRAT\nStrategic Goals"]
+    DRIV["📊 DRIV\nBusiness Drivers"]
+    MOTI["💡 MOTI\nMotivation & Context"]
+    ARCH["🏗 ARCH\nArchitecture Design"]
+    FEAT["✨ FEAT\nFeature Specifications"]
+    SPEC["🧪 SPEC\nExecutable Test Specs"]
+
+    STRAT --> DRIV
+    DRIV --> MOTI
+    MOTI --> ARCH
+    ARCH --> FEAT
+    FEAT --> SPEC
+
+    style STRAT fill:#0d3320,stroke:#3bf5a9,color:#3bf5a9
+    style DRIV fill:#0d3320,stroke:#3bf5a9,color:#e2e8f0
+    style MOTI fill:#1a1040,stroke:#7c3aed,color:#e2e8f0
+    style ARCH fill:#1a1040,stroke:#7c3aed,color:#e2e8f0
+    style FEAT fill:#1a1040,stroke:#7c3aed,color:#e2e8f0
+    style SPEC fill:#0d3320,stroke:#3bf5a9,color:#3bf5a9
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">On This Page</div>
+      <ul class="page-sidebar__links">
+        <li><a href="#metrics">At a Glance</a></li>
+        <li><a href="#tiers">Security Tiers</a></li>
+        <li><a href="#docs">Documentation</a></li>
+        <li><a href="#vfs">VFS Topology</a></li>
+        <li><a href="#sdlc-layers">SDLC Layers</a></li>
+      </ul>
+    </aside>
+  </div>
+
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>

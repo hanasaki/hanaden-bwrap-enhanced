@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture — Vuniverse Technical | Hanaden</title>
+  <meta name="description" content="Vuniverse architecture: VFS topology, mount namespace isolation, initialization sequence, tmpfs evaporation model, and PID 1 foreground hold pattern.">
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>Vuniverse</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="architecture.html" class="active">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Test Harness</a></li>
+        <li><a href="sdlc.html">SDLC</a></li>
+        <li><a href="sdlc-history.html">History</a></li>
+      </ul>
+      <div class="nav__mode-switch">
+        <a href="../business/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <section id="header" class="section pt-nav" style="padding-top: calc(var(--nav-height) + 3rem);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header__eyebrow">Architecture</div>
+        <h1>VFS Topology &amp; <span class="gradient">Namespace Isolation</span></h1>
+        <p>The security boundary is the mount namespace itself. Visibility is the only access control.
+        What the process can't see, it can't touch.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VFS Topology -->
+  <section id="vfs" class="section section--alt">
+    <div class="container">
+      <h2 class="mb-lg">Virtual Filesystem Layout</h2>
+      <p>When <code>bwrap-enhanced.sh start</code> executes, it constructs a complete virtual filesystem
+      visible only to the contained process. The host filesystem is never directly accessible.</p>
+
+      <div class="diagram mb-2xl">
+        <div class="diagram__label">Sandbox VFS — Mount Point Map</div>
+        <pre><code><span class="text-green">/</span>  (new mount namespace root)
+│
+├── <span class="text-cyan">usr/</span>         ← <span class="flag">--ro-bind</span> /usr /usr
+│   ├── bin/     ← host binaries (read-only)
+│   ├── lib/     ← host libraries (read-only)
+│   ├── share/   ← host data files (read-only)
+│   └── libexec/ ← host libexec (read-only)
+│
+├── <span class="text-cyan">lib/</span>         ← <span class="flag">--ro-bind</span> /lib /lib
+├── <span class="text-cyan">lib64/</span>       ← <span class="flag">--ro-bind</span> /lib64 /lib64
+├── <span class="text-cyan">bin</span>          ← <span class="flag">--symlink</span> usr/bin /bin
+├── <span class="text-cyan">sbin</span>         ← <span class="flag">--symlink</span> usr/sbin /sbin
+│
+├── <span class="text-purple">etc/</span>
+│   ├── <span class="str">passwd</span>   ← <span class="flag">--ro-bind-data</span> FD  (synthetic: sandbox_user)
+│   ├── <span class="str">group</span>    ← <span class="flag">--ro-bind-data</span> FD  (synthetic: sandbox_user)
+│   ├── <span class="text-muted">resolv.conf</span> ← <span class="flag">--ro-bind</span> /etc/resolv.conf
+│   ├── <span class="text-muted">ssl/</span>    ← <span class="flag">--ro-bind</span> /etc/ssl
+│   └── <span class="text-muted">pki/</span>    ← <span class="flag">--ro-bind</span> /etc/pki (if exists)
+│
+├── <span class="text-green">home/</span>
+│   └── <span class="str">sandbox_user/</span>
+│       └── <span class="val">(writable)</span> ← <span class="flag">--bind</span> HOST_REAL_HOME → /home/sandbox_user
+│
+├── <span class="text-red">tmp/</span>         ← <span class="flag">--tmpfs</span> /tmp      (evaporates)
+├── <span class="text-red">var/tmp/</span>     ← <span class="flag">--tmpfs</span> /var/tmp  (evaporates)
+├── <span class="text-red">dev/shm/</span>     ← <span class="flag">--tmpfs</span> /dev/shm  (evaporates)
+│
+├── <span class="text-muted">dev/</span>         ← <span class="flag">--dev</span> /dev       (devtmpfs, minimal)
+└── <span class="text-muted">proc/</span>        ← <span class="flag">--proc</span> /proc     (procfs, filtered)</code></pre>
+      </div>
+
+      <div class="grid grid-2" style="gap: 2rem;">
+        <div>
+          <h3 class="text-green mb-md">What's Visible</h3>
+          <ul class="feature-list">
+            <li>Host <code>/usr</code>, <code>/lib</code>, <code>/lib64</code> — read-only</li>
+            <li>Synthetic <code>/etc/passwd</code> and <code>/etc/group</code> — injected via memory FDs</li>
+            <li>DNS resolution (<code>/etc/resolv.conf</code>) and CA certs (<code>/etc/ssl</code>)</li>
+            <li>One writable home directory (controlled egress point)</li>
+            <li>Ephemeral <code>tmpfs</code> for /tmp, /var/tmp, /dev/shm</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-red mb-md">What's Invisible</h3>
+          <ul class="feature-list">
+            <li>Host home directory (<code>~/.ssh</code>, <code>~/.aws</code>, <code>~/.gnupg</code>)</li>
+            <li>Host <code>/root</code>, <code>/var</code>, <code>/opt</code>, <code>/srv</code></li>
+            <li>Other users' home directories</li>
+            <li>Host <code>/run</code> (D-Bus, Wayland, PipeWire — unless opted in)</li>
+            <li>Network (unless <code>--net-passthrough</code>)</li>
+            <li>Environment variables (unless <code>--env-passthrough</code>)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Initialization Sequence -->
+  <section id="init-sequence" class="section">
+    <div class="container">
+      <h2 class="mb-lg">Initialization Sequence</h2>
+      <p class="mb-xl">The <code>start</code> subcommand constructs the sandbox through a deterministic sequence.
+      Every step is validated before proceeding — failures are never silent.</p>
+
+      <div class="diagram">
+        <div class="diagram__label">Start Subcommand — Execution Flow</div>
+        <pre><code>┌─────────────────────────────────────────────────────────┐
+│  <span class="kw">bwrap-enhanced.sh start</span>  --host-real-root PATH -- CMD  │
+└───────────────────────────┬─────────────────────────────┘
+                            │
+                    ┌───────▼───────┐
+                    │  Parse flags  │
+                    │  + validate   │
+                    └───────┬───────┘
+                            │
+                    ┌───────▼───────┐
+                    │  Resolve all  │
+                    │  host paths   │
+                    └───────┬───────┘
+                            │
+                    ┌───────▼───────┐
+                    │  Generate FD  │   <span class="cmt">← /etc/passwd, /etc/group</span>
+                    │  identity     │   <span class="cmt">   via /dev/fd/N (zero disk writes)</span>
+                    └───────┬───────┘
+                            │
+                    ┌───────▼───────┐
+                    │  Build bwrap  │   <span class="cmt">← Assemble full bwrap argv[]</span>
+                    │  argument set │   <span class="cmt">   from resolved paths + flags</span>
+                    └───────┬───────┘
+                            │
+                ┌───────────▼───────────┐
+                │  <span class="flag">--dry-run?</span>           │──yes──▶ <span class="str">Print argv[] and exit</span>
+                └───────────┬───────────┘
+                            │ no
+                    ┌───────▼───────┐
+                    │  <span class="kw">exec bwrap</span>   │   <span class="cmt">← Replace shell process with bwrap</span>
+                    │  (PID 1 hold) │   <span class="cmt">   Foreground hold via /proc watcher</span>
+                    └───────────────┘</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- PID 1 Pattern -->
+  <section id="pid1" class="section section--alt">
+    <div class="container" style="max-width: 800px;">
+      <h2 class="mb-lg">PID 1 Foreground Hold</h2>
+      <p>Inside the sandbox, the contained command runs as PID 1. The parent shell uses a
+      zero-poll <code>/proc</code>-based watcher to maintain the foreground hold:</p>
+
+      <div class="callout callout--green">
+        <p><strong>Key insight:</strong> No polling loop. The watcher uses <code>inotifywait</code> or
+        <code>tail -f /dev/null --pid=$PID</code> to block until the child exits. Zero CPU overhead during
+        normal operation.</p>
+      </div>
+
+      <p>When the contained process exits:</p>
+      <ul class="feature-list">
+        <li>All <code>tmpfs</code> mounts evaporate (kernel-managed cleanup)</li>
+        <li>The mount namespace is destroyed (kernel-managed cleanup)</li>
+        <li>The user namespace is destroyed (kernel-managed cleanup)</li>
+        <li>No artifacts remain on the host filesystem</li>
+        <li>The exit code of the contained process propagates to the caller</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Passthrough Architecture -->
+  <section id="passthrough" class="section">
+    <div class="container">
+      <h2 class="mb-lg">Passthrough Architecture</h2>
+      <p class="mb-xl">Each passthrough flag selectively binds host resources into the sandbox.
+      Privilege escalation follows a strict ordering: <code class="text-green">absent &lt; ro &lt; rw</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Flag</th><th>Type</th><th>Host Resource</th><th>Sandbox Mount</th><th>Implied By</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--net-passthrough</code></td>
+              <td><span class="badge badge--red">bool</span></td>
+              <td>Network namespace</td>
+              <td>Share host network</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>--wayland-passthrough</code></td>
+              <td><span class="badge badge--green">bool</span></td>
+              <td><code>$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY</code></td>
+              <td>Wayland socket bind</td>
+              <td>implies <code>--x11-passthrough</code></td>
+            </tr>
+            <tr>
+              <td><code>--audio-passthrough</code></td>
+              <td><span class="badge badge--green">bool</span></td>
+              <td><code>$XDG_RUNTIME_DIR/pipewire-0</code></td>
+              <td>PipeWire socket bind</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>--x11-passthrough</code></td>
+              <td><span class="badge badge--green">bool</span></td>
+              <td><code>/tmp/.X11-unix</code></td>
+              <td>X11 socket bind</td>
+              <td>implied by wayland/gnome/kde</td>
+            </tr>
+            <tr>
+              <td><code>--dbus-passthrough</code></td>
+              <td><span class="badge badge--amber">bool</span></td>
+              <td>Session D-Bus socket</td>
+              <td>D-Bus bind</td>
+              <td><strong>NEVER implied</strong> — always explicit</td>
+            </tr>
+            <tr>
+              <td><code>--mise-passthrough</code></td>
+              <td><span class="badge badge--purple">graded</span></td>
+              <td><code>~/.local/share/mise</code></td>
+              <td>ro or rw bind</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>--local-bin-passthrough</code></td>
+              <td><span class="badge badge--purple">graded</span></td>
+              <td><code>~/.local/bin</code></td>
+              <td>ro or rw bind</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <script src="../shared/mermaid.min.js"></script>
+  <script src="../shared/nav.js"></script>
+</body>
+</html>
