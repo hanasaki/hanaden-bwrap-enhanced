@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SDLC History & Versions — Vuniverse Technical | Hanaden</title>
-  <meta name="description" content="Version history of the Vuniverse SDLC Engine specification. Changelogs, design changes, and rationale for each version.">
+  <title>SDLC Spec Versions — Vuniverse Technical | Hanaden</title>
+  <meta name="description" content="Version history of the SDLC Generic Deterministic Orchestrator Workflow Engine Specification. All versions from v0.0.1 through v0.0.6.">
   <link rel="stylesheet" href="../../shared/style.css">
   <style>
     .version-list { list-style: none; padding: 0; margin: 0; }
@@ -20,21 +20,16 @@
     .version-item:hover { background: rgba(59, 245, 169, 0.05); border-left-color: var(--accent-green); }
     .version-item.active { background: rgba(59, 245, 169, 0.08); border-left-color: var(--accent-green); }
     .version-item__ver { font-weight: 700; color: var(--text-bright); }
-    .version-item__date { font-size: 0.72rem; color: var(--text-dim); }
+    .version-item__meta { font-size: 0.72rem; color: var(--text-dim); }
     .version-item__summary { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
     .version-item__badge { display: inline-block; font-size: 0.65rem; padding: 1px 6px; border-radius: 3px; margin-left: 4px; }
     .version-item__badge--baseline { background: var(--accent-green); color: var(--bg-deepspace); }
     .version-item__badge--warn { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-    .version-item__badge--latest { background: rgba(124, 58, 237, 0.2); color: #a78bfa; }
+    .version-item__badge--draft { background: rgba(124, 58, 237, 0.2); color: #a78bfa; }
+    .version-item__badge--superseded { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
     .version-detail { display: none; }
     .version-detail.active { display: block; }
-    .change-entry { padding: var(--space-sm) 0; border-bottom: 1px solid var(--border-subtle); }
-    .change-entry:last-child { border-bottom: none; }
-    .change-entry__type { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
-    .change-entry__type--added { color: var(--accent-green); }
-    .change-entry__type--changed { color: var(--accent-purple); }
-    .change-entry__type--fixed { color: var(--accent-cyan); }
-    .change-entry__type--warning { color: #f59e0b; }
+    .spec-stat { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 3px; background: rgba(59, 245, 169, 0.06); color: var(--text-muted); margin-right: var(--space-xs); margin-bottom: var(--space-xs); }
   </style>
 </head>
 <body>
@@ -48,11 +43,12 @@
         <li><a href="../project-core/security-model.html">Security</a></li>
         <li><a href="../project-core/test-harness.html">Test Harness</a></li>
         <li><a href="index.html">SDLC</a></li>
-        <li><a href="versions.html" class="active">History</a></li>
+        <li><a href="versions.html" class="active">Spec Versions</a></li>
+        <li><a href="../project-core/releases.html">Releases</a></li>
       </ul>
       <div class="nav__mode-switch">
         <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
-        <a href="index.html" class="nav__mode-btn active">Technical</a>
+        <a href="../project-core/index.html" class="nav__mode-btn active">Technical</a>
       </div>
       <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
     </div>
@@ -62,138 +58,220 @@
     <div class="page-layout__main">
 
       <div class="section-header" style="margin-bottom: var(--space-lg);">
-        <div class="section-header__eyebrow">Version History</div>
-        <h1>SDLC Engine <span class="gradient">Changelog</span></h1>
+        <div class="section-header__eyebrow">SDLC Engine Spec</div>
+        <h1>Spec <span class="gradient">Versions</span></h1>
         <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 600px;">
-          Evolution of the Generic SDLC Deterministic Orchestrator Workflow Engine Specification.
-          Select a version from the sidebar to view its changelog.
+          Version history of the Generic SDLC Deterministic Orchestrator Workflow Engine Specification.
         </p>
       </div>
 
-      <!-- Version detail panes -->
-      <div id="detail-002" class="version-detail active">
+      <!-- v0.0.6 -->
+      <div id="detail-006" class="version-detail active">
         <section class="mb-2xl">
-          <h2>v0.0.2 <span class="badge badge--green" style="font-size: 0.7rem;">Baseline</span></h2>
-          <p class="text-muted" style="font-size: 0.8rem;">2026-08-30 · Frederick Bloom + Claude (Cursor AI)</p>
-
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--added">Added</div>
-            <p class="text-muted" style="font-size: 0.82rem;">First-class workstream kanban with exclusive-ownership parallel subagent model</p>
+          <h2>v0.0.6 <span class="version-item__badge version-item__badge--draft">Draft</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">2,816 lines</span>
+            <span class="spec-stat">35 sections</span>
+            <span class="spec-stat">57 diagrams</span>
           </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--added">Added</div>
-            <p class="text-muted" style="font-size: 0.82rem;">Merge-point fan-in events on the existing event bus — agents fan out for parallel work, merge back at defined sync points</p>
-          </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--fixed">Fixed</div>
-            <p class="text-muted" style="font-size: 0.82rem;">Layer/containment corrections: ARCH is peer of FEAT (not parent), MOTI.parent → DRIV (containment), FEAT/ARCH.parent → MOTI</p>
-          </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--fixed">Fixed</div>
-            <p class="text-muted" style="font-size: 0.82rem;">TDD transition corrections: NOT_STARTED → GREEN explicitly forbidden. Must pass through RED first.</p>
-          </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--changed">Rationale</div>
-            <p class="text-muted" style="font-size: 0.82rem;">Does not replace 0.0.1 event, RGB, process, or TDD core — additive only. UUID prefix reused from 0.0.1 by explicit user ruling (identity continuity).</p>
-          </div>
-
-          <h3 style="margin-top: var(--space-lg);">Key Diagrams (6)</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>§</th><th>Diagram</th><th>Content</th></tr></thead>
-              <tbody>
-                <tr><td>§2</td><td>Artifact Hierarchy + RGB</td><td>CORP-STRAT → T-DRIV → T-MOTI → FEAT/ARCH → SPEC → TEST with feedback arrows</td></tr>
-                <tr><td>§3</td><td>Anti-Fixation Guards</td><td>Guards per layer: strategy sunset, problem reframing, solution diversity, adversarial review, mutation test, anti-reward-hack</td></tr>
-                <tr><td>§4</td><td>Emergency Breakers</td><td>Healthy loop → death spiral → breaker trip → system reset → stronger guards</td></tr>
-                <tr><td>§5</td><td>Engine Core</td><td>Event Store → State Machine → Transition Evaluator cycle + Node/Guard/Breaker registries</td></tr>
-                <tr><td>§6</td><td>Star Topology</td><td>Hub + Agent Pool + Kanban Boards + Shared Backlogs + Component Registry + Dependency Graph</td></tr>
-                <tr><td>§7</td><td>Harvesting Lifecycle</td><td>Pattern Detection → Extraction → Promotion → Spawn Child SDLC</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p style="margin-top: var(--space-sm);"><a href="index.html" class="text-green" style="font-size: 0.85rem;">View all 6 diagrams rendered live →</a></p>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            OTel-style decomposition with API-contract-first trait crates. Self-documenting repos with
+            STRAT/DRIV/MOTI/FEAT/SPEC document hierarchy. System-of-systems architecture.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.5.1</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>OTel-style observability decomposition</li>
+            <li>API-contract-first trait crate design</li>
+            <li>Expanded from 15 to 35 sections</li>
+          </ul>
         </section>
       </div>
 
+      <!-- v0.0.5.1 -->
+      <div id="detail-0051" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.5.1 <span class="version-item__badge version-item__badge--warn">⚠ Experimental</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">2,525 lines</span>
+            <span class="spec-stat">15 sections</span>
+            <span class="spec-stat">45 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            System-of-systems restructure of v0.0.5: 8 bounded subsystems with clear API boundaries,
+            decomposed machine.json catalog, dedicated TDD and Kanban subsystems.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.5</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Restored TDD + RGB feedback clarity (corrupted in v0.0.5)</li>
+            <li>8 bounded subsystems with clear API contracts</li>
+            <li>Reduced from 3,785 to 2,525 lines (33% leaner)</li>
+            <li>Decomposed machine.json into subsystem catalogs</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.5 -->
+      <div id="detail-005" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.5 <span class="version-item__badge version-item__badge--warn">⚠ TDD Corrupted</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">3,785 lines</span>
+            <span class="spec-stat">25 sections</span>
+            <span class="spec-stat">89 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Integrated rewrite: one layer taxonomy, one kanban, one merge lifecycle, one exclusive-ownership
+            model, complete event catalog, TDD gate, nested parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.4</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Parallel execution additions expanded spec significantly</li>
+            <li>89 mermaid diagrams (peak complexity)</li>
+            <li><span class="text-red">⚠ TDD RED/GREEN cycle corrupted by parallel additions</span></li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.4 -->
+      <div id="detail-004" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.4 <span class="version-item__badge version-item__badge--warn">⚠ Experimental</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">2,328 lines</span>
+            <span class="spec-stat">20 sections</span>
+            <span class="spec-stat">63 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Integrated rewrite: unified layer taxonomy, kanban lifecycle, exclusive-ownership model,
+            complete event catalog, TDD gate, nested parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.3</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Expanded from 2,062 to 2,328 lines</li>
+            <li>Added 4 additional diagrams (59 → 63)</li>
+            <li>Refined kanban and merge lifecycle integration</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.3 -->
+      <div id="detail-003" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.3 <span class="version-item__badge version-item__badge--warn">⚠ Experimental</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">2,062 lines</span>
+            <span class="spec-stat">20 sections</span>
+            <span class="spec-stat">59 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Integrated rewrite: one layer taxonomy, one kanban, one merge lifecycle, one exclusive-ownership
+            model, complete event catalog, TDD gate, nested parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.2</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Major expansion from 1,017 to 2,062 lines (2× growth)</li>
+            <li>Added 8 new sections (12 → 20)</li>
+            <li>Diagrams increased from 38 to 59</li>
+            <li>Introduced kanban lifecycle and exclusive-ownership model</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.2 -->
+      <div id="detail-002" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.2 <span class="version-item__badge version-item__badge--baseline">✅ Baseline</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">1,017 lines</span>
+            <span class="spec-stat">12 sections</span>
+            <span class="spec-stat">38 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Authoritative baseline specification. Defines a fully implementable software engine for
+            managing the complete software development lifecycle as an event-sourced, deterministic
+            state machine with guards, breakers, and parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Sections</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>§2 Artifact Hierarchy with RGB feedback paths</li>
+            <li>§3 Anti-Fixation Guards</li>
+            <li>§4 Emergency Breakers</li>
+            <li>§5 Engine Core state machine</li>
+            <li>§6 Star Topology for parallel execution</li>
+            <li>§7 Harvesting and knowledge extraction</li>
+          </ul>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Changes from v0.0.1</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Added Kanban integration and merge-point semantics</li>
+            <li>TDD RED/GREEN/BLUE cycle corrections</li>
+            <li>Expanded from 915 to 1,017 lines</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.1 -->
       <div id="detail-001" class="version-detail">
         <section class="mb-2xl">
-          <h2>v0.0.1 <span class="badge badge--purple" style="font-size: 0.7rem;">Superseded</span></h2>
-          <p class="text-muted" style="font-size: 0.8rem;">2026-08-18 · Frederick Bloom + Claude (Cursor AI)</p>
-
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--added">Initial Release</div>
-            <p class="text-muted" style="font-size: 0.82rem;">Original engine specification: loops, RGB feedback, breakers, harvest, event-sourced core</p>
+          <h2>v0.0.1 <span class="version-item__badge version-item__badge--superseded">Superseded</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">915 lines</span>
+            <span class="spec-stat">12 sections</span>
+            <span class="spec-stat">38 diagrams</span>
           </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--added">Added</div>
-            <p class="text-muted" style="font-size: 0.82rem;">6-layer node type taxonomy: CORP-STRAT, T-DRIV, T-MOTI, FEAT, ARCH, SPEC, TEST_CODE</p>
-          </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--added">Added</div>
-            <p class="text-muted" style="font-size: 0.82rem;">6 mermaid diagrams covering artifact hierarchy, guards, breakers, engine core, parallel execution, harvesting</p>
-          </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--added">Added</div>
-            <p class="text-muted" style="font-size: 0.82rem;">Interface contracts: INode, IGuard, IBreaker, IEventStore, IStateProjection</p>
-          </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--changed">Rationale</div>
-            <p class="text-muted" style="font-size: 0.82rem;">Project-agnostic, instantiable for any codebase. Designed to be generic for any level of sub-agent or team orchestration.</p>
-          </div>
-        </section>
-      </div>
-
-      <div id="detail-003-006" class="version-detail">
-        <section class="mb-2xl">
-          <h2>v0.0.3 — v0.0.6 <span class="badge badge--amber" style="font-size: 0.7rem;">⚠ Experimental</span></h2>
-          <p class="text-muted" style="font-size: 0.8rem;">2026-08 · Various AI iterations</p>
-
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--warning">Status</div>
-            <p class="text-muted" style="font-size: 0.82rem;">These versions are experimental iterations where AI agents attempted to extend the parallel agent model and other enhancements.</p>
-          </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--warning">Known Issue</div>
-            <p class="text-muted" style="font-size: 0.82rem;">Some versions corrupted the core TDD RED→GREEN cycle while adding parallel execution features. The baseline v0.0.2 remains the authoritative spec.</p>
-          </div>
-          <div class="change-entry">
-            <div class="change-entry__type change-entry__type--added">Notable</div>
-            <p class="text-muted" style="font-size: 0.82rem;">v0.0.5.1 (by Antigravity/Google DeepMind) attempted a system-of-systems restructure with restored TDD+RGB recursive loop clarity, 8 bounded subsystems, and DRY schema consolidation.</p>
-          </div>
-
-          <div class="table-wrap" style="margin-top: var(--space-md);">
-            <table>
-              <thead><tr><th>Version</th><th>Lines</th><th>Diagrams</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr><td>0.0.3</td><td>2,062</td><td>15</td><td><span class="text-red">TDD may be corrupted</span></td></tr>
-                <tr><td>0.0.4</td><td>2,328</td><td>15</td><td><span class="text-red">TDD may be corrupted</span></td></tr>
-                <tr><td>0.0.5</td><td>3,785</td><td>38</td><td><span class="text-red">Parallel additions corrupted TDD</span></td></tr>
-                <tr><td>0.0.5.1</td><td>2,525</td><td>11</td><td><span class="text-purple">Restored TDD+RGB clarity</span></td></tr>
-                <tr><td>0.0.6</td><td>2,816</td><td>14</td><td><span class="text-muted">Draft</span></td></tr>
-              </tbody>
-            </table>
-          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Original engine specification. Defines a fully implementable software engine for managing
+            the complete software development lifecycle as an event-sourced, deterministic state machine
+            with guards, breakers, and parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Foundation</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Event-sourced state machine architecture</li>
+            <li>Anti-fixation guards and emergency breakers</li>
+            <li>Star topology for parallel execution</li>
+            <li>Harvesting and knowledge extraction</li>
+            <li>RGB feedback paths (RED/GREEN/BLUE)</li>
+          </ul>
         </section>
       </div>
 
     </div>
 
     <aside class="page-sidebar">
-      <div class="page-sidebar__heading">Versions</div>
+      <div class="page-sidebar__heading">Spec Versions</div>
       <ul class="version-list">
-        <li class="version-item" onclick="showVersion('003-006', this)">
-          <div><span class="version-item__ver">v0.0.3–0.0.6</span> <span class="version-item__badge version-item__badge--warn">⚠</span></div>
-          <div class="version-item__date">Experimental</div>
-          <div class="version-item__summary">AI iterations (some TDD corruption)</div>
+        <li class="version-item active" onclick="showVersion('006', this)">
+          <div><span class="version-item__ver">v0.0.6</span> <span class="version-item__badge version-item__badge--draft">Draft</span></div>
+          <div class="version-item__meta">2,816 lines · 57 diagrams</div>
+          <div class="version-item__summary">OTel-style decomposition</div>
         </li>
-        <li class="version-item active" onclick="showVersion('002', this)">
-          <div><span class="version-item__ver">v0.0.2</span> <span class="version-item__badge version-item__badge--baseline">Baseline</span></div>
-          <div class="version-item__date">2026-08-30</div>
-          <div class="version-item__summary">Kanban + merge-point + TDD corrections</div>
+        <li class="version-item" onclick="showVersion('0051', this)">
+          <div><span class="version-item__ver">v0.0.5.1</span> <span class="version-item__badge version-item__badge--warn">⚠</span></div>
+          <div class="version-item__meta">2,525 lines · 45 diagrams</div>
+          <div class="version-item__summary">Restored TDD+RGB clarity</div>
+        </li>
+        <li class="version-item" onclick="showVersion('005', this)">
+          <div><span class="version-item__ver">v0.0.5</span> <span class="version-item__badge version-item__badge--warn">⚠ TDD</span></div>
+          <div class="version-item__meta">3,785 lines · 89 diagrams</div>
+          <div class="version-item__summary">Parallel additions (corrupted TDD)</div>
+        </li>
+        <li class="version-item" onclick="showVersion('004', this)">
+          <div><span class="version-item__ver">v0.0.4</span> <span class="version-item__badge version-item__badge--warn">⚠</span></div>
+          <div class="version-item__meta">2,328 lines · 63 diagrams</div>
+          <div class="version-item__summary">Integrated rewrite</div>
+        </li>
+        <li class="version-item" onclick="showVersion('003', this)">
+          <div><span class="version-item__ver">v0.0.3</span> <span class="version-item__badge version-item__badge--warn">⚠</span></div>
+          <div class="version-item__meta">2,062 lines · 59 diagrams</div>
+          <div class="version-item__summary">Kanban + ownership model</div>
+        </li>
+        <li class="version-item" onclick="showVersion('002', this)">
+          <div><span class="version-item__ver">v0.0.2</span> <span class="version-item__badge version-item__badge--baseline">✅ Baseline</span></div>
+          <div class="version-item__meta">1,017 lines · 38 diagrams</div>
+          <div class="version-item__summary">Authoritative baseline spec</div>
         </li>
         <li class="version-item" onclick="showVersion('001', this)">
-          <div><span class="version-item__ver">v0.0.1</span></div>
-          <div class="version-item__date">2026-08-18</div>
+          <div><span class="version-item__ver">v0.0.1</span> <span class="version-item__badge version-item__badge--superseded">Superseded</span></div>
+          <div class="version-item__meta">915 lines · 38 diagrams</div>
           <div class="version-item__summary">Original engine specification</div>
         </li>
       </ul>
@@ -209,7 +287,6 @@
   }
   </script>
 
-  <script src="../../shared/mermaid.min.js"></script>
   <script src="../../shared/nav.js"></script>
 </body>
 </html>
