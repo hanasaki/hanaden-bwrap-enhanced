@@ -5,9 +5,9 @@ setup() {
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
 
 }
-_dry() { bash "$SCRIPT" --dry-run "$@" -- /bin/true 2>&1; }
+_dry() { bash "$SCRIPT" start --dry-run "$@" -- /bin/true 2>&1; }
 @test "FX11-WQ-001: --x11-passthrough ro -> ERROR exit 1 (wrong qualifier)" {
-    run bash "$SCRIPT" --x11-passthrough ro -- /bin/true 2>&1
+    run bash "$SCRIPT" start --x11-passthrough ro -- /bin/true 2>&1
     [ "$status" -eq 1 ]
     [[ "$output" == *"[ERROR]"* ]]
 }

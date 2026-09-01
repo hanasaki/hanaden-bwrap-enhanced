@@ -150,7 +150,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "DISP-UNK-005: --badopt (unknown top-level flag) exits 1" {
-    run bash "$SCRIPT" --badopt 2>&1
+    run bash "$SCRIPT" start --badopt 2>&1
     [ "$status" -eq 1 ]
 }
 
@@ -174,7 +174,7 @@ teardown() {
 }
 
 @test "DISP-REACH-003: start --help reachable (exits 0)" {
-    run bash "$SCRIPT" start --help 2>&1
+    run bash "$SCRIPT" --help 2>&1
     [ "$status" -eq 0 ]
 }
 

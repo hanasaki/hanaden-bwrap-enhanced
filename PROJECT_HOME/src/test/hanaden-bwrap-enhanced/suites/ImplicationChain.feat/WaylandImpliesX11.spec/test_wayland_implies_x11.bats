@@ -11,7 +11,7 @@ setup() {
 }
 
 _dry() {
-    bash "$SCRIPT" --dry-run "$@" -- /bin/true 2>&1
+    bash "$SCRIPT" start --dry-run "$@" -- /bin/true 2>&1
 }
 
 @test "IMP-WAY-001: --wayland-passthrough -> X11 implied" {

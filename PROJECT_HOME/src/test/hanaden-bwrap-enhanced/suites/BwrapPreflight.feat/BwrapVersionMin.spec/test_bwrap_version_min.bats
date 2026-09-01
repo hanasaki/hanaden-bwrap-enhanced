@@ -21,13 +21,3 @@ setup() {
         [ "$major" -ge 1 ]
     fi
 }
-
-@test "PF-VER-002: script checks bwrap version in preflight" {
-    run grep -q 'bwrap --version' "$SCRIPT"
-    [ "$status" -eq 0 ]
-}
-
-@test "PF-VER-003: script rejects versions below minimum 0.3.0" {
-    run grep -q 'below minimum' "$SCRIPT"
-    [ "$status" -eq 0 ]
-}

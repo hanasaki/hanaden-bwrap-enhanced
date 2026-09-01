@@ -5,7 +5,7 @@ setup() {
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
 
 }
-_dry() { bash "$SCRIPT" --dry-run "$@" -- /bin/true 2>&1; }
+_dry() { bash "$SCRIPT" start --dry-run "$@" -- /bin/true 2>&1; }
 
 @test "A11Y-SPI-001: --a11y-passthrough -> at-spi bound" {
     run _dry --a11y-passthrough

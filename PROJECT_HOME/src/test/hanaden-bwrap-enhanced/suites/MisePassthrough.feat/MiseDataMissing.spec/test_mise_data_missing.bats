@@ -5,10 +5,10 @@ setup() {
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
 
 }
-_dry() { bash "$SCRIPT" --dry-run "$@" -- /bin/true 2>&1; }
+_dry() { bash "$SCRIPT" start --dry-run "$@" -- /bin/true 2>&1; }
 
 _dry_no_data() {
-    MISE_DATA_DIR="/nonexistent/mise-data-$(date +%N)"         bash "$SCRIPT" --dry-run --mise-passthrough -- /bin/true 2>&1
+    MISE_DATA_DIR="/nonexistent/mise-data-$(date +%N)"         bash "$SCRIPT" start --dry-run --mise-passthrough -- /bin/true 2>&1
 }
 
 @test "MISE-NODATA-001: mise data dir missing -> FATAL" {

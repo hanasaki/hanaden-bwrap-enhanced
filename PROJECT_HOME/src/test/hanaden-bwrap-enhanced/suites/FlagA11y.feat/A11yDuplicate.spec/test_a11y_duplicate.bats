@@ -5,9 +5,9 @@ setup() {
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
 
 }
-_dry() { bash "$SCRIPT" --dry-run "$@" -- /bin/true 2>&1; }
+_dry() { bash "$SCRIPT" start --dry-run "$@" -- /bin/true 2>&1; }
 @test "FA11-DUP-001: --a11y-passthrough twice -> ERROR exit 1" {
-    run bash "$SCRIPT" --a11y-passthrough --a11y-passthrough -- /bin/true 2>&1
+    run bash "$SCRIPT" start --a11y-passthrough --a11y-passthrough -- /bin/true 2>&1
     [ "$status" -eq 1 ]
     [[ "$output" == *"[ERROR]"* ]]
 }

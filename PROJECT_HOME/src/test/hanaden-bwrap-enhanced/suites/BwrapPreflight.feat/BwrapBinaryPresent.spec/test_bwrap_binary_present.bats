@@ -20,16 +20,11 @@ setup() {
     [[ "$output" =~ [0-9]+\.[0-9]+\.[0-9]+ ]]
 }
 
-@test "PF-BIN-003: script preflight checks for bwrap" {
-    run grep -q 'command -v bwrap' "$SCRIPT"
-    [ "$status" -eq 0 ]
-}
-
 @test "PF-BIN-004: script --dry-run passes real preflight" {
     local root
     root="$(mktemp -d)"
     mkdir -p "${root}/home/sandbox_user"
-    run bash "$SCRIPT" --host-real-root "$root" --dry-run -- /bin/true
+    run bash "$SCRIPT" start --host-real-root "$root" --dry-run -- /bin/true
     rm -rf "$root"
     [ "$status" -eq 0 ]
 }

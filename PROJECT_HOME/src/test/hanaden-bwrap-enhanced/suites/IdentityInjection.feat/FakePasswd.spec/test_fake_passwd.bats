@@ -10,7 +10,7 @@ setup() {
 
 }
 
-_dry() { bash "$SCRIPT" --dry-run "$@" -- /bin/true 2>&1; }
+_dry() { bash "$SCRIPT" start --dry-run "$@" -- /bin/true 2>&1; }
 
 @test "ID-PW-001: --ro-bind-data 9 /etc/passwd in dry-run" {
     run _dry

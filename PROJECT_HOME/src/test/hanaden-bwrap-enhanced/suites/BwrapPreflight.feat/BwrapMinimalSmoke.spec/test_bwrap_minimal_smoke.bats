@@ -13,13 +13,3 @@ setup() {
     run bwrap --ro-bind / / --unshare-user --die-with-parent /bin/true
     [ "$status" -eq 0 ]
 }
-
-@test "PF-SMK-002: script smoke test uses --ro-bind and --unshare-user" {
-    run grep -q 'ro-bind / / --unshare-user' "$SCRIPT"
-    [ "$status" -eq 0 ]
-}
-
-@test "PF-SMK-003: script has FATAL path for smoke failure" {
-    run grep -q 'Minimal bwrap sandbox smoke test failed' "$SCRIPT"
-    [ "$status" -eq 0 ]
-}

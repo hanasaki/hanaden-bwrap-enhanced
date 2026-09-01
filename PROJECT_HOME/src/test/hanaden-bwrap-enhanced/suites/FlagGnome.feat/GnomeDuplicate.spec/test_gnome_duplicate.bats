@@ -5,9 +5,9 @@ setup() {
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
 
 }
-_dry() { bash "$SCRIPT" --dry-run "$@" -- /bin/true 2>&1; }
+_dry() { bash "$SCRIPT" start --dry-run "$@" -- /bin/true 2>&1; }
 @test "FGNM-DUP-001: --gnome-passthrough twice -> ERROR exit 1" {
-    run bash "$SCRIPT" --gnome-passthrough --gnome-passthrough -- /bin/true 2>&1
+    run bash "$SCRIPT" start --gnome-passthrough --gnome-passthrough -- /bin/true 2>&1
     [ "$status" -eq 1 ]
     [[ "$output" == *"[ERROR]"* ]]
 }

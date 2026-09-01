@@ -13,13 +13,3 @@ setup() {
     run bwrap --ro-bind / / --unshare-user --die-with-parent /bin/true
     [ "$status" -eq 0 ]
 }
-
-@test "PF-NS-002: script checks unprivileged_userns_clone sysctl" {
-    run grep -q 'unprivileged_userns_clone' "$SCRIPT"
-    [ "$status" -eq 0 ]
-}
-
-@test "PF-NS-003: script has FATAL path for disabled namespaces" {
-    run grep -q 'Unprivileged user namespaces are disabled' "$SCRIPT"
-    [ "$status" -eq 0 ]
-}

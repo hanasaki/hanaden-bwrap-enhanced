@@ -5,9 +5,9 @@ setup() {
     SCRIPT="${_project_home}/src/main/hanaden-bwrap-enhanced/bwrap-enhanced.sh"
 
 }
-_dry() { bash "$SCRIPT" --dry-run "$@" -- /bin/true 2>&1; }
+_dry() { bash "$SCRIPT" start --dry-run "$@" -- /bin/true 2>&1; }
 @test "FHHP-DUP-001: --host-real-home-parent twice -> ERROR exit 1" {
-    run bash "$SCRIPT" --host-real-home-parent /a --host-real-home-parent /b -- /bin/true 2>&1
+    run bash "$SCRIPT" start --host-real-home-parent /a --host-real-home-parent /b -- /bin/true 2>&1
     [ "$status" -eq 1 ]
     [[ "$output" == *"[ERROR]"* ]]
 }

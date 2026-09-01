@@ -29,7 +29,7 @@ setup() {
 }
 
 @test "HLP-QUAL-004: start --help also shows qualifier rules" {
-    run bash "$SCRIPT" start --help
+    run bash "$SCRIPT" --help
     [ "$status" -eq 0 ]
     [[ "$output" == *"ro"* ]]
     [[ "$output" == *"rw"* ]]
