@@ -40,7 +40,7 @@
         '<div class="footer__row">' +
           '<div class="footer__brand-col">' +
             '<span class="footer__logo">V</span>' +
-            '<span class="footer__name">Vuniverse</span>' +
+            '<span class="footer__name">V-Universe</span>' +
             '<span class="footer__by">by Frederick Bloom</span>' +
           '</div>' +
           '<div class="footer__links-col">' +
