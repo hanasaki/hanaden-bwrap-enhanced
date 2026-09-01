@@ -88,11 +88,17 @@ readonly _LOG_TRACE=600
 # LOGGING — all output to stderr, gated by LOG_LEVEL
 # ==============================================================================
 
-# _log LEVEL TAG MESSAGE  — emit iff LEVEL <= LOG_LEVEL
-# LOG_LEVEL is a local variable in each cmd_* function; passed as arg here.
+# _log THRESHOLD LEVEL TAG MESSAGE  — emit iff LEVEL <= THRESHOLD
+# EXCEPTION: ERROR and FATAL are ALWAYS emitted regardless of threshold.
+# Includes caller function:line for debuggability (log4j-style stack introspection).
+# FUNCNAME[2] = actual caller (skips convenience wrapper), BASH_LINENO[1] = its line.
 _log() {
     local threshold="$1" level="$2" tag="$3"; shift 3
-    [[ "$level" -le "$threshold" ]] && printf '%s %s\n' "$tag" "$*" >&2 || true
+    local caller="${FUNCNAME[2]:-main}" lineno="${BASH_LINENO[1]:-0}"
+    # ERROR and FATAL are always emitted regardless of log level threshold
+    if [[ "$level" -le "${_LOG_ERROR}" ]] || [[ "$level" -le "$threshold" ]]; then
+        printf '%s %s:%d %s\n' "$tag" "$caller" "$lineno" "$*" >&2
+    fi
 }
 
 # Convenience wrappers — caller passes threshold as first arg
@@ -518,6 +524,40 @@ _fsck_check_root() {
     if [[ "$verbose" == "true" ]]; then _info "$t" "fsck: [OK] root is a directory: ${root}"; fi
 }
 
+# _fsck_check_accessible THRESHOLD ROOT — verify root is readable+traversable; exit 8 if not
+_fsck_check_accessible() {
+    local t="$1" root="$2"
+    if [[ ! -r "$root" || ! -x "$root" ]]; then
+        _error "$t" "fsck: operational error: root is not readable/traversable: ${root}"
+        _info  "$t" "fsck: check permissions on ${root}  (need +r +x)"
+        exit 8
+    fi
+}
+
+# _fsck_quick_looks_clean ROOT USER — fast surface scan (existence only).
+# Returns 0 if root "looks clean" on the surface; 1 otherwise.
+# This check intentionally does NOT validate symlink targets — that is
+# the job of the deep checks (forced via -f).
+_fsck_quick_looks_clean() {
+    local root="$1" user="$2"
+    local dirs=( usr etc home proc dev tmp run opt var )
+    local symlinks=( bin lib lib64 )
+    for d in "${dirs[@]}"; do
+        [[ -d "${root}/${d}" ]] || return 1
+    done
+    for s in "${symlinks[@]}"; do
+        [[ -e "${root}/${s}" || -L "${root}/${s}" ]] || return 1
+    done
+    [[ -d "${root}/home/${user}" ]] || return 1
+    # Check for unexpected top-level entries — if any exist, the root
+    # is not "clean" and deep checks (including unexpected-entry warnings) must run.
+    local expected_count=12   # 9 dirs + 3 symlinks = 12 top-level entries
+    local actual_count
+    actual_count="$(find "$root" -maxdepth 1 -mindepth 1 -print0 | tr -cd '\0' | wc -c)"
+    [[ "$actual_count" -le "$expected_count" ]] || return 1
+    return 0
+}
+
 # _fsck_check_dirs THRESHOLD ROOT REPAIR_MODE VERBOSE — echoes exit-bit (0, 1, or 2)
 # When repair==interactive, reads y/N answers from fd 9 (opened by caller).
 _fsck_check_dirs() {
@@ -602,7 +642,8 @@ _fsck_check_home() {
     fi
     if [[ ! -d "$home_path" ]]; then
         _error "$t" "fsck: home path exists but is not a directory: ${home_path}"
-        exit 4
+        printf '4'
+        return
     fi
     if [[ "$verbose" == "true" ]]; then _info "$t" "fsck: [OK] user home: ${home_path}"; fi
     printf '0'
@@ -683,6 +724,30 @@ cmd_fsck() {
 
     _fsck_check_root "$log_level" "$host_real_root" "$verbose"
 
+    # Accessibility pre-check: root exists and is a directory (check_root passed)
+    # but can we actually read and traverse it?  If not → exit 8 (operational error).
+    _fsck_check_accessible "$log_level" "$host_real_root"
+
+    # Quick-check optimization: if root "looks clean" on a surface scan
+    # (all expected entries exist) AND none of the deep-check triggers are set,
+    # short-circuit to exit 0.  This skips deep validation (e.g. symlink target
+    # correctness), which is why -f exists: to force those deep checks.
+    # Also defeated by -v (user asked for per-check results) and -n (check-only
+    # mode expects detailed evaluation).
+    if [[ "$force" == "false" && "$repair_mode" == "none" \
+       && "$check_only" == "false" && "$verbose" == "false" ]]; then
+        if _fsck_quick_looks_clean "$host_real_root" "$virtual_user_name"; then
+            _info "$log_level" "fsck: no errors found"
+            exit 0
+        fi
+    fi
+
+    # -- Deep checks (always run when -f is set, or root looks damaged) ----------
+
+    # Operational error trap: if any deep check fails internally (not a user-facing
+    # root problem, but fsck itself breaking), catch it and exit 8.
+    trap '_error "$log_level" "fsck: operational error during check execution"; exit 8' ERR
+
     # For -r (interactive): open the TTY input source as fd 9 once, here in the
     # parent process.  All subshell read <&9 calls inherit the same open fd, so
     # sequential reads consume lines in order without re-opening the file.
@@ -698,6 +763,12 @@ cmd_fsck() {
     exit_bit=$(( exit_bit | bit ))
 
     bit="$(_fsck_check_home "$log_level" "$host_real_root" "$virtual_user_name" "$verbose")"
+    # Home check returns 4 for uncorrectable (e.g. home is a file, not a dir).
+    # Exit 4 immediately — don't OR into bitmap (4 is a hard stop).
+    if [[ "$bit" -eq 4 ]]; then
+        trap - ERR
+        exit 4
+    fi
     exit_bit=$(( exit_bit | bit ))
 
     if [[ "$repair_mode" == "interactive" ]]; then
@@ -705,6 +776,9 @@ cmd_fsck() {
     fi
 
     _fsck_check_unexpected_entries "$log_level" "$host_real_root" "$verbose"
+
+    # Remove operational error trap — all checks completed successfully
+    trap - ERR
 
     if [[ "$exit_bit" -eq 0 ]]; then
         _info "$log_level" "fsck: no errors found"
@@ -784,12 +858,12 @@ _start_validate_paths() {
     if [[ ! -d "$root" ]]; then
         _error "$t" "start: --host-real-root does not exist: ${root}"
         _info  "$t" "Run: ${_SCRIPT_NAME} provision --host-real-root ${root}  (creates dirs via mkdir -p)"
-        exit 1
+        _fatal "$t" "start: cannot proceed without a valid root directory"
     fi
     if [[ ! -d "${home_parent}/${user}" ]]; then
         _error "$t" "start: user home does not exist: ${home_parent}/${user}"
         _info  "$t" "Run: ${_SCRIPT_NAME} provision --host-real-root ${root}  (creates dirs via mkdir -p)"
-        exit 1
+        _fatal "$t" "start: cannot proceed without a valid user home"
     fi
 }
 
@@ -829,17 +903,65 @@ exec_sandbox() {
     shift 16
     local target_cmd=("$@")
 
-    _info "$t" "start: exec_sandbox not yet implemented (skeleton)"
-    _debug "$t" "start: root=${root} user=${user} dry=${dry_run}"
+    # --- Build bwrap argv (minimum viable) ---
+    local -a argv=()
+
+    # Step 1: RW root — the virtual root becomes /
+    argv+=( --bind "$root" / )
+
+    # Step 2: System binaries — bind host /usr read-only + usr-merge symlinks
+    argv+=( --ro-bind /usr /usr )
+    argv+=( --symlink usr/bin /bin )
+    argv+=( --symlink usr/lib /lib )
+    # lib64 may not exist on all architectures; use symlink anyway (bwrap handles it)
+    argv+=( --symlink usr/lib64 /lib64 )
+
+    # Step 4: Kernel filesystems
+    argv+=( --proc /proc )
+    argv+=( --dev /dev )
+
+    # Step 5: Writable tmpfs
+    argv+=( --tmpfs /tmp )
+
+    # Namespace isolation (individual flags for passthrough control later)
+    argv+=( --unshare-pid )
+    argv+=( --unshare-ipc )
+    argv+=( --unshare-uts )
+    argv+=( --unshare-cgroup )
+
+    # Network: default deny (passthrough flag will conditionally remove this later)
+    if [[ "$net" != "true" ]]; then
+        argv+=( --unshare-net )
+    fi
+
+    # Cleanup: kill sandbox if parent dies
+    argv+=( --die-with-parent )
+
+    # Environment: default is wipe everything (jail inherits NOTHING).
+    # --env-passthrough overrides: inherit host env (no --clearenv).
+    if [[ "$env_pt" != "true" ]]; then
+        argv+=( --clearenv )
+        argv+=( --setenv HOME "/home/${user}" )
+        argv+=( --setenv USER "${user}" )
+        argv+=( --setenv PATH "/usr/bin:/bin" )
+    fi
+
+    # Command separator and target
+    argv+=( -- "${target_cmd[@]}" )
+
+    # --- Mode dispatch ---
     if [[ "$dry_run" == "true" ]]; then
-        _info "$t" "[DRY RUN] bwrap [args would appear here]"
+        _info "$t" "[DRY RUN] bwrap ${argv[*]}"
         exit 0
     fi
     if [[ "$validate" == "true" ]]; then
-        _info "$t" "[VALIDATE] all flags resolved cleanly"
+        _info "$t" "[VALIDATE] all flags and paths validated cleanly"
         exit 0
     fi
-    _fatal "$t" "start: exec_sandbox is not yet implemented"
+
+    # Normal mode: exec bwrap (replaces this shell)
+    _debug "$t" "start: exec bwrap ${argv[*]}"
+    exec bwrap "${argv[@]}"
 }
 
 cmd_start() {
@@ -961,9 +1083,13 @@ cmd_start() {
         _err_missing_cmd_separator "$log_level"
     fi
 
-    # Preflight (skip for dry-run)
+    # Preflight (skip for dry-run and validate-only)
     if [[ "$dry_run" == "false" && "$validate_only" == "false" ]]; then
         _start_preflight "$log_level"
+    fi
+
+    # Path validation: always run unless dry-run (validate-only DOES validate paths per spec)
+    if [[ "$dry_run" == "false" ]]; then
         _start_validate_paths "$log_level" "$host_real_root" "$host_real_home_parent" "$virtual_user_name"
     fi
 

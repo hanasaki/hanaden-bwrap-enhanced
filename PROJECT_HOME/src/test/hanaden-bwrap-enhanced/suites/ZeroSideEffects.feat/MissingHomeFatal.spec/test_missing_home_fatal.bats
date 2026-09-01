@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # (c) 2026-* Frederick Bloom -- test_missing_home_fatal.bats -- Hanaden AI
-# SPEC: MissingHomeFatal.spec -- missing home dir -> ERROR exit 1
+# SPEC: MissingHomeFatal.spec -- missing home dir -> FATAL exit 2
 # ==============================================================================
 
 setup() {
@@ -21,14 +21,14 @@ _run_missing_home() {
         --host-real-root "$VALID_ROOT" "$@" -- /bin/true 2>&1
 }
 
-@test "ZSE-HOME-001: root exists but home missing -- exit 1" {
+@test "ZSE-HOME-001: root exists but home missing -- exit 2" {
     run _run_missing_home
-    [ "$status" -eq 1 ]
+    [ "$status" -eq 2 ]
 }
 
-@test "ZSE-HOME-002: root exists but home missing -- [ERROR] in stderr" {
+@test "ZSE-HOME-002: root exists but home missing -- [FATAL] in stderr" {
     run _run_missing_home
-    [[ "$output" == *"[ERROR]"* ]]
+    [[ "$output" == *"[FATAL]"* ]]
 }
 
 @test "ZSE-HOME-003: root exists but home missing -- mkdir hint in stderr" {

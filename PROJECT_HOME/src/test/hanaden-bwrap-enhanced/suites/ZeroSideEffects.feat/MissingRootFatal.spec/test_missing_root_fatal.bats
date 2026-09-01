@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # (c) 2026-* Frederick Bloom -- test_missing_root_fatal.bats -- Hanaden AI
-# SPEC: MissingRootFatal.spec -- missing root dir -> ERROR exit 1
+# SPEC: MissingRootFatal.spec -- missing root dir -> FATAL exit 2
 # ==============================================================================
 
 setup() {
@@ -15,14 +15,14 @@ _run_missing_root() {
         --host-real-root "/nonexistent/zse/$(date +%N)" "$@" -- /bin/true 2>&1
 }
 
-@test "ZSE-ROOT-001: missing root dir -- exit 1" {
+@test "ZSE-ROOT-001: missing root dir -- exit 2" {
     run _run_missing_root
-    [ "$status" -eq 1 ]
+    [ "$status" -eq 2 ]
 }
 
-@test "ZSE-ROOT-002: missing root dir -- [ERROR] in stderr" {
+@test "ZSE-ROOT-002: missing root dir -- [FATAL] in stderr" {
     run _run_missing_root
-    [[ "$output" == *"[ERROR]"* ]]
+    [[ "$output" == *"[FATAL]"* ]]
 }
 
 @test "ZSE-ROOT-003: missing root dir -- mkdir hint in stderr" {

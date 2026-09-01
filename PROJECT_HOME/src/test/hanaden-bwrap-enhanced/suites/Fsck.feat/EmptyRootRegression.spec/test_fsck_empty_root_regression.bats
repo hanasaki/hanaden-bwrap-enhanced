@@ -84,8 +84,12 @@ teardown() { rm -rf "$WORK"; }
     [ "$status" -eq 1 ]
 }
 
-@test "FSCK-EMPTY-009: empty root with --log-level FATAL exits 1 with no output" {
+@test "FSCK-EMPTY-009: empty root with --log-level FATAL still emits [ERROR] (always emitted)" {
     run bash "$SCRIPT" fsck --host-real-root "$ROOT" --log-level FATAL
     [ "$status" -eq 1 ]
-    [ -z "$output" ]
+    # Per spec: ERROR and FATAL are "always emitted regardless of log level"
+    [[ "$output" == *"[ERROR]"* ]]
+    # But INFO/WARN/DEBUG/TRACE must be suppressed
+    [[ "$output" != *"[INFO]"* ]]
+    [[ "$output" != *"[WARN]"* ]]
 }
