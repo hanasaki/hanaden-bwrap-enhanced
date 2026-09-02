@@ -5,24 +5,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Technical Overview — V-Universe | Hanaden</title>
-  <meta name="description" content="V-Universe (bwrap-enhanced) technical overview: VFS topology, mount namespace architecture, CLI reference, security model, test harness, and SDLC specifications. By Frederick Bloom.">
+  <meta name="description" content="V-Universe technical overview: VFS topology, mount namespace architecture, CLI reference, security model, test harness, and SDLC specifications. ">
   <link rel="stylesheet" href="../../shared/style.css">
 </head>
 <body>
   <nav class="nav">
     <div class="nav__inner">
       <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
-      <ul class="nav__links">
-        <li><a href="index.html" class="active">Overview</a></li>
-        <li><a href="architecture.html">Architecture</a></li>
-        <li><a href="cli-reference.html">CLI</a></li>
-        <li><a href="security-model.html">Security</a></li>
-        <li><a href="test-harness.html">Test Harness</a></li>
-        <li><a href="../project-sdlc/index.html">SDLC</a></li>
-        <li><a href="../project-sdlc/versions.html">Spec Versions</a></li>
-        <li><a href="releases.html">Releases</a></li>
-        <li><a href="../project-sdlc/versions.html">History</a></li>
-      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
       <div class="nav__mode-switch">
         <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
         <a href="index.html" class="nav__mode-btn active">Technical</a>
@@ -39,9 +33,6 @@
       <div class="section-header" style="margin-bottom: var(--space-xl);">
         <div class="section-header__eyebrow">⌘ Technical Documentation</div>
         <h1><span class="gradient">V-Universe</span> Internals</h1>
-        <p style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.12em; text-transform: uppercase;">
-          powered by bwrap-enhanced
-        </p>
         <p style="color: var(--text-secondary); font-size: 0.88rem; max-width: 600px; line-height: 1.5;">
           Mount namespace isolation. Zero-side-effect VFS construction. FD-injected identity.
           Single-script deployment with kernel-enforced containment boundaries.
@@ -232,13 +223,15 @@ graph TD
     </div>
 
     <aside class="page-sidebar">
-      <div class="page-sidebar__heading">On This Page</div>
-      <ul class="page-sidebar__links">
-        <li><a href="#metrics">At a Glance</a></li>
-        <li><a href="#tiers">Security Tiers</a></li>
-        <li><a href="#docs">Documentation</a></li>
-        <li><a href="#vfs">VFS Topology</a></li>
-        <li><a href="#sdlc-layers">SDLC Layers</a></li>
+            <div class="page-sidebar__heading">TECHNICAL · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html" class="active">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI Reference</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Quality</a></li>
+        <li><a href="releases.html">Change Log</a></li>
       </ul>
     </aside>
   </div>

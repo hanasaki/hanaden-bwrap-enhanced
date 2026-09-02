@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDLC Quality Engineering — V-Universe | Hanaden</title>
+  <meta name="description" content="Technical quality engineering for the SDLC engine: guard implementation, breaker mechanics, chaos testing, and verification methodology.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-sdlc/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Quality Engineering</div>
+        <h1>Verification <span class="gradient">Methodology</span></h1>
+        <p>How the SDLC engine verifies itself: guard mechanics, breaker thresholds, chaos testing, and anti-reward-hacking.</p>
+      </div>
+
+      <section id="guard-impl" class="mb-2xl">
+        <h2>Guard Implementation</h2>
+        <p>Guards are the first line of defense against process degradation. Implementation details:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Guard Level</th><th>Implementation</th><th>Trigger Frequency</th></tr></thead>
+            <tbody>
+              <tr><td>L0: Strategy</td><td>Market data comparison, assumption age tracking, strategic drift detection</td><td>Every sprint boundary</td></tr>
+              <tr><td>L1: Drivers</td><td>Problem statement validation, alternative enumeration, stakeholder alignment check</td><td>Every feature completion</td></tr>
+              <tr><td>L2: Features</td><td>Adversarial review, scope creep detection, dependency analysis</td><td>Every state entry</td></tr>
+              <tr><td>L3: Specs</td><td>Mutation testing, specification completeness, edge case enumeration</td><td>Every state entry</td></tr>
+              <tr><td>L4: Tests</td><td>Sabotage/mutation/stranger tests, property-based generation</td><td>Every test run</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="breaker-mechanics" class="mb-2xl">
+        <h2>Emergency Breaker Mechanics</h2>
+        <p>Breakers monitor system-wide health metrics and trip when thresholds are exceeded:</p>
+        <ul class="feature-list">
+          <li><strong>Hard constraints:</strong> Maximum iterations per work item, maximum time in any single state, maximum WIP across all agents</li>
+          <li><strong>Asymmetric data injection:</strong> Periodically introduce outside-perspective reviews from agents unfamiliar with the project</li>
+          <li><strong>Chaos engineering:</strong> Randomly disable guards, inject failures, and observe system response</li>
+          <li><strong>Governance escalation:</strong> When automated metrics indicate sustained degradation, escalate to human review</li>
+        </ul>
+        <div class="callout callout--red">
+          <p><strong>Death spiral detection:</strong> When guard block rate exceeds 40% over a rolling window, when the same node oscillates between states more than 3 times, or when WIP limits are sustained at maximum for more than 2 sprint cycles — breakers trip automatically.</p>
+        </div>
+      </section>
+
+      <section id="anti-reward" class="mb-2xl">
+        <h2>Anti-Reward-Hacking</h2>
+        <p>The engine itself must not game its own metrics. Three prohibited failure modes:</p>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-red" style="font-size: 0.9rem;">Proxy Exploitation</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Optimizing for green tests instead of correct code. A passing test is a proxy for correctness, not proof of it.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple" style="font-size: 0.9rem;">Shortcut Lock-In</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Taking the fastest path to "done" when the correct path requires more work. Shortcuts that produce identical metrics are still prohibited.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-cyan" style="font-size: 0.9rem;">Completion Theater</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Reporting success based on activity (commits, lines, meetings) instead of outcomes (working features, satisfied requirements).</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="verification" class="mb-2xl">
+        <h2>Verification Methodology</h2>
+        <p>The engine's own correctness is verified through:</p>
+        <ul class="feature-list">
+          <li><strong>State machine property tests:</strong> Verify all transitions satisfy invariants (determinism, totality, guard-first)</li>
+          <li><strong>Event store integrity:</strong> Verify append-only constraint, ordering guarantees, and replay consistency</li>
+          <li><strong>Guard coverage:</strong> Every node must have at least one active guard. Ungarded nodes are flagged.</li>
+          <li><strong>Breaker calibration:</strong> Thresholds are validated against historical data to avoid false positives and false negatives</li>
+          <li><strong>End-to-end replay:</strong> Complete project histories are replayed from event log to verify state reconstruction matches original</li>
+        </ul>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="core-specifications.html">Core Specifications</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html" class="active">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

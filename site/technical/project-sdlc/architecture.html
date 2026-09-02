@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDLC Engine Architecture — V-Universe | Hanaden</title>
+  <meta name="description" content="Technical architecture of the SDLC engine: event-sourced state machine, star topology, guard system, and feedback loops.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-sdlc/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Engine Architecture</div>
+        <h1>Inside the <span class="gradient">SDLC Engine</span></h1>
+        <p>The technical architecture: event store, state machine, transition evaluator, and orchestration layer.</p>
+      </div>
+
+      <section id="core" class="mb-2xl">
+        <h2>Engine Core</h2>
+        <p>The engine is an event-sourced state machine with three primary components:</p>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green" style="font-size: 0.9rem;">Event Store</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Append-only, immutable log. Partitioned by work-item-id. Every state change is an event. Total ordering within partition.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple" style="font-size: 0.9rem;">State Machine</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Materialized from event log. Replayable from any checkpoint. Current state is always a pure function of the event history.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-cyan" style="font-size: 0.9rem;">Transition Evaluator</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Pure function: <code>(state, event) → state'</code>. Deterministic. Same input always produces same output. No side effects.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="topology" class="mb-2xl">
+        <h2>Star Topology</h2>
+        <p>The orchestration layer uses a star topology for parallel work execution:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Component</th><th>Role</th><th>Responsibilities</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Hub</strong></td><td>Coordinator</td><td>State management, task assignment, WIP limits, conflict resolution, guard orchestration</td></tr>
+              <tr><td><strong>Agents</strong></td><td>Executors</td><td>Pull tasks, execute work, report results, request reviews</td></tr>
+              <tr><td><strong>Event Bus</strong></td><td>Communication</td><td>Structured events between hub and agents. Typed, versioned, ordered.</td></tr>
+              <tr><td><strong>DAG Engine</strong></td><td>Scheduler</td><td>Dependency resolution, auto-unblocking, critical path analysis</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="guard-system" class="mb-2xl">
+        <h2>Guard System Architecture</h2>
+        <p>Guards are first-class components registered on every node in the artifact hierarchy:</p>
+        <ul class="feature-list">
+          <li><strong>Registration:</strong> Each node declares 1..N guards at creation time</li>
+          <li><strong>Trigger:</strong> Guards fire on every state entry — not just on transitions, but on every observation</li>
+          <li><strong>Actions:</strong> Guards can <code>PASS</code> (allow), <code>BLOCK</code> (reject transition), or <code>REDIRECT</code> (force alternative path)</li>
+          <li><strong>Escalation:</strong> Blocked transitions generate events that propagate up the hierarchy</li>
+          <li><strong>Emergency:</strong> When guard density exceeds thresholds, emergency breakers trip and force system reset</li>
+        </ul>
+      </section>
+
+      <section id="tdd-machine" class="mb-2xl">
+        <h2>TDD State Machine</h2>
+        <p>Every work item has a TDD sub-machine with strict transition rules:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>From</th><th>Event</th><th>To</th><th>Constraint</th></tr></thead>
+            <tbody>
+              <tr><td><code>NOT_STARTED</code></td><td><code>TEST_CREATED</code></td><td><code>RED</code></td><td>Test must exist and fail</td></tr>
+              <tr><td><code>RED</code></td><td><code>TEST_PASS</code></td><td><code>GREEN</code></td><td>Implementation makes test pass</td></tr>
+              <tr><td><code>GREEN</code></td><td><code>REFACTOR_START</code></td><td><code>REFACTOR</code></td><td>Tests must stay green</td></tr>
+              <tr><td><code>GREEN/REFACTOR</code></td><td><code>TEST_FAIL</code></td><td><code>RED</code></td><td>Regression detected</td></tr>
+              <tr><td><code>NOT_STARTED</code></td><td><code>TEST_PASS</code></td><td>❌ BLOCKED</td><td><strong>Forbidden:</strong> Cannot skip RED</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html" class="active">Architecture</a></li>
+        <li><a href="core-specifications.html">Core Specifications</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

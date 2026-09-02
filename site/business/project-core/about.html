@@ -4,22 +4,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About — V-Universe by Hanaden | Frederick Bloom</title>
-  <meta name="description" content="About V-Universe, Hanaden, and Frederick Bloom. Project history, mission, and philosophy behind rootless namespace-isolated containment.">
+  <title>About — V-Universe | Hanaden</title>
+  <meta name="description" content="About V-Universe by Hanaden. Project history, mission, and philosophy behind rootless namespace-isolated containment.">
   <link rel="stylesheet" href="../../shared/style.css">
 </head>
 <body>
   <nav class="nav">
     <div class="nav__inner">
       <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
-      <ul class="nav__links">
-        <li><a href="index.html">Overview</a></li>
-        <li><a href="features.html">Features</a></li>
-        <li><a href="security.html">Security</a></li>
-        <li><a href="pricing.html">Licensing</a></li>
-        <li><a href="../project-sdlc/index.html">Process</a></li>
-        <li><a href="about.html">About</a></li>
-      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
       <div class="nav__mode-switch">
         <a href="index.html" class="nav__mode-btn active">Business</a>
         <a href="../../technical/project-core/index.html" class="nav__mode-btn">Technical</a>
@@ -33,19 +30,16 @@
 
       <div class="section-header" style="margin-bottom: var(--space-xl);">
         <div class="section-header__eyebrow">About</div>
-        <h1><span class="gradient">V-Universe</span> by Frederick Bloom</h1>
+        <h1>About <span class="gradient">V-Universe</span></h1>
       </div>
 
-      <section id="creator" class="mb-2xl">
-        <div class="card" style="padding: var(--space-xl);">
-          <h2 class="text-green" style="font-size: 1.3rem;">Frederick Bloom</h2>
-          <p class="text-muted" style="font-style: italic;">Creator &amp; Principal Engineer — Hanaden</p>
-          <p>V-Universe emerged from a practical need: as autonomous AI coding agents became central to
-          workflows, the lack of robust, rootless containment was an unacceptable security gap.</p>
-          <p>Existing solutions — Docker, VMs, chroot — require root access, heavyweight infrastructure,
-          or trust-based isolation. V-Universe solves this with Linux user namespaces: kernel-enforced
-          isolation without elevated privileges.</p>
-        </div>
+      <section id="origin" class="mb-2xl">
+        <h2>Origin</h2>
+        <p>V-Universe emerged from a practical need: as autonomous AI coding agents became central to
+        workflows, the lack of robust, rootless containment was an unacceptable security gap.</p>
+        <p>Existing solutions — Docker, VMs, chroot — require root access, heavyweight infrastructure,
+        or trust-based isolation. V-Universe solves this with Linux user namespaces: kernel-enforced
+        isolation without elevated privileges.</p>
       </section>
 
       <section id="mission" class="mb-2xl">
@@ -105,13 +99,17 @@
     </div>
 
     <aside class="page-sidebar">
-      <div class="page-sidebar__heading">On This Page</div>
-      <ul class="page-sidebar__links">
-        <li><a href="#creator">Frederick Bloom</a></li>
-        <li><a href="#mission">Mission</a></li>
-        <li><a href="#principles">Principles</a></li>
-        <li><a href="#timeline">Timeline</a></li>
-        <li><a href="#contact">Contact</a></li>
+            <div class="page-sidebar__heading">BUSINESS · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html">Licensing</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
       </ul>
     </aside>
   </div>

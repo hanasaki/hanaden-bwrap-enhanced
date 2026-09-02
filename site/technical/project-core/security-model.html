@@ -2,9 +2,9 @@
 <!-- (c) 2026-* Frederick Bloom — Hanaden -->
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Security Model — V-Universe Technical | Hanaden</title>
+  <title>Security Model — V-Universe | Hanaden</title>
   <meta name="description" content="V-Universe security model: Constitutional articles, invariants, threat model, security tiers, and the Immutable Principle. Full technical specification.">
   <link rel="stylesheet" href="../../shared/style.css">
 </head>
@@ -12,17 +12,11 @@
   <nav class="nav">
     <div class="nav__inner">
       <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
-      <ul class="nav__links">
-        <li><a href="index.html">Overview</a></li>
-        <li><a href="architecture.html">Architecture</a></li>
-        <li><a href="cli-reference.html">CLI</a></li>
-        <li><a href="security-model.html" class="active">Security</a></li>
-        <li><a href="test-harness.html">Test Harness</a></li>
-        <li><a href="../project-sdlc/index.html">SDLC</a></li>
-        <li><a href="../project-sdlc/versions.html">Spec Versions</a></li>
-        <li><a href="releases.html">Releases</a></li>
-        <li><a href="../project-sdlc/versions.html">History</a></li>
-      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
       <div class="nav__mode-switch">
         <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
         <a href="index.html" class="nav__mode-btn active">Technical</a>
@@ -31,22 +25,20 @@
     </div>
   </nav>
 
-  <section id="header" class="section pt-nav" style="padding-top: calc(var(--nav-height) + 3rem);">
-    <div class="container">
-      <div class="section-header">
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
         <div class="section-header__eyebrow">Security Model</div>
         <h1>The <span class="gradient">Constitution</span></h1>
         <p>The security model is codified in <code>CONSTITUTION.md</code> — a binding governance document
         that defines invariants, articles, and enforcement rules. Every code change must satisfy
         the Constitution or be rejected.</p>
       </div>
-    </div>
-  </section>
 
-  <!-- Article II — The Immutable Principle -->
-  <section id="immutable" class="section section--alt">
-    <div class="container">
-      <h2 class="mb-lg">Article II — The Immutable Principle</h2>
+      <!-- Article II — The Immutable Principle -->
+      <section id="immutable" class="mb-2xl">
+<h2 class="mb-lg">Article II — The Immutable Principle</h2>
 
       <div class="grid grid-3" style="gap: 1.5rem; margin-bottom: var(--space-2xl);">
         <div class="card" style="border-top: 3px solid var(--accent-green);">
@@ -67,13 +59,11 @@
           The sandbox config is invisible to the contained process.</p>
         </div>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- Security Invariants -->
-  <section id="invariants" class="section">
-    <div class="container">
-      <h2 class="mb-lg">Security Invariants</h2>
+      <!-- Security Invariants -->
+      <section id="invariants" class="mb-2xl">
+<h2 class="mb-lg">Security Invariants</h2>
       <p class="mb-xl">These invariants MUST hold at all times. Each is verified by executable specifications.</p>
 
       <div class="table-wrap">
@@ -125,13 +115,11 @@
           </tbody>
         </table>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- Threat Model -->
-  <section id="threats" class="section section--alt">
-    <div class="container">
-      <h2 class="mb-lg">Threat Model</h2>
+      <!-- Threat Model -->
+      <section id="threats" class="mb-2xl">
+<h2 class="mb-lg">Threat Model</h2>
 
       <div class="table-wrap mb-2xl">
         <table>
@@ -191,13 +179,11 @@
         This is not "access denied" — it's "path does not exist." There is no error message to
         reverse-engineer, no permission boundary to probe.</p>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- Security Tiers (Technical) -->
-  <section id="tier-map" class="section">
-    <div class="container">
-      <h2 class="mb-lg">Security Tier Mapping</h2>
+      <!-- Security Tiers (Technical) -->
+      <section id="tier-map" class="mb-2xl">
+<h2 class="mb-lg">Security Tier Mapping</h2>
 
       <div class="table-wrap">
         <table>
@@ -243,8 +229,23 @@
         <strong>Note:</strong> Network (<code>--net-passthrough</code>) and environment (<code>--env-passthrough</code>)
         are orthogonal to the tier system. They can be combined with any tier but are denied by default at all levels.
       </p>
+      </section>
+
     </div>
-  </section>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI Reference</a></li>
+        <li><a href="security-model.html" class="active">Security</a></li>
+        <li><a href="test-harness.html">Quality</a></li>
+        <li><a href="releases.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
   <script src="../../shared/mermaid.min.js"></script>
   <script src="../../shared/nav.js"></script>
 </body>

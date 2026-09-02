@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Process Architecture — V-Universe | Hanaden</title>
+  <meta name="description" content="Business-level view of the SDLC engine architecture: how the development process is structured, managed, and self-corrects.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../../technical/project-sdlc/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Process Architecture</div>
+        <h1>A Self-Correcting <span class="gradient">Development Engine</span></h1>
+        <p>How the SDLC engine structures work from strategy to code, with feedback loops at every level.</p>
+      </div>
+
+      <section id="hierarchy" class="mb-2xl">
+        <h2>The Artifact Hierarchy</h2>
+        <p>Development flows through six layers. Each layer produces artifacts that feed the next, and every layer has feedback loops that can correct layers above it:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Artifact</th><th>Question Answered</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge--purple">L0</span></td><td>Corporate Strategy</td><td>Why does this project exist?</td></tr>
+              <tr><td><span class="badge badge--red">L1</span></td><td>Technical Drivers</td><td>What problem are we solving?</td></tr>
+              <tr><td><span class="badge badge--green">L1</span></td><td>Technical Motivators</td><td>How do we solve it?</td></tr>
+              <tr><td><span class="badge badge--cyan">L2</span></td><td>Features + Architecture</td><td>What to build and how?</td></tr>
+              <tr><td><span class="badge badge--red">L3</span></td><td>Specifications</td><td>Exact behavior defined</td></tr>
+              <tr><td><span class="badge badge--green">L4</span></td><td>Test Code</td><td>Automated verification</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="feedback" class="mb-2xl">
+        <h2>Feedback Loops</h2>
+        <p>The most powerful aspect: tests don't just verify code — they improve the entire stack. When tests expose problems beyond the code level, feedback escalates:</p>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-red" style="font-size: 0.9rem;">RED Feedback</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Code regression — fix is local and immediate. The spec is right, the implementation is wrong.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green" style="font-size: 0.9rem;">GREEN Feedback</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Integration flaw or broken requirement — fix requires mid-level redesign. The spec may need revision.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple" style="font-size: 0.9rem;">BLUE Feedback</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Paradigm shift — the strategy itself is wrong. Requires strategic rethink. Rare but critical.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-cyan" style="font-size: 0.9rem;">Emergency Breakers</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">When all guards fail and the system enters a death spiral, breakers trip and force a full reset with lessons learned.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="orchestration" class="mb-2xl">
+        <h2>Parallel Orchestration</h2>
+        <p>Work doesn't flow sequentially — it flows through a star topology:</p>
+        <ul class="feature-list">
+          <li><strong>Hub coordinates:</strong> A central orchestrator manages state, assigns work, and enforces WIP limits</li>
+          <li><strong>Agents execute:</strong> Independent workers pull tasks, execute them, and report results</li>
+          <li><strong>DAG dependencies:</strong> Tasks declare dependencies; the engine unblocks them automatically</li>
+          <li><strong>Optimistic concurrency:</strong> Multiple agents work in parallel with conflict detection and resolution</li>
+        </ul>
+        <p>For the full technical specification, see <a href="../../technical/project-sdlc/index.html">Technical → SDLC Overview</a>.</p>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">BUSINESS · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html" class="active">Architecture</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

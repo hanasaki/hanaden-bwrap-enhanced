@@ -111,26 +111,91 @@
       });
     }
 
+    // --- DRY Table of Contents — auto-generate "On This Page" from headings ---
+    function generateTOC(sidebar) {
+      // Find or create the TOC heading
+      var tocHeading = sidebar.querySelector('.page-sidebar__toc-heading');
+      var tocList = sidebar.querySelector('.page-sidebar__toc');
+
+      // Scan page for headings with IDs (h2 and sections with id + heading)
+      var anchors = [];
+      var mainContent = document.querySelector('.page-layout__main') || document.querySelector('main');
+      if (!mainContent) return;
+
+      // Collect h2[id] and section[id] > h2/h3
+      mainContent.querySelectorAll('h2[id], section[id]').forEach(function (el) {
+        var id, text;
+        if (el.tagName === 'SECTION') {
+          id = el.id;
+          var heading = el.querySelector('h2, h3');
+          text = heading ? heading.textContent.trim() : '';
+        } else {
+          id = el.id;
+          text = el.textContent.trim();
+        }
+        if (id && text) {
+          anchors.push({ id: id, text: text.substring(0, 45) });
+        }
+      });
+
+      // Also check for standalone anchored elements (divs with id + heading inside)
+      if (anchors.length < 2) {
+        mainContent.querySelectorAll('[id]').forEach(function (el) {
+          if (el.tagName === 'H2' || el.tagName === 'H3') {
+            anchors.push({ id: el.id, text: el.textContent.trim().substring(0, 45) });
+          }
+        });
+      }
+
+      if (anchors.length < 2) return; // Not enough sections to warrant a TOC
+
+      // Remove any existing hardcoded TOC list
+      if (tocList) tocList.remove();
+      if (tocHeading) tocHeading.remove();
+
+      // Also remove old hardcoded "On This Page" heading + following list
+      var headings = sidebar.querySelectorAll('.page-sidebar__heading');
+      headings.forEach(function (h) {
+        if (h.textContent.trim() === 'On This Page') {
+          var nextEl = h.nextElementSibling;
+          if (nextEl && nextEl.tagName === 'UL') nextEl.remove();
+          h.remove();
+        }
+      });
+
+      // Build new TOC
+      var heading = document.createElement('div');
+      heading.className = 'page-sidebar__heading page-sidebar__toc-heading';
+      heading.style.marginTop = 'var(--space-md)';
+      heading.textContent = 'On This Page';
+
+      var ul = document.createElement('ul');
+      ul.className = 'page-sidebar__links page-sidebar__toc';
+      anchors.forEach(function (a) {
+        var li = document.createElement('li');
+        var link = document.createElement('a');
+        link.href = '#' + a.id;
+        link.textContent = a.text;
+        li.appendChild(link);
+        ul.appendChild(li);
+      });
+
+      sidebar.appendChild(heading);
+      sidebar.appendChild(ul);
+    }
+
+    // Apply TOC to existing sidebars (skip pages with custom version-list)
+    var existingSidebar = document.querySelector('.page-sidebar');
+    if (existingSidebar && !existingSidebar.querySelector('.version-list')) {
+      generateTOC(existingSidebar);
+    }
+
     // --- Auto-sidebar generation for pages without one ---
     if (!document.querySelector('.page-sidebar')) {
       var sections = document.querySelectorAll('section[id]');
       if (sections.length >= 2) {
         var sidebar = document.createElement('aside');
         sidebar.className = 'page-sidebar';
-        sidebar.innerHTML = '<div class="page-sidebar__heading">On This Page</div>';
-        var ul = document.createElement('ul');
-        ul.className = 'page-sidebar__links';
-        sections.forEach(function (sec) {
-          var heading = sec.querySelector('h2, h3');
-          if (!heading) return;
-          var li = document.createElement('li');
-          var a = document.createElement('a');
-          a.href = '#' + sec.id;
-          a.textContent = heading.textContent.substring(0, 40);
-          li.appendChild(a);
-          ul.appendChild(li);
-        });
-        sidebar.appendChild(ul);
 
         var nav = document.querySelector('.nav');
         var footer = document.querySelector('.footer');
@@ -154,6 +219,9 @@
         } else {
           document.body.appendChild(main);
         }
+
+        // Generate TOC for the newly created sidebar
+        generateTOC(sidebar);
       }
     }
 

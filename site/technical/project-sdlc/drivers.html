@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDLC Technical Drivers — V-Universe | Hanaden</title>
+  <meta name="description" content="Technical drivers behind the SDLC engine: event sourcing, deterministic state machines, anti-fixation, and parallel orchestration.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-sdlc/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Technical Drivers</div>
+        <h1>Engineering Constraints That <span class="gradient">Shape the Engine</span></h1>
+        <p>The technical requirements and design forces driving the SDLC engine's architecture.</p>
+      </div>
+
+      <section id="event-sourcing" class="mb-2xl">
+        <h2>Driver: Event Sourcing</h2>
+        <p>The engine must be fully auditable, replayable, and recoverable. This demands event sourcing:</p>
+        <ul class="feature-list">
+          <li><strong>Append-only log:</strong> Every state change is an immutable event. Nothing is overwritten or deleted.</li>
+          <li><strong>Replayability:</strong> The current state can be reconstructed from any checkpoint by replaying events.</li>
+          <li><strong>Total ordering:</strong> Events are ordered per work-item-id. Concurrent work items have independent event streams.</li>
+          <li><strong>Audit trail:</strong> Complete history of what happened, when, why, and what triggered it.</li>
+        </ul>
+      </section>
+
+      <section id="determinism" class="mb-2xl">
+        <h2>Driver: Deterministic Transitions</h2>
+        <p>The state machine must be pure — same input events produce same output states. This enables:</p>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green">Testing</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">State transitions can be unit-tested in isolation. Given event X in state S, the output state is always S'.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple">Recovery</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Crash recovery replays the event log. No special recovery procedures. The log IS the recovery mechanism.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="parallelism" class="mb-2xl">
+        <h2>Driver: Parallel Execution</h2>
+        <p>Development work is inherently parallelizable. The engine must support concurrent execution without sacrificing correctness:</p>
+        <ul class="feature-list">
+          <li><strong>Star topology:</strong> Central hub coordinates, independent agents execute. No peer-to-peer complexity.</li>
+          <li><strong>WIP limits:</strong> Kanban-style work-in-progress limits prevent overloading.</li>
+          <li><strong>Optimistic concurrency:</strong> Agents work independently; conflicts detected and resolved at commit time.</li>
+          <li><strong>DAG dependencies:</strong> Tasks declare dependencies; the engine auto-schedules based on the dependency graph.</li>
+        </ul>
+      </section>
+
+      <section id="anti-fixation" class="mb-2xl">
+        <h2>Driver: Anti-Fixation</h2>
+        <p>Software projects tend toward fixation — repeating patterns even when they're not working. The engine must actively combat this:</p>
+        <ul class="feature-list">
+          <li><strong>Inline guards:</strong> Every node has 1..N guards that fire on state entry. Guards can BLOCK or REDIRECT transitions.</li>
+          <li><strong>Multi-layer enforcement:</strong> Guards at strategy, driver, motivator, feature, spec, and test levels.</li>
+          <li><strong>Emergency breakers:</strong> When guards fail and death spirals emerge, circuit breakers force a system reset.</li>
+          <li><strong>Lessons learned:</strong> After breaker trips, guards are re-armed with stronger rules derived from the failure.</li>
+        </ul>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html" class="active">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="core-specifications.html">Core Specifications</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

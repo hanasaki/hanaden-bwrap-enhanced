@@ -2,9 +2,9 @@
 <!-- (c) 2026-* Frederick Bloom — Hanaden -->
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Architecture — V-Universe Technical | Hanaden</title>
+  <title>Architecture — V-Universe | Hanaden</title>
   <meta name="description" content="V-Universe architecture: VFS topology, mount namespace isolation, initialization sequence, tmpfs evaporation model, and PID 1 foreground hold pattern.">
   <link rel="stylesheet" href="../../shared/style.css">
 </head>
@@ -12,17 +12,11 @@
   <nav class="nav">
     <div class="nav__inner">
       <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
-      <ul class="nav__links">
-        <li><a href="index.html">Overview</a></li>
-        <li><a href="architecture.html" class="active">Architecture</a></li>
-        <li><a href="cli-reference.html">CLI</a></li>
-        <li><a href="security-model.html">Security</a></li>
-        <li><a href="test-harness.html">Test Harness</a></li>
-        <li><a href="../project-sdlc/index.html">SDLC</a></li>
-        <li><a href="../project-sdlc/versions.html">Spec Versions</a></li>
-        <li><a href="releases.html">Releases</a></li>
-        <li><a href="../project-sdlc/versions.html">History</a></li>
-      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
       <div class="nav__mode-switch">
         <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
         <a href="index.html" class="nav__mode-btn active">Technical</a>
@@ -31,22 +25,32 @@
     </div>
   </nav>
 
-  <section id="header" class="section pt-nav" style="padding-top: calc(var(--nav-height) + 3rem);">
-    <div class="container">
-      <div class="section-header">
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
         <div class="section-header__eyebrow">Architecture</div>
         <h1>VFS Topology &amp; <span class="gradient">Namespace Isolation</span></h1>
         <p>The security boundary is the mount namespace itself. Visibility is the only access control.
         What the process can't see, it can't touch.</p>
       </div>
-    </div>
-  </section>
 
-  <!-- VFS Topology -->
-  <section id="vfs" class="section section--alt">
-    <div class="container">
-      <h2 class="mb-lg">Virtual Filesystem Layout</h2>
-      <p>When <code>bwrap-enhanced.sh start</code> executes, it constructs a complete virtual filesystem
+      <!-- VFS Topology -->
+      <section id="vfs" class="mb-2xl">
+<h2 class="mb-lg">VFS Filesystem Layout</h2>
+
+      <div class="callout callout--green mb-xl">
+        <p><strong>What is a VFS?</strong> A <em>Virtual Filesystem</em> (VFS) is a kernel abstraction layer
+        that presents a unified directory tree to a process, regardless of what physical storage — or
+        no storage at all — backs each mount point. Linux mount namespaces allow each process to see
+        its <strong>own</strong> VFS, completely independent of the host. V-Universe exploits this:
+        every sandbox gets a purpose-built VFS where <code>--ro-bind</code>, <code>--tmpfs</code>,
+        and <code>--bind</code> mounts compose a custom root that the kernel enforces — no
+        application-level checks required. The process literally cannot address paths that aren't
+        in its VFS.</p>
+      </div>
+
+      <p>When <code>bwrap-enhanced.sh start</code> executes, it constructs a complete VFS
       visible only to the contained process. The host filesystem is never directly accessible.</p>
 
       <div class="diagram mb-2xl">
@@ -106,58 +110,40 @@
           </ul>
         </div>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- Initialization Sequence -->
-  <section id="init-sequence" class="section">
-    <div class="container">
-      <h2 class="mb-lg">Initialization Sequence</h2>
+      <!-- Initialization Sequence -->
+      <section id="init-sequence" class="mb-2xl">
+<h2 class="mb-lg">Initialization Sequence</h2>
       <p class="mb-xl">The <code>start</code> subcommand constructs the sandbox through a deterministic sequence.
       Every step is validated before proceeding — failures are never silent.</p>
 
-      <div class="diagram">
-        <div class="diagram__label">Start Subcommand — Execution Flow</div>
-        <pre><code>┌─────────────────────────────────────────────────────────┐
-│  <span class="kw">bwrap-enhanced.sh start</span>  --host-real-root PATH -- CMD  │
-└───────────────────────────┬─────────────────────────────┘
-                            │
-                    ┌───────▼───────┐
-                    │  Parse flags  │
-                    │  + validate   │
-                    └───────┬───────┘
-                            │
-                    ┌───────▼───────┐
-                    │  Resolve all  │
-                    │  host paths   │
-                    └───────┬───────┘
-                            │
-                    ┌───────▼───────┐
-                    │  Generate FD  │   <span class="cmt">← /etc/passwd, /etc/group</span>
-                    │  identity     │   <span class="cmt">   via /dev/fd/N (zero disk writes)</span>
-                    └───────┬───────┘
-                            │
-                    ┌───────▼───────┐
-                    │  Build bwrap  │   <span class="cmt">← Assemble full bwrap argv[]</span>
-                    │  argument set │   <span class="cmt">   from resolved paths + flags</span>
-                    └───────┬───────┘
-                            │
-                ┌───────────▼───────────┐
-                │  <span class="flag">--dry-run?</span>           │──yes──▶ <span class="str">Print argv[] and exit</span>
-                └───────────┬───────────┘
-                            │ no
-                    ┌───────▼───────┐
-                    │  <span class="kw">exec bwrap</span>   │   <span class="cmt">← Replace shell process with bwrap</span>
-                    │  (PID 1 hold) │   <span class="cmt">   Foreground hold via /proc watcher</span>
-                    └───────────────┘</code></pre>
-      </div>
-    </div>
-  </section>
+      <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TD
+    classDef cmd fill:#1a1a2e,color:#e0e0ff,stroke:#7070ff,stroke-width:2px
+    classDef step fill:#1a2e1a,color:#c0ffc0,stroke:#00c853,stroke-width:2px
+    classDef decision fill:#2e1a00,color:#ffe0b2,stroke:#ff6d00,stroke-width:2px
+    classDef output fill:#006064,color:#fff,stroke:#00e5ff,stroke-width:2px
 
-  <!-- PID 1 Pattern -->
-  <section id="pid1" class="section section--alt">
-    <div class="container" style="max-width: 800px;">
-      <h2 class="mb-lg">PID 1 Foreground Hold</h2>
+    START["bwrap-enhanced.sh start\n--host-real-root PATH -- CMD"]:::cmd
+    PARSE["Parse flags + validate"]:::step
+    RESOLVE["Resolve all host paths"]:::step
+    IDENTITY["Generate FD identity\n/etc/passwd, /etc/group\nvia /dev/fd/N — zero disk writes"]:::step
+    BUILD["Build bwrap argument set\nAssemble full bwrap argv\nfrom resolved paths + flags"]:::step
+    DRY{"--dry-run?"}:::decision
+    PRINT["Print argv and exit"]:::output
+    EXEC["exec bwrap\nPID 1 foreground hold\nvia /proc watcher"]:::cmd
+
+    START --> PARSE --> RESOLVE --> IDENTITY --> BUILD --> DRY
+    DRY -->|yes| PRINT
+    DRY -->|no| EXEC
+      </div>
+      </section>
+
+      <!-- PID 1 Pattern -->
+      <section id="pid1" class="mb-2xl">
+<h2 class="mb-lg">PID 1 Foreground Hold</h2>
       <p>Inside the sandbox, the contained command runs as PID 1. The parent shell uses a
       zero-poll <code>/proc</code>-based watcher to maintain the foreground hold:</p>
 
@@ -175,13 +161,11 @@
         <li>No artifacts remain on the host filesystem</li>
         <li>The exit code of the contained process propagates to the caller</li>
       </ul>
-    </div>
-  </section>
+      </section>
 
-  <!-- Passthrough Architecture -->
-  <section id="passthrough" class="section">
-    <div class="container">
-      <h2 class="mb-lg">Passthrough Architecture</h2>
+      <!-- Passthrough Architecture -->
+      <section id="passthrough" class="mb-2xl">
+<h2 class="mb-lg">Passthrough Architecture</h2>
       <p class="mb-xl">Each passthrough flag selectively binds host resources into the sandbox.
       Privilege escalation follows a strict ordering: <code class="text-green">absent &lt; ro &lt; rw</code></p>
 
@@ -243,8 +227,23 @@
           </tbody>
         </table>
       </div>
+      </section>
+
     </div>
-  </section>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html" class="active">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI Reference</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Quality</a></li>
+        <li><a href="releases.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
   <script src="../../shared/mermaid.min.js"></script>
   <script src="../../shared/nav.js"></script>
 </body>

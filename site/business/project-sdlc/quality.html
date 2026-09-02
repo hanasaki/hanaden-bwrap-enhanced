@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDLC Quality — V-Universe | Hanaden</title>
+  <meta name="description" content="How the SDLC engine ensures quality at every level: from strategy validation to code verification.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../../technical/project-sdlc/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Quality Assurance</div>
+        <h1>Quality at <span class="gradient">Every Layer</span></h1>
+        <p>The SDLC engine doesn't just test code — it validates strategy, requirements, architecture, and process.</p>
+      </div>
+
+      <section id="layers" class="mb-2xl">
+        <h2>Multi-Layer Quality</h2>
+        <p>Traditional QA focuses on code. The SDLC engine extends quality assurance to every artifact in the hierarchy:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Quality Mechanism</th><th>What It Catches</th></tr></thead>
+            <tbody>
+              <tr><td>Strategy</td><td>Market re-scan, assumption audit</td><td>Outdated strategic direction</td></tr>
+              <tr><td>Drivers</td><td>Problem reframing, alternative analysis</td><td>Wrong problem being solved</td></tr>
+              <tr><td>Motivators</td><td>Solution diversity, competing approaches</td><td>Suboptimal solution approach</td></tr>
+              <tr><td>Features</td><td>Adversarial review, design spikes</td><td>Over-engineering, missing requirements</td></tr>
+              <tr><td>Specs</td><td>Mutation testing, stranger testing</td><td>Ambiguous or incomplete specifications</td></tr>
+              <tr><td>Code</td><td>TDD, property-based testing, fuzzing</td><td>Bugs, regressions, edge cases</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="guards" class="mb-2xl">
+        <h2>Anti-Fixation Guards</h2>
+        <p>Every node in the SDLC hierarchy has guards that fire on every state transition. These guards prevent:</p>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-red">Tunnel Vision</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Focusing too narrowly on one solution when better alternatives exist. Guards force exploration of the solution space.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple">Stale Assumptions</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Continuing to build on assumptions that are no longer valid. Guards periodically re-validate premises.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-cyan">Cargo Cult</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Doing things because "we've always done it this way." Guards challenge conventions and demand justification.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green">Completion Theater</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Reporting success based on activity metrics. Guards verify actual outcomes, not just process compliance.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="breakers" class="mb-2xl">
+        <h2>Emergency Breakers</h2>
+        <p>When guards fail and the system enters a death spiral — escalating pressure, narrowing focus, reactive fixes — emergency breakers trip:</p>
+        <ul class="feature-list">
+          <li><strong>Hard constraints:</strong> Resource limits, time limits, scope limits that cannot be overridden</li>
+          <li><strong>Asymmetric data:</strong> Deliberately introducing outside perspectives and conflicting information</li>
+          <li><strong>Chaos engineering:</strong> Randomly disabling components to find hidden dependencies</li>
+          <li><strong>Governance review:</strong> Human oversight when automated guards are insufficient</li>
+        </ul>
+        <p>After a breaker trips, the system undergoes a full reset: realign strategy, capture lessons learned, and re-arm guards with stronger rules.</p>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">BUSINESS · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html" class="active">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

@@ -2,9 +2,9 @@
 <!-- (c) 2026-* Frederick Bloom — Hanaden -->
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CLI Reference — V-Universe Technical | Hanaden</title>
+  <title>CLI Reference — V-Universe | Hanaden</title>
   <meta name="description" content="Complete CLI reference for bwrap-enhanced: provision, fsck, start subcommands. All flags, grading system, exit codes, and usage examples.">
   <link rel="stylesheet" href="../../shared/style.css">
 </head>
@@ -12,17 +12,11 @@
   <nav class="nav">
     <div class="nav__inner">
       <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
-      <ul class="nav__links">
-        <li><a href="index.html">Overview</a></li>
-        <li><a href="architecture.html">Architecture</a></li>
-        <li><a href="cli-reference.html" class="active">CLI</a></li>
-        <li><a href="security-model.html">Security</a></li>
-        <li><a href="test-harness.html">Test Harness</a></li>
-        <li><a href="../project-sdlc/index.html">SDLC</a></li>
-        <li><a href="../project-sdlc/versions.html">Spec Versions</a></li>
-        <li><a href="releases.html">Releases</a></li>
-        <li><a href="../project-sdlc/versions.html">History</a></li>
-      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
       <div class="nav__mode-switch">
         <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
         <a href="index.html" class="nav__mode-btn active">Technical</a>
@@ -31,9 +25,10 @@
     </div>
   </nav>
 
-  <section id="header" class="section pt-nav" style="padding-top: calc(var(--nav-height) + 3rem);">
-    <div class="container">
-      <div class="section-header">
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
         <div class="section-header__eyebrow">CLI Reference</div>
         <h1><code style="font-size: inherit; background: none; border: none; padding: 0;">bwrap-enhanced.sh</code> <span class="gradient">Contract</span></h1>
         <p>Multi-subcommand dispatcher following the <code>git</code> / <code>systemctl</code> pattern.
@@ -44,13 +39,10 @@
       <pre><code><span class="kw">bwrap-enhanced.sh</span>  SUBCOMMAND  [OPTIONS]  [ARGS]
 <span class="kw">bwrap-enhanced.sh</span>  <span class="flag">--help</span> | <span class="flag">-h</span>       <span class="cmt"># dispatch table (all subcommands), exit 0</span>
 <span class="kw">bwrap-enhanced.sh</span>  <span class="flag">--version</span> | <span class="flag">-v</span>    <span class="cmt"># version string, exit 0</span></code></pre>
-    </div>
-  </section>
 
-  <!-- Subcommand Table -->
-  <section id="subcommands" class="section section--alt">
-    <div class="container">
-      <h2 class="mb-lg">Subcommands</h2>
+      <!-- Subcommand Table -->
+      <section id="subcommands" class="mb-2xl">
+<h2 class="mb-lg">Subcommands</h2>
       <div class="table-wrap mb-2xl">
         <table>
           <thead>
@@ -90,13 +82,11 @@
         <p><strong>Stubs:</strong> Have full <code>--help</code> and option parsing but exit
         <code>[ERROR] not yet implemented</code> at execution time.</p>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- provision -->
-  <section id="provision" class="section">
-    <div class="container">
-      <h2 class="mb-lg"><code class="text-green">provision</code> — Create Virtual Root Skeleton</h2>
+      <!-- provision -->
+      <section id="provision" class="mb-2xl">
+<h2 class="mb-lg"><code class="text-green">provision</code> — Create Virtual Root Skeleton</h2>
       <pre><code><span class="kw">bwrap-enhanced.sh</span> <span class="flag">provision</span> [OPTIONS]
 
   <span class="flag">--host-real-root</span>        <span class="val">PATH</span>         <span class="cmt">(default: ~/virtual-roots; MUST NOT exist)</span>
@@ -118,13 +108,11 @@
         <p><strong>NOT idempotent.</strong> If <code>--host-real-root</code> already exists, <code>provision</code>
         will fail with a non-zero exit code. Use <code>fsck</code> to validate and repair existing roots.</p>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- fsck -->
-  <section id="fsck" class="section section--alt">
-    <div class="container">
-      <h2 class="mb-lg"><code class="text-green">fsck</code> — Check / Repair Virtual Root</h2>
+      <!-- fsck -->
+      <section id="fsck" class="mb-2xl">
+<h2 class="mb-lg"><code class="text-green">fsck</code> — Check / Repair Virtual Root</h2>
       <pre><code><span class="kw">bwrap-enhanced.sh</span> <span class="flag">fsck</span> [ROOT_PATH] [OPTIONS]
 
   <span class="flag">--host-real-root</span>        <span class="val">PATH</span>         <span class="cmt">(default: ~/virtual-roots)</span>
@@ -135,13 +123,11 @@
   <span class="flag">-r</span>                                   <span class="cmt">(interactive)</span>
   <span class="flag">-f</span>                                   <span class="cmt">(force)</span>
   <span class="flag">-v</span>                                   <span class="cmt">(verbose)</span></code></pre>
-    </div>
-  </section>
+      </section>
 
-  <!-- start -->
-  <section id="start" class="section">
-    <div class="container">
-      <h2 class="mb-lg"><code class="text-green">start</code> — Launch Isolated Process</h2>
+      <!-- start -->
+      <section id="start" class="mb-2xl">
+<h2 class="mb-lg"><code class="text-green">start</code> — Launch Isolated Process</h2>
       <pre><code><span class="kw">bwrap-enhanced.sh</span> <span class="flag">start</span> [OPTIONS] <span class="flag">--</span> <span class="val">CMD [ARG...]</span>
 
   <span class="flag">--host-real-root</span>        <span class="val">PATH</span>         <span class="cmt">(default: ~/virtual-roots; MUST exist)</span>
@@ -176,8 +162,23 @@ bare graded flag  = <span class="val">ro</span>     <span class="cmt">(most rest
 flag absent       = <span class="val">false</span>  <span class="cmt">= default deny</span>
 --flag false      = <span class="text-red">[ERROR]</span>  <span class="cmt">(false is implicit; omit the flag)</span></code></pre>
       </div>
+      </section>
+
     </div>
-  </section>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html" class="active">CLI Reference</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Quality</a></li>
+        <li><a href="releases.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
   <script src="../../shared/mermaid.min.js"></script>
   <script src="../../shared/nav.js"></script>
 </body>

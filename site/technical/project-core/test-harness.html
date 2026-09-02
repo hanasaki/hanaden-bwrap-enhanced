@@ -2,9 +2,9 @@
 <!-- (c) 2026-* Frederick Bloom — Hanaden -->
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Harness — V-Universe Technical | Hanaden</title>
+  <title>Test Harness — V-Universe | Hanaden</title>
   <meta name="description" content="V-Universe test harness architecture: bats-core pipeline, JSONL event stream, JSON schemas, JUnit/JaCoCo/HTML SPA report generation.">
   <link rel="stylesheet" href="../../shared/style.css">
 </head>
@@ -12,17 +12,11 @@
   <nav class="nav">
     <div class="nav__inner">
       <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
-      <ul class="nav__links">
-        <li><a href="index.html">Overview</a></li>
-        <li><a href="architecture.html">Architecture</a></li>
-        <li><a href="cli-reference.html">CLI</a></li>
-        <li><a href="security-model.html">Security</a></li>
-        <li><a href="test-harness.html" class="active">Test Harness</a></li>
-        <li><a href="../project-sdlc/index.html">SDLC</a></li>
-        <li><a href="../project-sdlc/versions.html">Spec Versions</a></li>
-        <li><a href="releases.html">Releases</a></li>
-        <li><a href="../project-sdlc/versions.html">History</a></li>
-      </ul>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
       <div class="nav__mode-switch">
         <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
         <a href="index.html" class="nav__mode-btn active">Technical</a>
@@ -31,26 +25,37 @@
     </div>
   </nav>
 
-  <section id="header" class="section pt-nav" style="padding-top: calc(var(--nav-height) + 3rem);">
-    <div class="container">
-      <div class="section-header">
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
         <div class="section-header__eyebrow">Test Harness</div>
         <h1>The <span class="gradient">Pipeline</span></h1>
         <p>A complete test execution, normalization, and reporting pipeline. From <code>.bats</code> files
         to JUnit XML, JSONL event streams, JaCoCo coverage, and a self-contained HTML SPA report.</p>
       </div>
-    </div>
-  </section>
 
-  <!-- Pipeline Architecture -->
-  <section id="pipeline" class="section section--alt">
-    <div class="container">
-      <h2 class="mb-lg">Pipeline Architecture</h2>
-      <div class="diagram mb-2xl">
-        <div class="diagram__label">Test Execution Pipeline</div>
-        <pre><code>                                ┌→ <span class="text-cyan">JUnit XML</span>    <span class="cmt">(CI: Jenkins/GitLab)</span>
-<span class="text-green">bats</span> ──→ <span class="text-purple">JUnit XML</span> ──→ <span class="text-green">JSONL</span> ──┼→ <span class="text-cyan">JaCoCo XML</span>   <span class="cmt">(CI: coverage gates)</span>
-                                └→ <span class="text-cyan">HTML SPA</span>     <span class="cmt">(humans: file:// open, git hosting)</span></code></pre>
+      <!-- Pipeline Architecture -->
+      <section id="pipeline" class="mb-2xl">
+<h2 class="mb-lg">Pipeline Architecture</h2>
+      <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    classDef source fill:#1a2e1a,color:#c0ffc0,stroke:#00c853,stroke-width:2px
+    classDef intermediate fill:#1a1a2e,color:#e0e0ff,stroke:#7070ff,stroke-width:2px
+    classDef output fill:#006064,color:#fff,stroke:#00e5ff,stroke-width:2px
+
+    BATS[".bats files"]:::source
+    JUNIT["JUnit XML"]:::intermediate
+    JSONL["JSONL stream"]:::source
+    OUT_JUNIT["JUnit XML\nCI: Jenkins/GitLab"]:::output
+    OUT_JACOCO["JaCoCo XML\nCI: coverage gates"]:::output
+    OUT_HTML["HTML SPA\nfile:// open, git hosting"]:::output
+
+    BATS --> JUNIT --> JSONL
+    JSONL --> OUT_JUNIT
+    JSONL --> OUT_JACOCO
+    JSONL --> OUT_HTML
       </div>
 
       <div class="table-wrap mb-2xl">
@@ -92,13 +97,11 @@
           </tbody>
         </table>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- Suites Layout -->
-  <section id="suites" class="section">
-    <div class="container">
-      <h2 class="mb-lg">Test Suite Layout</h2>
+      <!-- Suites Layout -->
+      <section id="suites" class="mb-2xl">
+<h2 class="mb-lg">Test Suite Layout</h2>
       <div class="diagram mb-xl">
         <div class="diagram__label">Directory Convention</div>
         <pre><code>PROJECT_HOME/src/test/hanaden-bwrap-enhanced/suites/
@@ -117,20 +120,18 @@
       <span class="text-purple">PipewireSocketBind</span>.spec/
         <span class="text-cyan">test_pipewire_socket_bind.bats</span>    → AUDIO-PW-001</code></pre>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- JSONL Schema -->
-  <section id="jsonl" class="section section--alt">
-    <div class="container">
-      <h2 class="mb-lg">JSONL Event Schema</h2>
+      <!-- JSONL Schema -->
+      <section id="jsonl" class="mb-2xl">
+<h2 class="mb-lg">JSONL Event Schema</h2>
       <p class="mb-xl">All test events are normalized into a JSONL stream conforming to the
       <code>test-event.schema.json</code> schema. Three event types:</p>
 
-      <div class="grid grid-3" style="gap: 1.5rem;">
+      <div class="grid grid-2" style="gap: 1.5rem;">
         <div class="card">
           <span class="badge badge--green mb-md">suite_started</span>
-          <pre style="font-size: 0.75rem;"><code>{
+          <pre style="font-size: 0.75rem; overflow-x: auto;"><code>{
   "<span class="str">type</span>": "<span class="val">suite_started</span>",
   "<span class="str">trace_id</span>": "<span class="val">460c378c…</span>",
   "<span class="str">suite_name</span>": "<span class="val">…/test_*.bats</span>",
@@ -163,17 +164,15 @@
 }</code></pre>
         </div>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- HTML SPA Report -->
-  <section id="html-report" class="section">
-    <div class="container">
-      <h2 class="mb-lg">HTML SPA Report</h2>
+      <!-- HTML SPA Report -->
+      <section id="html-report" class="mb-2xl">
+<h2 class="mb-lg">HTML SPA Report</h2>
       <p class="mb-xl">The <code>merged_html_report.py</code> generator (3,131 lines) scans run directories, embeds all JSONL
       data as inline <code>&lt;script&gt;</code> blocks, and produces a single self-contained <code>index.html</code>.</p>
 
-      <div class="grid grid-3" style="gap: 0.75rem;">
+      <div class="grid grid-2" style="gap: 0.75rem;">
         <div class="card" style="padding: var(--space-md);">
           <h4 class="text-green" style="font-size: 0.9rem;">Dashboard View</h4>
           <p class="text-muted mb-0" style="font-size: 0.82rem;">Aggregate pass/fail/skip metrics, trend charts, timing breakdowns. All data from JSONL.</p>
@@ -197,15 +196,13 @@
 ├── unified_html_report.py   (Combined view)
 └── _html_templates.py       (Shared HTML/CSS/JS templates)</code></pre>
       </div>
-    </div>
-  </section>
+      </section>
 
-  <!-- Run Metadata -->
-  <section id="metadata" class="section section--alt">
-    <div class="container">
-      <h2 class="mb-lg">Run Metadata Schema</h2>
+      <!-- Run Metadata -->
+      <section id="metadata" class="mb-2xl">
+<h2 class="mb-lg">Run Metadata Schema</h2>
       <p class="mb-lg">Each timed run produces a <code>_run-metadata.json</code> with aggregate statistics:</p>
-      <pre><code>{
+      <pre style="overflow-x: auto;"><code>{
   "<span class="str">harness_version</span>": "<span class="val">0.2.0</span>",
   "<span class="str">bats_version</span>": "<span class="val">Bats 1.12.0</span>",
   "<span class="str">scope</span>": "<span class="val">run-all</span>",
@@ -219,8 +216,23 @@
   "<span class="str">timestamp_start</span>": "<span class="val">2026-09-01T10:51:09Z</span>",
   "<span class="str">timestamp_end</span>": "<span class="val">2026-09-01T10:52:41Z</span>"
 }</code></pre>
+      </section>
+
     </div>
-  </section>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI Reference</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html" class="active">Quality</a></li>
+        <li><a href="releases.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
   <script src="../../shared/mermaid.min.js"></script>
   <script src="../../shared/nav.js"></script>
 </body>
