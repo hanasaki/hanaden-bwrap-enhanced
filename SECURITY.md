@@ -2,34 +2,37 @@
 
 # Security Policy
 
+> **No Commitments.** No commitments, obligations, or legal contracts — express or
+> implied — arise from this document or from any interaction with this project,
+> including but not limited to: responding to, reviewing, investigating, or addressing
+> security disclosures, reports, bugs, or any other communication. No process,
+> response, timeline, action, or outcome of any kind is guaranteed. All maintainer
+> actions are entirely voluntary and at sole discretion.
+
+---
+
+## Security Architecture
+
+The security model is codified in [`CONSTITUTION.md`](CONSTITUTION.md) — the internal
+governance document that defines invariants, articles, and enforcement rules.
+
+Full technical specification:
+[Security Model](https://hanasaki.github.io/hanaden-bwrap-enhanced/site/technical/project-core/security-model.html)
+
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in bwrap-enhanced, please report it
-responsibly by contacting:
+Security disclosures may be directed to:
 
 **Frederick Bloom**
-Email: frederick.bloom@hanaden.ai
+Email: devlabs@hanaden.com
 
-Please include:
+Useful information to include:
 - Description of the vulnerability
 - Steps to reproduce
 - Impact assessment
 - Suggested fix (if any)
 
-## Response Timeline
-
-- **Acknowledgement:** Within 48 hours
-- **Initial assessment:** Within 5 business days
-- **Fix timeline:** Depends on severity
-
 ## Security Bulletins
 
-Known security issues and mitigations are documented in:
+Known security issues and mitigations, if any are published, are documented in:
 `PROJECT_HOME/docs/security-bulletins/`
-
-## Scope
-
-This policy covers:
-- `bwrap-enhanced.sh` — the sandbox wrapper script
-- All sandbox isolation mechanisms (VFS, network, env, identity)
-- GUI/audio/accessibility passthrough security boundaries

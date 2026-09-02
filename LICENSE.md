@@ -1,24 +1,27 @@
-================================================================================
-HANADEN PROJECT — CUSTOM DUAL LICENSE & GOVERNANCE FRAMEWORK
-================================================================================
-Author:                 Frederick Bloom <devlabs@hanaden.com>
-Copyright:              (c) 2026-* Frederick Bloom. All rights reserved.
-Date Effective:         2026-08-21
-Website:                https://hanaden.com
-SPDX-License-Identifier: AGPL-3.0-only
+<!-- (c) 2026-* Frederick Bloom -- LICENSE.md -- Hanaden AI -->
 
-================================================================================
-SECTION 1 — OPEN SOURCE BASE LICENSE (RECIPROCAL COPYLEFT)
-================================================================================
+**HANADEN PROJECT — CUSTOM DUAL LICENSE & GOVERNANCE FRAMEWORK**
+
+| | |
+|:---|:---|
+| **Author** | Frederick Bloom \<devlabs@hanaden.com\> |
+| **Copyright** | (c) 2026-\* Frederick Bloom. All rights reserved. |
+| **Date Effective** | 2026-08-21 |
+| **Repository** | https://github.com/hanasaki/hanaden-bwrap-enhanced |
+| **SPDX-License-Identifier** | AGPL-3.0-only |
+
+---
+
+
+## Section 1 — Open Source Base License (Reciprocal Copyleft)
 
 This software, its source code, specifications, architectures, test suites,
 and related artifacts are licensed under the GNU Affero General Public
 License v3.0 (AGPL-3.0-only).
 
 The authoritative text of the AGPL-3.0 is located in the repository at:
-  PROJECT_HOME/docs/legal/third-party/AGPL-3.0.txt
-or online at:
-  https://www.gnu.org/licenses/agpl-3.0.txt
+`PROJECT_HOME/docs/legal/third-party/AGPL-3.0.txt`
+or online at: https://www.gnu.org/licenses/agpl-3.0.txt
 
 Under the AGPL-3.0, any person or organization that runs, modifies, links,
 builds upon, or distributes this software — including over a computer network
@@ -27,14 +30,14 @@ complete corresponding source code of the entire derived work freely and
 publicly available under the exact same AGPL-3.0 license terms to all users
 interacting with it.
 
-================================================================================
-SECTION 2 — ADDITIONAL TERMS (AGPL-3.0 Section 7 Permitted Additions)
-================================================================================
+---
+
+## Section 2 — Additional Terms (AGPL-3.0 Section 7 Permitted Additions)
 
 The following additional terms and requirements apply to all use, copying,
 modification, and distribution of this software and all derivative works:
 
-2.1 ATTRIBUTION — PRESERVED IN PERPETUITY
+**2.1 Attribution — Preserved in Perpetuity**  
 All copies, forks, modifications, distributions, user interfaces, documentation,
 and runtime splash/boot banners MUST prominently preserve and display the
 following attribution:
@@ -43,58 +46,55 @@ following attribution:
     Author: Frederick Bloom <devlabs@hanaden.com>
 
 This attribution must appear in:
-  (a) All source file headers and preamble comments
-  (b) All README, CONSTITUTION, and documentation files
-  (c) All "About", splash screens, CLI help banners, or user-facing notices
-  (d) All legal notices and distribution packages
+- (a) All source file headers and preamble comments
+- (b) All README, CONSTITUTION, and documentation files
+- (c) All "About", splash screens, CLI help banners, or user-facing notices
+- (d) All legal notices and distribution packages
 
 No entity or individual may strip, obscure, redact, or relocate this notice.
 
-2.2 MORAL RIGHTS
+**2.2 Moral Rights**  
 Frederick Bloom asserts all moral rights to this work under all applicable
 jurisdictions worldwide, including the right of paternity and integrity.
 Frederick Bloom's name and original authorship must remain indelibly attached
 to this work and all its descendants in perpetuity.
 
-2.3 PROHIBITION ON MACHINE LEARNING & AI TRAINING
+**2.3 Prohibition on Machine Learning & AI Training**  
 Use of this source code, specifications, designs, architecture, or any derivative
 thereof for the purpose of training, fine-tuning, evaluating, benchmarking, or
 distilling machine learning models, neural networks, or artificial intelligence
 systems is STRICTLY PROHIBITED without explicit written commercial authorization
 from Frederick Bloom.
 
-2.4 CONTRIBUTOR LICENSE AGREEMENT (CLA) & CONTRIBUTIONS
+**2.4 Contributor License Agreement (CLA) & Contributions**  
 Any contribution submitted to this project (code, design, tests, fixes, docs)
 requires prior execution of the Hanaden Contributor License Agreement (CLA).
 By contributing, contributors assign all copyright and patent ownership to
 Frederick Bloom to maintain a unified, unfragmented intellectual property core.
-Unsigned contributions will not be accepted, reviewed, or merged.
-See: PROJECT_HOME/docs/legal/FrederickBloom/CLA.md
+Unsigned contributions will not be accepted, reviewed, or merged.  
+See: `PROJECT_HOME/docs/legal/FrederickBloom/CLA.md`
 
-================================================================================
-SECTION 3 — COMMERCIAL & PROPRIETARY DUAL LICENSING
-================================================================================
+---
+
+## Section 3 — Commercial & Proprietary Dual Licensing
 
 Any use, deployment, or distribution that falls outside the strict copyleft
 terms of the AGPL-3.0 requires an executed, written Commercial License Agreement
 directly with Frederick Bloom.
 
 A commercial license is required for:
-  (a) Commercial deployment within proprietary software or hardware products
-  (b) Closed-source distribution of the software or its derivatives
-  (c) Hosted, cloud, or SaaS services where source code is withheld from users
-  (d) Internal enterprise deployment without open-sourcing organizational changes
-  (e) OEM or white-label redistribution
-  (f) Machine learning and AI model training (see Section 2.3)
+- (a) Commercial deployment within proprietary software or hardware products
+- (b) Closed-source distribution of the software or its derivatives
+- (c) Hosted, cloud, or SaaS services where source code is withheld from users
+- (d) Internal enterprise deployment without open-sourcing organizational changes
+- (e) OEM or white-label redistribution
+- (f) Machine learning and AI model training (see Section 2.3)
 
-FOR COMMERCIAL LICENSING AND USAGE AGREEMENTS:
-  Frederick Bloom
-  Email:   devlabs@hanaden.com
-  Website: https://hanaden.com
+**For commercial licensing:** devlabs@hanaden.com
 
-================================================================================
-SECTION 4 — WARRANTY DISCLAIMER
-================================================================================
+---
+
+## Section 4 — Warranty Disclaimer
 
 THIS SOFTWARE IS PROVIDED BY FREDERICK BLOOM "AS IS", WITHOUT WARRANTY OF ANY
 KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
@@ -105,9 +105,9 @@ OF THIS SOFTWARE LIES WITH YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE OR CAUSE
 SYSTEM INTERRUPTION, YOU ASSUME THE FULL COST OF ALL REPAIRS, SERVICING, OR
 REMEDIATION.
 
-================================================================================
-SECTION 5 — LIMITATION OF LIABILITY
-================================================================================
+---
+
+## Section 5 — Limitation of Liability
 
 IN NO EVENT SHALL FREDERICK BLOOM, THE AUTHOR, OR ANY COPYRIGHT HOLDER BE
 LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR
@@ -118,9 +118,9 @@ WHETHER IN CONTRACT, STRICT LIABILITY, TORT (INCLUDING NEGLIGENCE), OR
 OTHERWISE, ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 OF THE POSSIBILITY OF SUCH DAMAGE.
 
-================================================================================
-SECTION 6 — INDEMNIFICATION
-================================================================================
+---
+
+## Section 6 — Indemnification
 
 BY ACCESSING, DOWNLOADING, COMPILING, RUNNING, MODIFYING, OR DISTRIBUTING THIS
 SOFTWARE, YOU HEREBY AGREE TO INDEMNIFY, DEFEND, AND HOLD HARMLESS FREDERICK
@@ -129,17 +129,17 @@ ALL CLAIMS, LIABILITIES, LOSSES, DEMANDS, LAWSUITS, JUDGMENTS, DAMAGES, COSTS,
 AND EXPENSES (INCLUDING REASONABLE ATTORNEYS' FEES AND LEGAL COSTS) ARISING OUT
 OF OR IN ANY WAY CONNECTED WITH:
 
-  (a) YOUR USE OF, MISUSE OF, OR INABILITY TO USE THIS SOFTWARE
-  (b) YOUR VIOLATION OF ANY TERM OR CONDITION OF THIS LICENSE
-  (c) YOUR VIOLATION OF ANY APPLICABLE STATUTE, REGULATION, OR LAW
-  (d) YOUR INFRINGEMENT OR MISAPPROPRIATION OF ANY THIRD-PARTY INTELLECTUAL
-      PROPERTY, PRIVACY, OR CONTRACTUAL RIGHT
-  (e) ANY MODIFICATION, COMPILATION, DEPLOYMENT, OR DISTRIBUTION OF THIS
-      SOFTWARE MADE BY YOU OR ON YOUR BEHALF
+- (a) YOUR USE OF, MISUSE OF, OR INABILITY TO USE THIS SOFTWARE
+- (b) YOUR VIOLATION OF ANY TERM OR CONDITION OF THIS LICENSE
+- (c) YOUR VIOLATION OF ANY APPLICABLE STATUTE, REGULATION, OR LAW
+- (d) YOUR INFRINGEMENT OR MISAPPROPRIATION OF ANY THIRD-PARTY INTELLECTUAL
+  PROPERTY, PRIVACY, OR CONTRACTUAL RIGHT
+- (e) ANY MODIFICATION, COMPILATION, DEPLOYMENT, OR DISTRIBUTION OF THIS
+  SOFTWARE MADE BY YOU OR ON YOUR BEHALF
 
-================================================================================
-SECTION 7 — GOVERNING LAW & DISPUTE RESOLUTION
-================================================================================
+---
+
+## Section 7 — Governing Law & Dispute Resolution
 
 This License Agreement and all disputes arising out of or related to this
 software shall be governed by and construed in accordance with applicable
@@ -147,6 +147,6 @@ copyright and contract laws. Any legal controversy or claim shall be resolved
 through good-faith negotiation, or through binding arbitration or courts of
 competent jurisdiction at the sole election of Frederick Bloom.
 
-================================================================================
-END OF LICENSE
-================================================================================
+---
+
+*End of License*

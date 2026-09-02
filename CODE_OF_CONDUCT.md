@@ -2,32 +2,37 @@
 
 # Code of Conduct
 
-## Our Pledge
+> **No Commitments.** No commitments, obligations, or legal contracts — express or
+> implied — arise from this document or from any interaction with this project,
+> including but not limited to: responding to, reviewing, investigating, or addressing
+> pull requests, issues, comments, reports, bugs, security disclosures, feature
+> requests, or any other communication. No process, response, timeline, action,
+> or outcome of any kind is guaranteed. All maintainer actions are entirely voluntary
+> and at sole discretion.
 
-We are committed to providing a welcoming, inclusive, and harassment-free
-experience for everyone contributing to or interacting with this project.
+---
 
-## Our Standards
+## Conduct Expectations
 
-**Positive behavior includes:**
-- Using welcoming and inclusive language
-- Respecting differing viewpoints and experiences
-- Gracefully accepting constructive criticism
-- Focusing on what is best for the project
-- Showing empathy toward others
+This project aspires to a professional, respectful environment. The following
+describes the conduct desired of participants — these are desired expectations, not
+guarantees of enforcement or outcome. Project owners and managers retain sole
+discretion over all conduct-related decisions at all times.
 
-**Unacceptable behavior includes:**
+**Desired behavior:**
+- Professional, respectful communication
+- Constructive engagement with differing viewpoints
+- Focus on technical substance
+
+**Undesired behavior:**
 - Harassment, trolling, or personal attacks
 - Publishing others' private information without consent
-- Any conduct reasonably considered inappropriate in a professional setting
+- Conduct incompatible with a professional setting
 
-## Enforcement
+## Contact
 
-Instances of unacceptable behavior may be reported to:
-**Frederick Bloom** — frederick.bloom@hanaden.ai
+Conduct concerns may be directed to:
+**Frederick Bloom** — devlabs@hanaden.com
 
-All reports will be reviewed and investigated promptly and fairly.
-
-## Attribution
-
-This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/), version 2.1.
+Correspondence is received at the maintainer's discretion. No response,
+investigation, or action of any kind is guaranteed or implied.

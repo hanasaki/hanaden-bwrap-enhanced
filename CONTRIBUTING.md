@@ -4,21 +4,20 @@
 
 ## License
 
-This is proprietary software. All contributions are subject to the project
-license. By contributing, you agree that your contributions become the
-property of Frederick Bloom under the same license terms.
+All contributions are governed by the project [`LICENSE.md`](LICENSE.md) and require
+prior execution of the [`CLA`](PROJECT_HOME/docs/legal/FrederickBloom/CLA.md).
 
 ## Branch Workflow
 
-This project follows GitOps with a three-tier branch model:
+This project follows a two-tier branch model:
 
 ```
-feature/* → develop → master
+feature/* → master
 ```
 
-1. **feature/*** — All work happens on feature branches created from `develop`
-2. **develop** — Integration branch. Feature branches merge here via `--no-ff`
-3. **master** — Release branch. Only `develop` merges here via `--no-ff`
+1. **feature/*** — All work happens on feature branches created from `master`
+2. **master** — Release branch. Feature branches merge here via `--no-ff` only when
+   all tests pass at 100% and all specs are satisfied.
 
 ## Commit Messages
 
@@ -46,6 +45,14 @@ All code changes MUST follow the SDLC TDD cycle:
 5. Run full regression suite — confirm zero regressions
 6. Update spec if needed
 
+```bash
+./PROJECT_HOME/src/test/hanaden-bwrap-enhanced/run_phase1.sh
+```
+
 ## Contact
 
-Frederick Bloom — frederick.bloom@hanaden.ai
+Frederick Bloom — devlabs@hanaden.com
+
+## Documentation
+
+Full project documentation: https://hanasaki.github.io/hanaden-bwrap-enhanced/site/

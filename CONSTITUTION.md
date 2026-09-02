@@ -4,6 +4,7 @@
 
 * **Author:** Frederick Bloom <devlabs@hanaden.com>
 * **Effective Date:** 2026-08-21
+* **Version:** `0.4.0-beta`
 * **Project Name:** `hanaden-bwrap-enhanced`
 * **Project Name Short:** `Hanaden.BwrapEnhanced`
 * **Copyright:** (c) 2026-* **Frederick Bloom**. All rights reserved.
@@ -74,12 +75,12 @@ The Immutable Principle governs all execution boundaries within Hanaden:
 | Boundary | Default Posture | Risk & Mitigation |
 | :--- | :--- | :--- |
 | **Filesystem (VFS)** | Read-Only Root (`/`), Volatile `/tmp` | Egress confined strictly to `/home/[USER]`. Host `/homes` and root hidden. |
-| **Network** | **Default-Deny** (`--unshare-net`) | Network namespace isolated unless explicitly opted in via `--share-net`. |
+| **Network** | **Default-Deny** (`--unshare-net`) | Network namespace isolated unless explicitly opted in via `--net-passthrough`. |
 | **User Identity** | Synthetic Injection | Synthetic `/etc/passwd` and `/etc/group` injected via file descriptors. |
-| **Wayland Display** | Opt-in (`--enable-wayland`) | Sockets mounted read-only (`wayland-0`). Confined to Wayland protocol security. |
-| **X11 Display** | Opt-in (`--enable-x11`) | Sockets mounted RO; `XAUTHORITY` bound read-only. Note: X11 lacks sub-window isolation. |
-| **D-Bus Session Bus** | Opt-in (`--enable-dbus`) | **High Risk:** D-Bus portals can expose host file pickers. Enabled only when required. |
-| **Desktop Integrations** | Opt-in (`--enable-gnome` / `--enable-kde`) | Desktop services (GVFS, Keyring) passed through selectively per security tier. |
+| **Wayland Display** | Opt-in (`--wayland-passthrough`) | Sockets mounted read-only (`wayland-0`). Confined to Wayland protocol security. Implies `--x11-passthrough`. |
+| **X11 Display** | Opt-in (`--x11-passthrough`) | Sockets mounted RO; `XAUTHORITY` bound read-only. Note: X11 lacks sub-window isolation. |
+| **D-Bus Session Bus** | Opt-in (`--dbus-passthrough`) | **High Risk:** D-Bus portals can expose host file pickers. Never implied — always explicit. |
+| **Desktop Integrations** | Opt-in (`--gnome-passthrough` / `--kde-passthrough`) | Desktop services (GVFS, Keyring) passed through selectively per security tier. Implies `--x11-passthrough`. |
 
 ---
 
@@ -87,7 +88,7 @@ The Immutable Principle governs all execution boundaries within Hanaden:
 
 1. **Test-Driven Architecture (TDD):** Every feature in `bwrap-enhanced` is governed by a corresponding specification under `PROJECT_HOME/docs/architecture-design-features-specs/` and verified by executable tests in `PROJECT_HOME/src/test/hanaden-bwrap-enhanced/`.
 2. **The Sabotage & Mutation Tests:** Tests must verify system behavior under active fault injection and structural isolation failure. Superficial keyword-matching tests are prohibited.
-3. **Automated Verification:** All changes to `bwrap-enhanced.sh` must execute clean through `run_phase1.sh` with 100% pass rates across all 45 specs and 77 assertions.
+3. **Automated Verification:** All changes to `bwrap-enhanced.sh` must execute clean through `run_phase1.sh` with 100% pass rates across all 53 test files, 875 assertions, and 42 feature suites.
 
 ---
 
