@@ -51,7 +51,49 @@
       </div>
 
       <p>When <code>bwrap-enhanced.sh start</code> executes, it constructs a complete VFS
-      visible only to the contained process. The host filesystem is never directly accessible.</p>
+      visible only to the contained process. The host filesystem is never directly accessible.
+      The diagram below shows the macro-level mapping: which host zones are exposed (read-only
+      or read-write), which are masked with volatile <code>tmpfs</code>, and which are injected
+      synthetically via file descriptors.</p>
+
+      <div class="mermaid mb-2xl">
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    subgraph Host["Host Filesystem -- Trusted Jailer Zone"]
+        H_Root["/ -- Host Root"]
+        H_Bin["/usr, /bin, /lib"]
+        H_Etc["/etc -- Configs and Credentials"]
+        H_Tmp["/tmp -- Host Temp"]
+        H_Homes["/homes -- NFS / User Homes"]
+        H_Egress["EPHEMERAL_HOME/sandbox-user/"]
+    end
+
+    subgraph VFS["V-Universe -- Sandbox VFS Boundary"]
+        V_Root["/ -- Immutable Read-Only Root"]
+        V_Bin["/usr, /bin, /lib -- RO Bind"]
+        V_Etc["/etc -- Sanitized: profile.d Shadowed"]
+        V_Id["/etc/passwd, /etc/group -- Injected FDs"]
+        V_Tmp["/tmp -- Fresh Volatile tmpfs"]
+        V_Homes["/homes -- Hidden Empty tmpfs"]
+        V_Home["/home/sandbox-user/ -- Live RW Egress Channel"]
+    end
+
+    H_Root -->|--remount-ro /| V_Root
+    H_Bin -->|--ro-bind| V_Bin
+    H_Etc -->|Shadow profile.d| V_Etc
+    Host -.->|FD 9 and 10| V_Id
+    H_Tmp -.->|Mask with tmpfs| V_Tmp
+    H_Homes -.->|Mask with tmpfs| V_Homes
+    H_Egress ==>|--bind RW Write-Hole| V_Home
+
+    style Host fill:#1b2838,stroke:#2a475e,color:#ffffff
+    style VFS fill:#171a21,stroke:#66c0f4,color:#ffffff
+    style V_Home fill:#1e3d2f,stroke:#4caf50,color:#ffffff
+    style V_Root fill:#3b1e1e,stroke:#f44336,color:#ffffff
+      </div>
+
+      <p class="mb-lg">The detailed mount-point tree below shows every path inside the sandbox,
+      the <code>bwrap</code> flag that creates it, and whether it is read-only, writable, or ephemeral.</p>
 
       <div class="diagram mb-2xl">
         <div class="diagram__label">Sandbox VFS — Mount Point Map</div>
@@ -138,6 +180,30 @@ flowchart TD
     START --> PARSE --> RESOLVE --> IDENTITY --> BUILD --> DRY
     DRY -->|yes| PRINT
     DRY -->|no| EXEC
+      </div>
+
+      <p class="mt-xl mb-lg">The flowchart above shows the <em>steps</em>. The sequence diagram below
+      shows the <em>actors</em> — how the host, the engine, the sandbox VFS, and the contained
+      process interact across the initialization boundary:</p>
+
+      <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+sequenceDiagram
+    participant Host as Host Environment -- Jailer
+    participant Engine as bwrap-enhanced.sh
+    participant VFS as V-Universe -- Sandbox VFS
+    participant Proc as Workload Process -- Prisoner
+
+    Host->>Engine: Invoke with flags and target command
+    Engine->>Engine: Validate host paths exist -- Zero-Side-Effects check
+    Engine->>Engine: Build synthetic /etc/passwd, /etc/group, /etc/profile FDs
+    Engine->>VFS: Unshare namespaces -- user, pid, ipc, uts, cgroup, net
+    Engine->>VFS: Bind / read-only, mount tmpfs on /tmp and /homes
+    Engine->>VFS: Bind host egress dir to /home/USER -- RW
+    Engine->>VFS: Selectively bind Wayland / X11 / Audio sockets -- if opted in
+    Engine->>Proc: Exec target command as PID 1 foreground hold
+    Proc->>VFS: Read toolchains and write to /home/USER
+    Proc->>Host: Process terminates -- volatile tmpfs evaporates immediately
       </div>
       </section>
 
