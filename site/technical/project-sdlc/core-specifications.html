@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Core Specifications — V-Universe | Hanaden</title>
+  <meta name="description" content="Detailed technical specifications for the SDLC engine: state machine definitions, event schemas, guard contracts, and transition rules.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-sdlc/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Core Specifications</div>
+        <h1>The <span class="gradient">Formal Spec</span></h1>
+        <p>Precise definitions of states, events, transitions, guards, and contracts that compose the SDLC engine.</p>
+      </div>
+
+      <section id="states" class="mb-2xl">
+        <h2>State Definitions</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>State</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>NOT_STARTED</code></td><td>Initial</td><td>Work item created, no test file exists. <code>tdd.test-file</code> is null.</td></tr>
+              <tr><td><code>RED</code></td><td>Active</td><td>Test exists and fails. Spec requirement not yet implemented, or regression detected.</td></tr>
+              <tr><td><code>GREEN</code></td><td>Active</td><td>Test exists and passes. Implementation satisfies specification.</td></tr>
+              <tr><td><code>REFACTOR</code></td><td>Active</td><td>Tests remain green while implementation is restructured for clarity/performance.</td></tr>
+              <tr><td><code>BLOCKED</code></td><td>Terminal</td><td>Guard rejected transition. Requires intervention or escalation.</td></tr>
+              <tr><td><code>EMERGENCY</code></td><td>Terminal</td><td>Breaker tripped. System-wide reset in progress.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="events" class="mb-2xl">
+        <h2>Event Types</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Event</th><th>Source</th><th>Payload</th></tr></thead>
+            <tbody>
+              <tr><td><code>TEST_CREATED</code></td><td>Agent</td><td>test-file path, work-item-id, spec reference</td></tr>
+              <tr><td><code>TEST_PASS</code></td><td>Harness</td><td>test-file, execution time, assertion count</td></tr>
+              <tr><td><code>TEST_FAIL</code></td><td>Harness</td><td>test-file, failure message, stack trace</td></tr>
+              <tr><td><code>CODE_REGRESSION</code></td><td>CI</td><td>commit SHA, failing tests, blame analysis</td></tr>
+              <tr><td><code>INTEGRATION_FLAW</code></td><td>Guard</td><td>component pair, failure mode, suggested fix</td></tr>
+              <tr><td><code>BROKEN_REQUIREMENT</code></td><td>Guard</td><td>requirement ID, invalidation reason</td></tr>
+              <tr><td><code>UNFEASIBLE_SCOPE</code></td><td>Guard</td><td>scope assessment, constraint violations</td></tr>
+              <tr><td><code>PARADIGM_SHIFT</code></td><td>Emergency</td><td>trigger event chain, strategic impact</td></tr>
+              <tr><td><code>GUARD_BLOCK</code></td><td>Guard</td><td>guard ID, node ID, rejection reason</td></tr>
+              <tr><td><code>BREAKER_TRIP</code></td><td>System</td><td>breaker type, spiral metrics, affected nodes</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="hierarchy-spec" class="mb-2xl">
+        <h2>Artifact Hierarchy Specification</h2>
+        <p>The hierarchy is a strict DAG with six levels. Each level's artifacts own artifacts at the level below:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>Node Type</th><th>Owns</th><th>Guard Types</th></tr></thead>
+            <tbody>
+              <tr><td>L0</td><td><code>CORP-STRAT</code></td><td>T-DRIV nodes</td><td>Strategy sunset, market re-scan, assumption audit</td></tr>
+              <tr><td>L1a</td><td><code>T-DRIV</code></td><td>T-MOTI nodes</td><td>Problem reframing, alternative drivers, right problem?</td></tr>
+              <tr><td>L1b</td><td><code>T-MOTI</code></td><td>FEAT + ARCH nodes</td><td>Solution diversity, competing approaches, better way?</td></tr>
+              <tr><td>L2a</td><td><code>FEAT</code></td><td>SPEC nodes</td><td>Adversarial review, feature alternatives</td></tr>
+              <tr><td>L2b</td><td><code>ARCH</code></td><td>SPEC nodes</td><td>Architecture alternatives, design spikes</td></tr>
+              <tr><td>L3</td><td><code>SPEC</code></td><td>TEST nodes</td><td>Mutation test, red-team challenge, stranger test</td></tr>
+              <tr><td>L4</td><td><code>TEST</code></td><td>—</td><td>Property-based, chaos + fuzzing, anti-reward-hack</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="contracts" class="mb-2xl">
+        <h2>Guard Contracts</h2>
+        <p>Every guard implements a standard contract:</p>
+        <pre style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-md); overflow-x: auto; font-size: 0.8rem; color: var(--text-primary);"><code>interface Guard {
+  id:        string          // Unique guard identifier
+  node_id:   string          // Node this guard is registered on
+  trigger:   "STATE_ENTRY"   // When the guard fires
+  evaluate:  (state, event) → GuardResult
+}
+
+type GuardResult =
+  | { action: "PASS" }
+  | { action: "BLOCK",    reason: string }
+  | { action: "REDIRECT", target_node: string, event: Event }</code></pre>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="core-specifications.html" class="active">Core Specifications</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

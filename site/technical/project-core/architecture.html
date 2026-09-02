@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture — V-Universe | Hanaden</title>
+  <meta name="description" content="V-Universe architecture: VFS topology, mount namespace isolation, initialization sequence, tmpfs evaporation model, and PID 1 foreground hold pattern.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Architecture</div>
+        <h1>VFS Topology &amp; <span class="gradient">Namespace Isolation</span></h1>
+        <p>The security boundary is the mount namespace itself. Visibility is the only access control.
+        What the process can't see, it can't touch.</p>
+      </div>
+
+      <!-- VFS Topology -->
+      <section id="vfs" class="mb-2xl">
+<h2 class="mb-lg">VFS Filesystem Layout</h2>
+
+      <div class="callout callout--green mb-xl">
+        <p><strong>What is a VFS?</strong> A <em>Virtual Filesystem</em> (VFS) is a kernel abstraction layer
+        that presents a unified directory tree to a process, regardless of what physical storage — or
+        no storage at all — backs each mount point. Linux mount namespaces allow each process to see
+        its <strong>own</strong> VFS, completely independent of the host. V-Universe exploits this:
+        every sandbox gets a purpose-built VFS where <code>--ro-bind</code>, <code>--tmpfs</code>,
+        and <code>--bind</code> mounts compose a custom root that the kernel enforces — no
+        application-level checks required. The process literally cannot address paths that aren't
+        in its VFS.</p>
+      </div>
+
+      <p>When <code>bwrap-enhanced.sh start</code> executes, it constructs a complete VFS
+      visible only to the contained process. The host filesystem is never directly accessible.
+      The diagram below shows the macro-level mapping: which host zones are exposed (read-only
+      or read-write), which are masked with volatile <code>tmpfs</code>, and which are injected
+      synthetically via file descriptors.</p>
+
+      <div class="mermaid mb-2xl">
+%%{init: {'theme': 'dark'}}%%
+flowchart LR
+    subgraph Host["Host Filesystem -- Trusted Jailer Zone"]
+        H_Root["/ -- Host Root"]
+        H_Bin["/usr, /bin, /lib"]
+        H_Etc["/etc -- Configs and Credentials"]
+        H_Tmp["/tmp -- Host Temp"]
+        H_Homes["/homes -- NFS / User Homes"]
+        H_Egress["EPHEMERAL_HOME/sandbox-user/"]
+    end
+
+    subgraph VFS["V-Universe -- Sandbox VFS Boundary"]
+        V_Root["/ -- Immutable Read-Only Root"]
+        V_Bin["/usr, /bin, /lib -- RO Bind"]
+        V_Etc["/etc -- Sanitized: profile.d Shadowed"]
+        V_Id["/etc/passwd, /etc/group -- Injected FDs"]
+        V_Tmp["/tmp -- Fresh Volatile tmpfs"]
+        V_Homes["/homes -- Hidden Empty tmpfs"]
+        V_Home["/home/sandbox-user/ -- Live RW Egress Channel"]
+    end
+
+    H_Root -->|--remount-ro /| V_Root
+    H_Bin -->|--ro-bind| V_Bin
+    H_Etc -->|Shadow profile.d| V_Etc
+    Host -.->|FD 9 and 10| V_Id
+    H_Tmp -.->|Mask with tmpfs| V_Tmp
+    H_Homes -.->|Mask with tmpfs| V_Homes
+    H_Egress ==>|--bind RW Write-Hole| V_Home
+
+    style Host fill:#1b2838,stroke:#2a475e,color:#ffffff
+    style VFS fill:#171a21,stroke:#66c0f4,color:#ffffff
+    style V_Home fill:#1e3d2f,stroke:#4caf50,color:#ffffff
+    style V_Root fill:#3b1e1e,stroke:#f44336,color:#ffffff
+      </div>
+
+      <p class="mb-lg">The detailed mount-point tree below shows every path inside the sandbox,
+      the <code>bwrap</code> flag that creates it, and whether it is read-only, writable, or ephemeral.</p>
+
+      <div class="diagram mb-2xl">
+        <div class="diagram__label">Sandbox VFS — Mount Point Map</div>
+        <pre><code><span class="text-green">/</span>  (new mount namespace root)
+│
+├── <span class="text-cyan">usr/</span>         ← <span class="flag">--ro-bind</span> /usr /usr
+│   ├── bin/     ← host binaries (read-only)
+│   ├── lib/     ← host libraries (read-only)
+│   ├── share/   ← host data files (read-only)
+│   └── libexec/ ← host libexec (read-only)
+│
+├── <span class="text-cyan">lib/</span>         ← <span class="flag">--ro-bind</span> /lib /lib
+├── <span class="text-cyan">lib64/</span>       ← <span class="flag">--ro-bind</span> /lib64 /lib64
+├── <span class="text-cyan">bin</span>          ← <span class="flag">--symlink</span> usr/bin /bin
+├── <span class="text-cyan">sbin</span>         ← <span class="flag">--symlink</span> usr/sbin /sbin
+│
+├── <span class="text-purple">etc/</span>
+│   ├── <span class="str">passwd</span>   ← <span class="flag">--ro-bind-data</span> FD  (synthetic: sandbox_user)
+│   ├── <span class="str">group</span>    ← <span class="flag">--ro-bind-data</span> FD  (synthetic: sandbox_user)
+│   ├── <span class="text-muted">resolv.conf</span> ← <span class="flag">--ro-bind</span> /etc/resolv.conf
+│   ├── <span class="text-muted">ssl/</span>    ← <span class="flag">--ro-bind</span> /etc/ssl
+│   └── <span class="text-muted">pki/</span>    ← <span class="flag">--ro-bind</span> /etc/pki (if exists)
+│
+├── <span class="text-green">home/</span>
+│   └── <span class="str">sandbox_user/</span>
+│       └── <span class="val">(writable)</span> ← <span class="flag">--bind</span> HOST_REAL_HOME → /home/sandbox_user
+│
+├── <span class="text-red">tmp/</span>         ← <span class="flag">--tmpfs</span> /tmp      (evaporates)
+├── <span class="text-red">var/tmp/</span>     ← <span class="flag">--tmpfs</span> /var/tmp  (evaporates)
+├── <span class="text-red">dev/shm/</span>     ← <span class="flag">--tmpfs</span> /dev/shm  (evaporates)
+│
+├── <span class="text-muted">dev/</span>         ← <span class="flag">--dev</span> /dev       (devtmpfs, minimal)
+└── <span class="text-muted">proc/</span>        ← <span class="flag">--proc</span> /proc     (procfs, filtered)</code></pre>
+      </div>
+
+      <div class="grid grid-2" style="gap: 2rem;">
+        <div>
+          <h3 class="text-green mb-md">What's Visible</h3>
+          <ul class="feature-list">
+            <li>Host <code>/usr</code>, <code>/lib</code>, <code>/lib64</code> — read-only</li>
+            <li>Synthetic <code>/etc/passwd</code> and <code>/etc/group</code> — injected via memory FDs</li>
+            <li>DNS resolution (<code>/etc/resolv.conf</code>) and CA certs (<code>/etc/ssl</code>)</li>
+            <li>One writable home directory (controlled egress point)</li>
+            <li>Ephemeral <code>tmpfs</code> for /tmp, /var/tmp, /dev/shm</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-red mb-md">What's Invisible</h3>
+          <ul class="feature-list">
+            <li>Host home directory (<code>~/.ssh</code>, <code>~/.aws</code>, <code>~/.gnupg</code>)</li>
+            <li>Host <code>/root</code>, <code>/var</code>, <code>/opt</code>, <code>/srv</code></li>
+            <li>Other users' home directories</li>
+            <li>Host <code>/run</code> (D-Bus, Wayland, PipeWire — unless opted in)</li>
+            <li>Network (unless <code>--net-passthrough</code>)</li>
+            <li>Environment variables (unless <code>--env-passthrough</code>)</li>
+          </ul>
+        </div>
+      </div>
+      </section>
+
+      <!-- Initialization Sequence -->
+      <section id="init-sequence" class="mb-2xl">
+<h2 class="mb-lg">Initialization Sequence</h2>
+      <p class="mb-xl">The <code>start</code> subcommand constructs the sandbox through a deterministic sequence.
+      Every step is validated before proceeding — failures are never silent.</p>
+
+      <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TD
+    classDef cmd fill:#1a1a2e,color:#e0e0ff,stroke:#7070ff,stroke-width:2px
+    classDef step fill:#1a2e1a,color:#c0ffc0,stroke:#00c853,stroke-width:2px
+    classDef decision fill:#2e1a00,color:#ffe0b2,stroke:#ff6d00,stroke-width:2px
+    classDef output fill:#006064,color:#fff,stroke:#00e5ff,stroke-width:2px
+
+    START["bwrap-enhanced.sh start\n--host-real-root PATH -- CMD"]:::cmd
+    PARSE["Parse flags + validate"]:::step
+    RESOLVE["Resolve all host paths"]:::step
+    IDENTITY["Generate FD identity\n/etc/passwd, /etc/group\nvia /dev/fd/N — zero disk writes"]:::step
+    BUILD["Build bwrap argument set\nAssemble full bwrap argv\nfrom resolved paths + flags"]:::step
+    DRY{"--dry-run?"}:::decision
+    PRINT["Print argv and exit"]:::output
+    EXEC["exec bwrap\nPID 1 foreground hold\nvia /proc watcher"]:::cmd
+
+    START --> PARSE --> RESOLVE --> IDENTITY --> BUILD --> DRY
+    DRY -->|yes| PRINT
+    DRY -->|no| EXEC
+      </div>
+
+      <p class="mt-xl mb-lg">The flowchart above shows the <em>steps</em>. The sequence diagram below
+      shows the <em>actors</em> — how the host, the engine, the sandbox VFS, and the contained
+      process interact across the initialization boundary:</p>
+
+      <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+sequenceDiagram
+    participant Host as Host Environment -- Jailer
+    participant Engine as bwrap-enhanced.sh
+    participant VFS as V-Universe -- Sandbox VFS
+    participant Proc as Workload Process -- Prisoner
+
+    Host->>Engine: Invoke with flags and target command
+    Engine->>Engine: Validate host paths exist -- Zero-Side-Effects check
+    Engine->>Engine: Build synthetic /etc/passwd, /etc/group, /etc/profile FDs
+    Engine->>VFS: Unshare namespaces -- user, pid, ipc, uts, cgroup, net
+    Engine->>VFS: Bind / read-only, mount tmpfs on /tmp and /homes
+    Engine->>VFS: Bind host egress dir to /home/USER -- RW
+    Engine->>VFS: Selectively bind Wayland / X11 / Audio sockets -- if opted in
+    Engine->>Proc: Exec target command as PID 1 foreground hold
+    Proc->>VFS: Read toolchains and write to /home/USER
+    Proc->>Host: Process terminates -- volatile tmpfs evaporates immediately
+      </div>
+      </section>
+
+      <!-- PID 1 Pattern -->
+      <section id="pid1" class="mb-2xl">
+<h2 class="mb-lg">PID 1 Foreground Hold</h2>
+      <p>Inside the sandbox, the contained command runs as PID 1. The parent shell uses a
+      zero-poll <code>/proc</code>-based watcher to maintain the foreground hold:</p>
+
+      <div class="callout callout--green">
+        <p><strong>Key insight:</strong> No polling loop. The watcher uses <code>inotifywait</code> or
+        <code>tail -f /dev/null --pid=$PID</code> to block until the child exits. Zero CPU overhead during
+        normal operation.</p>
+      </div>
+
+      <p>When the contained process exits:</p>
+      <ul class="feature-list">
+        <li>All <code>tmpfs</code> mounts evaporate (kernel-managed cleanup)</li>
+        <li>The mount namespace is destroyed (kernel-managed cleanup)</li>
+        <li>The user namespace is destroyed (kernel-managed cleanup)</li>
+        <li>No artifacts remain on the host filesystem</li>
+        <li>The exit code of the contained process propagates to the caller</li>
+      </ul>
+      </section>
+
+      <!-- Passthrough Architecture -->
+      <section id="passthrough" class="mb-2xl">
+<h2 class="mb-lg">Passthrough Architecture</h2>
+      <p class="mb-xl">Each passthrough flag selectively binds host resources into the sandbox.
+      Privilege escalation follows a strict ordering: <code class="text-green">absent &lt; ro &lt; rw</code></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Flag</th><th>Type</th><th>Host Resource</th><th>Sandbox Mount</th><th>Implied By</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--net-passthrough</code></td>
+              <td><span class="badge badge--red">bool</span></td>
+              <td>Network namespace</td>
+              <td>Share host network</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>--wayland-passthrough</code></td>
+              <td><span class="badge badge--green">bool</span></td>
+              <td><code>$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY</code></td>
+              <td>Wayland socket bind</td>
+              <td>implies <code>--x11-passthrough</code></td>
+            </tr>
+            <tr>
+              <td><code>--audio-passthrough</code></td>
+              <td><span class="badge badge--green">bool</span></td>
+              <td><code>$XDG_RUNTIME_DIR/pipewire-0</code></td>
+              <td>PipeWire socket bind</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>--x11-passthrough</code></td>
+              <td><span class="badge badge--green">bool</span></td>
+              <td><code>/tmp/.X11-unix</code></td>
+              <td>X11 socket bind</td>
+              <td>implied by wayland/gnome/kde</td>
+            </tr>
+            <tr>
+              <td><code>--dbus-passthrough</code></td>
+              <td><span class="badge badge--amber">bool</span></td>
+              <td>Session D-Bus socket</td>
+              <td>D-Bus bind</td>
+              <td><strong>NEVER implied</strong> — always explicit</td>
+            </tr>
+            <tr>
+              <td><code>--mise-passthrough</code></td>
+              <td><span class="badge badge--purple">graded</span></td>
+              <td><code>~/.local/share/mise</code></td>
+              <td>ro or rw bind</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>--local-bin-passthrough</code></td>
+              <td><span class="badge badge--purple">graded</span></td>
+              <td><code>~/.local/bin</code></td>
+              <td>ro or rw bind</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html" class="active">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI Reference</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Quality</a></li>
+        <li><a href="releases.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

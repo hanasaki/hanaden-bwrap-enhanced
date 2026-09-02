@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V-Universe — Secure Containment | Hanaden</title>
+  <meta name="description" content="V-Universe by Hanaden. Rootless, kernel-enforced containment for AI agents, developer workflows, and desktop apps. Zero root, zero daemons, zero side effects.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../../technical/project-core/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+
+  <!-- Main content with sidebar — sidebar starts at top -->
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">🛡 Kernel-Enforced Containment</div>
+        <h1>Contain the Uncontained. <span class="gradient">By Design.</span></h1>
+        <p>AI agents execute with your full privileges. <strong>V-Universe</strong> creates kernel-enforced
+        containment boundaries no process can escape — without Docker, VMs, or root.</p>
+        <div class="flex gap-md" style="flex-wrap: wrap; margin-top: var(--space-md);">
+          <a href="security.html" class="btn btn--primary">Security Architecture →</a>
+          <a href="pricing.html" class="btn btn--secondary">Licensing</a>
+        </div>
+      </div>
+
+      <!-- Problem -->
+      <section id="problem" class="mb-2xl">
+        <div class="section-header__eyebrow">The Problem</div>
+        <h2>Your AI Agents Have Full Access to <span class="text-red">Everything</span></h2>
+        <p>Every LLM assistant, autonomous agent, and CI runner executes with your user's full filesystem
+        privileges. One rogue script and your credentials, SSH keys, and source code are exposed.</p>
+        <div class="callout callout--red">
+          <p><strong>The risk is real:</strong> Agents generate and execute arbitrary shell commands,
+          download packages from public registries, write anywhere, and consume stored credentials —
+          all with your full permissions.</p>
+        </div>
+      </section>
+
+      <!-- Solution -->
+      <section id="solution" class="mb-2xl">
+        <div class="section-header__eyebrow">The Solution</div>
+        <h2>An <span class="text-green">Inescapable Virtual Universe</span></h2>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card animate-in" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--green" style="display: inline-flex;">🔒</div>
+            <h4>Zero Root</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Linux user namespaces via Bubblewrap. No root, no daemons, no kernel modules.</p>
+          </div>
+          <div class="card animate-in" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--purple" style="display: inline-flex;">⚡</div>
+            <h4>Single Script</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Not a container runtime. One bash script. Deploys in seconds, zero overhead.</p>
+          </div>
+          <div class="card animate-in" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--cyan" style="display: inline-flex;">🛡</div>
+            <h4>Zero Side Effects</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">No temp files, no PID files. Identity via memory FDs. Fails fast on misconfig.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Immutable Principle -->
+      <section id="principle" class="mb-2xl">
+        <h2>The <span class="text-green">Immutable Principle</span></h2>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="text-align: center; padding: var(--space-md);">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏗</div>
+            <h4 class="text-green" style="font-size: 0.9rem;">External Construction</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Jail designed <em>before</em> execution.</p>
+          </div>
+          <div class="card" style="text-align: center; padding: var(--space-md);">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🛡</div>
+            <h4 class="text-purple" style="font-size: 0.9rem;">External Enforcement</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Kernel guards — not app checks.</p>
+          </div>
+          <div class="card" style="text-align: center; padding: var(--space-md);">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🚫</div>
+            <h4 class="text-red" style="font-size: 0.9rem;">Zero Self-Policing</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Prisoners never build their own cell.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tiers (compact) -->
+      <section id="tiers" class="mb-2xl">
+        <h2>Progressive Trust Levels</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tier</th><th>Config</th><th>Trust</th><th>Use Case</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge--green">0</span></td><td>Clean, net deny</td><td class="text-green">Max</td><td>AI agents, untrusted scripts</td></tr>
+              <tr><td><span class="badge badge--green">1</span></td><td>+ Wayland + Audio</td><td class="text-green">High</td><td>Sandboxed desktop apps</td></tr>
+              <tr><td><span class="badge badge--purple">2</span></td><td>+ Accessibility</td><td class="text-purple">High</td><td>Screen readers</td></tr>
+              <tr><td><span class="badge badge--amber">3</span></td><td>+ D-Bus portals</td><td class="text-red">Med</td><td>File picker portals</td></tr>
+              <tr><td><span class="badge badge--red">4</span></td><td>+ DE services</td><td class="text-red">Low</td><td>Full desktop integration</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mermaid">
+graph LR
+    T0["🔒 Tier 0\nBase Sandbox\nMax Isolation"]
+    T1["🖥 Tier 1\n+ Wayland + Audio\nHigh Trust"]
+    T2["♿ Tier 2\n+ Accessibility\nHigh Trust"]
+    T3["📂 Tier 3\n+ D-Bus Portals\nMedium Trust"]
+    T4["🖥 Tier 4\n+ DE Services\n⚠ Low Trust"]
+
+    T0 -->|"--enable-wayland\n--enable-audio"| T1
+    T1 -->|"--enable-a11y"| T2
+    T2 -->|"--enable-dbus"| T3
+    T3 -->|"--enable-gnome\n--enable-kde"| T4
+
+    style T0 fill:#0d3320,stroke:#3bf5a9,color:#3bf5a9
+    style T1 fill:#0d3320,stroke:#3bf5a9,color:#e2e8f0
+    style T2 fill:#1a1040,stroke:#7c3aed,color:#e2e8f0
+    style T3 fill:#3b1a00,stroke:#f59e0b,color:#e2e8f0
+    style T4 fill:#3b0d0d,stroke:#ef4444,color:#e2e8f0
+        </div>
+      </section>
+
+      <!-- Metrics -->
+      <section id="verified" class="mb-2xl">
+        <h2>Test-Driven from <span class="text-green">Day One</span></h2>
+        <div class="stats mb-xl">
+          <div class="stat"><div class="stat__value">875</div><div class="stat__label">Tests</div></div>
+          <div class="stat"><div class="stat__value">42</div><div class="stat__label">Features</div></div>
+          <div class="stat"><div class="stat__value">53</div><div class="stat__label">Test Files</div></div>
+          <div class="stat"><div class="stat__value">100%</div><div class="stat__label">Target</div></div>
+        </div>
+        <div class="grid grid-2" style="gap: 1rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green" style="font-size: 0.9rem;">Test Harness Pipeline</h4>
+            <pre style="font-size: 0.75rem; overflow-x: auto;"><code>bwrap-enhanced.sh → test-harness-runner.sh
+  ├── suites/*.feat/*.spec/*.bats  (53 files)
+  ├── shared/helpers &amp; assertions
+  └── report-generators/
+      ├── junit_html_report.py
+      ├── jacoco_html_report.py
+      └── merged_html_report.py</code></pre>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple" style="font-size: 0.9rem;">Output Formats</h4>
+            <ul class="feature-list" style="font-size: 0.82rem;">
+              <li><strong>JUnit XML</strong> — CI/CD integration</li>
+              <li><strong>JaCoCo XML</strong> — Coverage metrics</li>
+              <li><strong>JSONL</strong> — Structured event stream</li>
+              <li><strong>Merged HTML</strong> — Interactive dashboard</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section id="cta" class="mb-xl text-center">
+        <h2>Ready to Contain Your Workloads?</h2>
+        <div class="flex-center gap-md" style="flex-wrap: wrap;">
+          <a href="pricing.html" class="btn btn--primary">View Licensing →</a>
+          <a href="mailto:devlabs@hanaden.com" class="btn btn--ghost">Contact Sales</a>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+            <div class="page-sidebar__heading">BUSINESS · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html" class="active">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html">Licensing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Standards — V-Universe | Hanaden</title>
+  <meta name="description" content="Technical standards for SDLC engine implementation: event schema versioning, state machine contracts, and testing requirements.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-sdlc/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Technical Standards</div>
+        <h1>Implementation <span class="gradient">Standards</span></h1>
+        <p>Precise technical standards governing event schemas, state machine behavior, and verification requirements.</p>
+      </div>
+
+      <section id="event-schema" class="mb-2xl">
+        <h2>Event Schema Standards</h2>
+        <ul class="feature-list">
+          <li><strong>Versioned:</strong> Every event type carries a schema version. Consumers must handle unknown versions gracefully.</li>
+          <li><strong>Immutable:</strong> Events are append-only. Once written, an event is never modified or deleted.</li>
+          <li><strong>Typed:</strong> Events carry structured payloads with typed fields. No untyped bags of properties.</li>
+          <li><strong>Causal:</strong> Events carry a <code>caused_by</code> reference linking to the triggering event for full causal chain reconstruction.</li>
+          <li><strong>Timestamped:</strong> Logical clock (monotonic counter per partition) + wall clock. Logical clock is authoritative for ordering.</li>
+        </ul>
+      </section>
+
+      <section id="transition-rules" class="mb-2xl">
+        <h2>Transition Standards</h2>
+        <p>State transitions must satisfy these invariants:</p>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green">Purity</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Transition function is pure: <code>(state, event) → state'</code>. No side effects. No I/O. No randomness. Same inputs always produce same outputs.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple">Totality</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Every <code>(state, event)</code> pair has a defined result — either a new state or a rejection. No undefined transitions.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-red">Guard-First</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Guards evaluate BEFORE transition. If any guard returns BLOCK, the transition does not execute. Guard evaluation order is deterministic.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-cyan">Event Emission</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Transitions emit zero or more events. Emitted events are appended to the event store atomically with the state change.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="testing-standards" class="mb-2xl">
+        <h2>Testing Standards</h2>
+        <p>All engine components must satisfy:</p>
+        <ul class="feature-list">
+          <li><strong>Sabotage test:</strong> Removing the requirement must cause the test to fail. Tests that pass without their requirement are deleted.</li>
+          <li><strong>Mutation test:</strong> Introducing a deliberate bug must be caught. Tests that pass with mutations are strengthened.</li>
+          <li><strong>Stranger test:</strong> Someone unfamiliar with the spec should produce equivalent tests from the code behavior alone.</li>
+          <li><strong>Property-based:</strong> Where applicable, property-based tests generate random inputs and verify invariants.</li>
+          <li><strong>Deterministic:</strong> Tests produce the same result regardless of execution order, timing, or environment.</li>
+        </ul>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="core-specifications.html">Core Specifications</a></li>
+        <li><a href="standards.html" class="active">Standards</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

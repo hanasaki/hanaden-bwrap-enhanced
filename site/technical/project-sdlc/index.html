@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDLC Engine — V-Universe | Hanaden</title>
+  <meta name="description" content="V-Universe SDLC: a deterministic, event-sourced orchestrator engine. TDD-driven, self-regulating development lifecycle with anti-fixation guards, emergency breakers, and emergent architecture. Spec v0.0.6.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-sdlc/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <!-- Curated Overview (top) -->
+      <div class="section-header" style="margin-bottom: var(--space-lg);">
+        <div class="section-header__eyebrow">Specification v0.0.6</div>
+        <h1><span class="gradient">SDLC</span> Engine</h1>
+        <p style="color: var(--text-secondary); font-size: 0.88rem; max-width: 600px; line-height: 1.5;">
+          A generic, deterministic, fully implementable software engine for managing the complete
+          development lifecycle as an event-sourced state machine with parallel orchestration.
+        </p>
+      </div>
+
+      <section id="concepts" class="mb-2xl">
+        <h2>Core Concepts</h2>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 style="font-size: 0.9rem;" class="text-green">Event-Sourced State Machine</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Every state change is an immutable event. Replayable from any checkpoint. Total ordering per work item. No hidden state.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 style="font-size: 0.9rem;" class="text-purple">Parallel Star Topology</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Hub coordinates, agents execute. Kanban boards with WIP limits. Optimistic concurrency. DAG-based dependency unblocking.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 style="font-size: 0.9rem;" class="text-red">Self-Regulating Guards</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Anti-fixation guards at every layer. Mutation tests, stranger tests, adversarial reviews. Guards fire on every state entry — can BLOCK or REDIRECT.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 style="font-size: 0.9rem;" class="text-cyan">Emergent Architecture</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Refactoring and harvesting detect common patterns, extract libs, promote to SOA services, and spawn child SDLC instances — autonomously.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tdd" class="mb-2xl">
+        <h2>TDD — The Inner Loop</h2>
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: var(--space-sm);">
+          Strict RED → GREEN → REFACTOR discipline. <strong>NOT_STARTED → GREEN is forbidden.</strong>
+          A node MUST pass through RED (a real failing test) before GREEN. Skipping RED is completion theater.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>TDD State</th><th>Definition</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge--red">NOT_STARTED</span></td><td>No test file yet. <code>tdd.test-file</code> is null.</td></tr>
+              <tr><td><span class="badge badge--red">RED</span></td><td>Test exists and fails. Spec requirement not yet implemented, or regression.</td></tr>
+              <tr><td><span class="badge badge--green">GREEN</span></td><td>Test exists and passes.</td></tr>
+              <tr><td><span class="badge badge--purple">REFACTOR</span></td><td>Tests stay green while implementation is cleaned up.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-muted" style="font-size: 0.8rem; margin-top: var(--space-sm);">
+          Legal: <code>NOT_STARTED → RED → GREEN → REFACTOR</code>. Backward: <code>GREEN|REFACTOR → RED</code> on <code>TEST_FAIL</code> / <code>CODE_REGRESSION</code>.
+        </p>
+      </section>
+
+      <section id="rgb" class="mb-2xl">
+        <h2>RGB Feedback Loop</h2>
+        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: var(--space-sm);">
+          The self-improvement loop. Tests don't just make code better — they make <em>specs, features, strategy, motivation, and drivers</em> better.
+          When tests expose problems beyond code, feedback escalates upward through the hierarchy.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Color</th><th>Event</th><th>Target</th><th>Scope</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge--red">RED</span></td><td><code>CODE_REGRESSION</code></td><td>SPEC</td><td>Local fix — immediate</td></tr>
+              <tr><td><span class="badge badge--green">GREEN</span></td><td><code>INTEGRATION_FLAW</code></td><td>FEAT / ARCH</td><td>Mid-level redesign — 1 sprint</td></tr>
+              <tr><td><span class="badge badge--green">GREEN</span></td><td><code>UNFEASIBLE_SCOPE</code></td><td>T-MOTI</td><td>Solution unviable — 1 sprint</td></tr>
+              <tr><td><span class="badge badge--green">GREEN</span></td><td><code>BROKEN_REQUIREMENT</code></td><td>T-DRIV</td><td>Requirement invalid — 1 sprint</td></tr>
+              <tr><td><span class="badge badge--purple">BLUE</span></td><td><code>PARADIGM_SHIFT</code></td><td>CORP-STRAT</td><td>Strategic rethink — unbounded</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Diagram §2: Artifact Hierarchy + RGB Feedback -->
+      <section id="hierarchy" class="mb-2xl">
+        <h2>§2 — Artifact Hierarchy + RGB Feedback</h2>
+        <p class="text-muted" style="font-size: 0.85rem;">The SDLC artifact hierarchy with deterministic feedback loops. Source: <code>SdlcEngineSpec.system-0.0.6 &sect;2</code></p>
+        <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    classDef strat fill:#0d47a1,color:#fff,stroke:#7070ff,stroke-width:2px
+    classDef driv fill:#1565c0,color:#fff,stroke:#ff7070,stroke-width:2px
+    classDef moti fill:#1e88e5,color:#fff,stroke:#70ff70,stroke-width:2px
+    classDef feat fill:#2e7d32,color:#d0f0ff,stroke:#70d0ff,stroke-width:2px
+    classDef arch fill:#6a1b9a,color:#ffd0ff,stroke:#d070ff,stroke-width:2px
+    classDef spec fill:#c62828,color:#e8e8e8,stroke:#888,stroke-width:2px
+    classDef test fill:#37474f,color:#fff,stroke:#ff1744,stroke-width:3px
+    classDef market fill:#006064,color:#fff,stroke:#00e5ff,stroke-width:2px
+
+    M1["Market / User Data"]:::market
+
+    subgraph DESIGN["DESIGN -- the SDLC System"]
+        S1["CORP-STRAT"]:::strat
+        S2["T-DRIV"]:::driv
+        S3["T-MOTI"]:::moti
+        S4a["FEAT"]:::feat
+        S4b["ARCH"]:::arch
+        S5["SPEC"]:::spec
+        S6["TEST CODE"]:::test
+    end
+
+    M1 ==>|Strategic Pivot| S1
+    M1 -.->|Problem Signal| S2
+
+    S1 -->|Declares Intent| S2
+    S2 -->|Defines Problem| S3
+    S3 -->|Proposes Solution| S4a & S4b
+    S4a <-->|Peer Iteration| S4b
+    S4a & S4b -->|Decomposes Into| S5
+    S5 -->|Generates Tests| S6
+
+    S6 -.->|BLUE: Paradigm Shift| S1
+    S6 -->|GREEN: Integration Flaw| S4a
+    S6 -->|GREEN: Unfeasible Scope| S3
+    S6 -->|GREEN: Broken Requirement| S2
+    S6 ==>|RED: Code Regression| S5
+
+    linkStyle 7 stroke:#2979ff,stroke-width:2px
+    linkStyle 8 stroke:#00e676,stroke-width:2px
+    linkStyle 9 stroke:#00e676,stroke-width:2px
+    linkStyle 10 stroke:#00e676,stroke-width:2px
+    linkStyle 11 stroke:#ff1744,stroke-width:4px
+
+    style DESIGN fill:#1a1a1a,stroke:#555,stroke-dasharray:5 5
+        </div>
+      </section>
+
+      <!-- Diagram §3: Anti-Fixation Guards -->
+      <section id="guards" class="mb-2xl">
+        <h2>§3 — Anti-Fixation Guards</h2>
+        <p class="text-muted" style="font-size: 0.85rem;">Every node registers 1..N inline guards that fire on every state entry. Guards prevent fixation, rigid thinking, and cognitive ruts before they cascade.</p>
+        <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    classDef node fill:#1a1a2e,color:#e0e0ff,stroke:#555,stroke-width:2px
+    classDef guard fill:#ff8f00,color:#000,stroke:#ff6f00,stroke-width:2px
+
+    subgraph L0["L0: Strategy"]
+        direction LR
+        S1["CORP-STRAT"]:::node
+        G1["Guard: Strategy sunset\nMarket re-scan\nAssumption audit"]:::guard
+        S1 --- G1
+    end
+
+    subgraph L1a["L1: Driver"]
+        direction LR
+        S2["T-DRIV"]:::node
+        G2["Guard: Problem reframing\nAlternative drivers\nRight problem?"]:::guard
+        S2 --- G2
+    end
+
+    subgraph L1b["L1: Motivator"]
+        direction LR
+        S3["T-MOTI"]:::node
+        G3["Guard: Solution diversity\nCompeting approaches\nBetter way?"]:::guard
+        S3 --- G3
+    end
+
+    subgraph L2["L2-L3: Features + Architecture"]
+        direction LR
+        S4["FEAT / ARCH"]:::node
+        G4["Guard: Adversarial review\nArch alternatives\nDesign spikes"]:::guard
+        S4 --- G4
+    end
+
+    subgraph L4["L4: Specifications"]
+        direction LR
+        S5["SPEC"]:::node
+        G5["Guard: Mutation test\nRed-team challenge\nStranger test"]:::guard
+        S5 --- G5
+    end
+
+    subgraph L5["L5: Tests"]
+        direction LR
+        S6["TEST CODE"]:::node
+        G6["Guard: Property-based\nChaos + fuzzing\nAnti-reward-hack"]:::guard
+        S6 --- G6
+    end
+
+    L0 --> L1a --> L1b --> L2 --> L4 --> L5
+        </div>
+      </section>
+
+      <!-- Diagram §4: Emergency Breakers -->
+      <section id="breakers" class="mb-2xl">
+        <h2>§4 — Emergency Breakers + System Reset</h2>
+        <p class="text-muted" style="font-size: 0.85rem;">When inline guards fail and the system enters a death spiral, emergency breakers trip and force a system reset. Stronger guards are re-armed after lessons learned.</p>
+        <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    classDef healthy fill:#2e7d32,color:#fff,stroke:#00c853,stroke-width:2px
+    classDef spiral fill:#c62828,color:#fff,stroke:#ff1744,stroke-width:2px
+    classDef breaker fill:#e65100,color:#fff,stroke:#ff6d00,stroke-width:2px
+    classDef reset fill:#006064,color:#fff,stroke:#00e5ff,stroke-width:2px
+    classDef entry fill:#37474f,color:#e0e0e0,stroke:#888,stroke-width:1px
+
+    subgraph ENTRY["Entry Points"]
+        direction LR
+        E1["Strategic Design"]:::entry
+        E2["Live Execution"]:::entry
+    end
+
+    subgraph HEALTHY["Healthy Core Loop"]
+        HM["Motivator"]:::healthy
+        HD["Driver"]:::healthy
+        HT["Trigger"]:::healthy
+        HM -->|Shapes| HD -->|Initiates| HT -->|Reinforces| HM
+    end
+
+    E1 --> HM
+    E2 --> HT
+
+    subgraph SPIRAL["Death Recursion"]
+        MM["Myopic Motivator"]:::spiral
+        MD["Intense Driver"]:::spiral
+        RA["Reactive Action"]:::spiral
+        SF["System Fragility"]:::spiral
+        MM --> MD --> RA --> SF
+        SF -->|Pressure| MD
+        SF -->|Narrower focus| MM
+    end
+
+    HD -->|Guards bypassed| MD
+
+    subgraph EMERGENCY["Emergency Breakers"]
+        CB1["Hard Constraints"]:::breaker
+        CB2["Asymmetric Data"]:::breaker
+        CB3["Chaos Engineering"]:::breaker
+        CB4["Governance"]:::breaker
+        TRIP{"BREAKER TRIPPED"}:::breaker
+    end
+
+    RA -.->|Thresholds| CB1
+    SF -.->|Alarm| CB4
+    MM -.->|Fixation| CB2
+    MD -.->|Unsustainable| CB3
+    CB1 & CB2 & CB3 & CB4 ==>|Shut down| TRIP
+
+    subgraph RESET_PHASE["System Reset"]
+        RESET["Realign Strategy"]:::reset
+        LL["Lessons Learned"]:::reset
+        REARM["Re-arm Guards"]:::reset
+    end
+
+    TRIP --> RESET --> LL --> REARM
+    REARM -->|Stronger guards| HM
+
+    style ENTRY fill:#1a1a1a,stroke:#555,stroke-dasharray:5 5
+    style HEALTHY fill:#0a200a,stroke:#28a745,stroke-dasharray:5 5
+    style SPIRAL fill:#200a0a,stroke:#dc3545,stroke-dasharray:5 5
+    style EMERGENCY fill:#201500,stroke:#fd7e14,stroke-dasharray:5 5
+    style RESET_PHASE fill:#001a1a,stroke:#00e5ff,stroke-dasharray:5 5
+        </div>
+      </section>
+
+      <!-- Diagram §5: Engine Core -->
+      <section id="engine" class="mb-2xl">
+        <h2>§5 — Deterministic Engine Core</h2>
+        <p class="text-muted" style="font-size: 0.85rem;">Event-sourced state machine with pure transition evaluator. Same input, same output. Fully replayable, auditable, recoverable.</p>
+        <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    classDef engine fill:#1a1a2e,color:#e0e0ff,stroke:#7070ff,stroke-width:2px
+    classDef bus fill:#e65100,color:#fff,stroke:#ff6d00,stroke-width:2px
+    classDef store fill:#006064,color:#fff,stroke:#00e5ff,stroke-width:2px
+
+    subgraph CORE["Engine Core -- Event Sourced"]
+        EVT["Event Store\nAppend-only, immutable\nPartitioned by work-item-id"]:::bus
+        SM["State Machine\nMaterialized from event log\nReplayable from any checkpoint"]:::engine
+        EVAL["Transition Evaluator\nPure function: state + event = state-prime\nNo side effects, no randomness"]:::engine
+
+        EVT -->|Ordered replay| SM
+        SM -->|Current state| EVAL
+        EVAL -->|Emit event| EVT
+    end
+
+    subgraph REG["Registries"]
+        NR["Node Registry\nINode implementations"]:::engine
+        GR["Guard Registry\nIGuard per node"]:::engine
+        BR["Breaker Registry\nIBreaker per metric"]:::engine
+    end
+
+    EVAL -->|Execute| NR
+    EVAL -->|Validate| GR
+    BR -->|Monitor| SM
+    BR -->|Trip| EVT
+
+    style CORE fill:#0a0a1a,stroke:#7070ff,stroke-dasharray:5 5
+    style REG fill:#1a1a1a,stroke:#555,stroke-dasharray:5 5
+        </div>
+      </section>
+
+      <!-- Diagram §6: Parallel Execution -->
+      <section id="parallel" class="mb-2xl">
+        <h2>§6 — Parallel Execution: Star Topology</h2>
+        <p class="text-muted" style="font-size: 0.85rem;">Hub coordinates, agents execute. Multiple agents work concurrently on different work items via kanban boards and async event bus.</p>
+        <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    classDef hub fill:#0d47a1,color:#fff,stroke:#7070ff,stroke-width:3px
+    classDef agent fill:#2e7d32,color:#fff,stroke:#00c853,stroke-width:2px
+    classDef kanban fill:#6a1b9a,color:#fff,stroke:#d070ff,stroke-width:2px
+    classDef comp fill:#e65100,color:#fff,stroke:#ff6d00,stroke-width:2px
+    classDef bus fill:#37474f,color:#fff,stroke:#888,stroke-width:2px
+
+    subgraph STAR["Star Topology -- Parallel Execution"]
+        direction TB
+
+        HUB["ENGINE HUB\nCoordinator\nDependency resolver\nConflict arbitrator"]:::hub
+
+        subgraph BUS["Async Event Bus"]
+            PUB["publish: work-item events"]:::bus
+            SUB["subscribe: capability match"]:::bus
+            DLQ["dead-letter queue\nundeliverable or timed-out"]:::bus
+        end
+
+        subgraph AGENTS["Agent Pool -- Spoke Nodes"]
+            direction LR
+            A1["Agent 1\nSPEC writer"]:::agent
+            A2["Agent 2\nTest generator"]:::agent
+            A3["Agent 3\nFEAT integrator"]:::agent
+            A4["Agent 4\nRefactor + harvest"]:::agent
+            AN["Agent N\nAny capability"]:::agent
+        end
+
+        subgraph KANBAN["Parallel Kanban Boards"]
+            direction LR
+            K1["Board: Feature A\nN specs in parallel"]:::kanban
+            K2["Board: Feature B\nM specs in parallel"]:::kanban
+            K3["Board: Cross-cutting\nRefactoring + harvesting"]:::kanban
+        end
+
+        subgraph BACKLOG["Shared Backlogs"]
+            direction LR
+            BL1["Global Backlog\nPriority: dependency depth"]:::kanban
+            BL2["Refactor Backlog\nHarvest candidates"]:::kanban
+        end
+
+        subgraph SHARED["Shared Component Registry"]
+            CR["Component Registry\nOwners, dependents, usage count\nConflict detection matrix"]:::comp
+            DG["Dependency Graph\nDAG of work items\nParallelism = width of DAG"]:::comp
+        end
+    end
+
+    HUB -->|Decompose work| BL1
+    HUB -->|Detect harvest| BL2
+    BL1 -->|Distribute| K1 & K2 & K3
+    K1 & K2 & K3 -->|Claim| A1 & A2 & A3 & A4 & AN
+
+    A1 & A2 & A3 & A4 & AN -->|Complete event| PUB
+    SUB -->|Route to agent| A1 & A2 & A3 & A4 & AN
+    PUB -->|Aggregate| HUB
+    HUB -->|Update| CR
+    HUB -->|Resolve| DG
+    DG -->|Unblock next| BL1
+
+    style STAR fill:#0a0a1a,stroke:#555,stroke-dasharray:5 5
+    style BUS fill:#1a1a1a,stroke:#888,stroke-dasharray:5 5
+    style AGENTS fill:#0a200a,stroke:#28a745,stroke-dasharray:5 5
+    style KANBAN fill:#1a0a2a,stroke:#d070ff,stroke-dasharray:5 5
+    style BACKLOG fill:#1a1a2e,stroke:#7070ff,stroke-dasharray:5 5
+    style SHARED fill:#201500,stroke:#fd7e14,stroke-dasharray:5 5
+        </div>
+      </section>
+
+      <!-- Diagram §7: Harvesting Lifecycle -->
+      <section id="harvesting" class="mb-2xl">
+        <h2>§7 — Harvesting Lifecycle</h2>
+        <p class="text-muted" style="font-size: 0.85rem;">Common patterns emerge → extract to lib → promote to SOA service → spawn independent SDLC instance. Emergent architecture through detection, not design.</p>
+        <div class="mermaid">
+%%{init: {'theme': 'dark'}}%%
+flowchart TB
+    classDef detect fill:#37474f,color:#fff,stroke:#888,stroke-width:2px
+    classDef extract fill:#e65100,color:#fff,stroke:#ff6d00,stroke-width:2px
+    classDef promote fill:#0d47a1,color:#fff,stroke:#7070ff,stroke-width:2px
+    classDef spawn fill:#2e7d32,color:#fff,stroke:#00c853,stroke-width:3px
+
+    subgraph HARVEST["Harvesting Lifecycle"]
+        direction TB
+
+        subgraph DETECT["Phase 1: Pattern Detection"]
+            D1["Duplication Scanner\nAST + semantic similarity\nacross all agent output"]:::detect
+            D2["Usage Counter\nComponent referenced by N nodes\nthreshold configurable"]:::detect
+            D3["Coupling Analyzer\nShared interfaces detected\nacross feature boundaries"]:::detect
+        end
+
+        subgraph EXTRACT["Phase 2: Extraction"]
+            E1["Extract Internal Lib\nShared code to lib/\nOwn test suite generated"]:::extract
+            E2["Define Interface Contract\nIComponent interface\nVersion pinned"]:::extract
+            E3["Update Dependency Graph\nAll consumers point to lib\nNo direct code coupling"]:::extract
+        end
+
+        subgraph PROMOTE["Phase 3: Promotion"]
+            P1["Lib Maturity Gate\nStable API for N cycles\nTest coverage threshold met"]:::promote
+            P2["Extract SOA Service\nOwn deployment, own SLA\nAPI versioning enforced"]:::promote
+            P3["Service Registry\nDiscoverable endpoint\nHealth monitoring"]:::promote
+        end
+
+        subgraph SPAWN["Phase 4: New SDLC Instance"]
+            SP["Spawn Child SDLC\nNew CORP-STRAT for the service\nOwn T-DRIV, T-MOTI, FEAT, SPEC\nOwn kanban, own agents\nOwn guards and breakers"]:::spawn
+        end
+    end
+
+    D1 & D2 & D3 -->|Candidate identified| E1
+    E1 --> E2 --> E3
+    E3 -->|Lib stabilizes| P1
+    P1 -->|Maturity reached| P2
+    P2 --> P3
+    P3 -->|Independent lifecycle| SP
+    SP -.->|Feeds back as dependency| E3
+
+    style HARVEST fill:#0a0a1a,stroke:#555,stroke-dasharray:5 5
+    style DETECT fill:#1a1a1a,stroke:#888,stroke-dasharray:5 5
+    style EXTRACT fill:#201500,stroke:#fd7e14,stroke-dasharray:5 5
+    style PROMOTE fill:#0a0a2e,stroke:#7070ff,stroke-dasharray:5 5
+    style SPAWN fill:#0a200a,stroke:#00c853,stroke-dasharray:5 5
+        </div>
+      </section>
+
+      <!-- Standards -->
+      <section id="standards" class="mb-2xl">
+        <h2>Standards Compliance</h2>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-sm); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-dim);">IEEE</div>
+            <div style="font-size: 0.85rem; font-weight: 600;">1044:2009</div>
+          </div>
+          <div class="card" style="padding: var(--space-sm); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-dim);">ISO/IEC</div>
+            <div style="font-size: 0.85rem; font-weight: 600;">12207:2017</div>
+          </div>
+          <div class="card" style="padding: var(--space-sm); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-dim);">ISO/IEC</div>
+            <div style="font-size: 0.85rem; font-weight: 600;">15288:2023</div>
+          </div>
+          <div class="card" style="padding: var(--space-sm); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-dim);">TOGAF</div>
+            <div style="font-size: 0.85rem; font-weight: 600;">10</div>
+          </div>
+          <div class="card" style="padding: var(--space-sm); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-dim);">SAFe</div>
+            <div style="font-size: 0.85rem; font-weight: 600;">6.0</div>
+          </div>
+          <div class="card" style="padding: var(--space-sm); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-dim);">POSIX</div>
+            <div style="font-size: 0.85rem; font-weight: 600;">Compliant</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+            <div class="page-sidebar__heading">TECHNICAL · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html" class="active">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="core-specifications.html">Core Specifications</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

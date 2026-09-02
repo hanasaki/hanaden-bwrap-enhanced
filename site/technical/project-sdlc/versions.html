@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDLC Spec Versions — V-Universe | Hanaden</title>
+  <meta name="description" content="Version history of the SDLC Generic Deterministic Orchestrator Workflow Engine Specification. All versions from v0.0.1 through v0.0.6.">
+  <link rel="stylesheet" href="../../shared/style.css">
+  <style>
+    .version-list { list-style: none; padding: 0; margin: 0; }
+    .version-item {
+      position: relative;
+      padding: 4px var(--space-sm);
+      border-left: 3px solid var(--border-subtle);
+      margin-bottom: 1px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+    .version-item:hover { background: rgba(59, 245, 169, 0.05); border-left-color: var(--accent-green); }
+    .version-item.active { background: rgba(59, 245, 169, 0.08); border-left-color: var(--accent-green); }
+    .version-item__ver { font-weight: 700; color: var(--text-bright); }
+    .version-item__badge { display: inline-block; font-size: 0.6rem; padding: 1px 5px; border-radius: 3px; margin-left: 3px; vertical-align: middle; }
+    .version-item__badge--baseline { background: var(--accent-green); color: var(--bg-deepspace); }
+    .version-item__badge--warn { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .version-item__badge--draft { background: rgba(124, 58, 237, 0.2); color: #a78bfa; }
+    .version-item__badge--superseded { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+    .version-item__tip {
+      display: block; max-height: 0; overflow: hidden;
+      transition: max-height 0.2s ease;
+      padding: 0 2px; white-space: normal;
+    }
+    .version-item:hover .version-item__tip { max-height: 80px; padding-top: 4px; }
+    .version-item__tip-stats { font-size: 0.68rem; color: var(--text-dim); margin-bottom: 3px; }
+    .version-item__tip-desc { font-size: 0.72rem; color: var(--text-muted); line-height: 1.35; }
+    .version-item--changelog {
+      padding: 5px var(--space-sm); margin-bottom: var(--space-xs);
+      border-left: 3px solid var(--accent-cyan);
+      font-size: 0.75rem; color: var(--accent-cyan); font-weight: 600;
+    }
+    .version-item--changelog:hover { background: rgba(34, 211, 238, 0.05); }
+    .version-item--changelog.active { background: rgba(34, 211, 238, 0.08); border-left-color: var(--accent-cyan); }
+    .version-detail { display: none; }
+    .version-detail.active { display: block; }
+    .spec-stat { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 3px; background: rgba(59, 245, 169, 0.06); color: var(--text-muted); margin-right: var(--space-xs); margin-bottom: var(--space-xs); }
+    .changelog-entry { border-left: 3px solid var(--border-subtle); padding-left: var(--space-md); margin-bottom: var(--space-lg); }
+    .changelog-entry__header { display: flex; align-items: center; gap: var(--space-xs); margin-bottom: 4px; }
+    .changelog-entry__ver { font-weight: 700; font-size: 0.9rem; color: var(--text-bright); }
+    .changelog-entry__stats { font-size: 0.72rem; color: var(--text-dim); }
+    .changelog-entry__desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+    .changelog-entry__changes { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; padding-left: var(--space-md); }
+    .changelog-entry__changes li { margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-sdlc/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-lg);">
+        <div class="section-header__eyebrow">SDLC Engine Spec</div>
+        <h1>Spec <span class="gradient">Versions</span></h1>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 600px;">
+          Version history of the Generic SDLC Deterministic Orchestrator Workflow Engine Specification.
+        </p>
+      </div>
+
+      <!-- Change Log (all versions stacked) -->
+      <div id="detail-changelog" class="version-detail">
+        <section class="mb-2xl">
+          <h2><span class="gradient">Change Log</span></h2>
+          <p style="color: var(--text-muted); font-size: 0.82rem; margin-bottom: var(--space-lg);">All spec versions, newest first.</p>
+
+          <div class="changelog-entry">
+            <div class="changelog-entry__header">
+              <span class="changelog-entry__ver">v0.0.6</span>
+              <span class="version-item__badge version-item__badge--draft">Draft</span>
+              <span class="changelog-entry__stats">2,816 lines · 35 §§ · 57 diagrams</span>
+            </div>
+            <div class="changelog-entry__desc">OTel-style decomposition with API-contract-first trait crates. Self-documenting repos.</div>
+            <ul class="changelog-entry__changes"><li>OTel-style observability decomposition</li><li>API-contract-first trait crate design</li><li>Expanded from 15 to 35 sections</li></ul>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-entry__header">
+              <span class="changelog-entry__ver">v0.0.5.1</span>
+              <span class="version-item__badge version-item__badge--warn">⚠</span>
+              <span class="changelog-entry__stats">2,525 lines · 15 §§ · 45 diagrams</span>
+            </div>
+            <div class="changelog-entry__desc">Restored TDD+RGB clarity. 8 bounded subsystems with clear API boundaries.</div>
+            <ul class="changelog-entry__changes"><li>Restored TDD + RGB feedback clarity</li><li>8 bounded subsystems with clear API contracts</li><li>Reduced from 3,785 to 2,525 lines (33% leaner)</li></ul>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-entry__header">
+              <span class="changelog-entry__ver">v0.0.5</span>
+              <span class="version-item__badge version-item__badge--warn">⚠ TDD</span>
+              <span class="changelog-entry__stats">3,785 lines · 25 §§ · 89 diagrams</span>
+            </div>
+            <div class="changelog-entry__desc">Parallel execution additions. Peak complexity. TDD RED/GREEN cycle corrupted.</div>
+            <ul class="changelog-entry__changes"><li>Parallel execution additions expanded spec significantly</li><li>89 mermaid diagrams (peak complexity)</li><li>⚠ TDD RED/GREEN cycle corrupted</li></ul>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-entry__header">
+              <span class="changelog-entry__ver">v0.0.4</span>
+              <span class="version-item__badge version-item__badge--warn">⚠</span>
+              <span class="changelog-entry__stats">2,328 lines · 20 §§ · 63 diagrams</span>
+            </div>
+            <div class="changelog-entry__desc">Integrated rewrite: unified layer taxonomy, kanban lifecycle, exclusive-ownership model.</div>
+            <ul class="changelog-entry__changes"><li>Expanded from 2,062 to 2,328 lines</li><li>Added 4 additional diagrams (59→63)</li><li>Refined kanban and merge lifecycle integration</li></ul>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-entry__header">
+              <span class="changelog-entry__ver">v0.0.3</span>
+              <span class="version-item__badge version-item__badge--warn">⚠</span>
+              <span class="changelog-entry__stats">2,062 lines · 20 §§ · 59 diagrams</span>
+            </div>
+            <div class="changelog-entry__desc">Kanban + ownership model. Major expansion from baseline.</div>
+            <ul class="changelog-entry__changes"><li>Major expansion from 1,017 to 2,062 lines (2×)</li><li>Added 8 new sections (12→20)</li><li>Introduced kanban lifecycle and exclusive-ownership model</li></ul>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-entry__header">
+              <span class="changelog-entry__ver">v0.0.2</span>
+              <span class="version-item__badge version-item__badge--baseline">✅ Baseline</span>
+              <span class="changelog-entry__stats">1,017 lines · 12 §§ · 38 diagrams</span>
+            </div>
+            <div class="changelog-entry__desc">Authoritative baseline. Event-sourced state machine with guards, breakers, parallel execution.</div>
+            <ul class="changelog-entry__changes"><li>Added Kanban integration and merge-point semantics</li><li>TDD RED/GREEN/BLUE cycle corrections</li><li>Expanded from 915 to 1,017 lines</li></ul>
+          </div>
+
+          <div class="changelog-entry">
+            <div class="changelog-entry__header">
+              <span class="changelog-entry__ver">v0.0.1</span>
+              <span class="version-item__badge version-item__badge--superseded">Superseded</span>
+              <span class="changelog-entry__stats">915 lines · 12 §§ · 38 diagrams</span>
+            </div>
+            <div class="changelog-entry__desc">Original engine specification. Foundation for all subsequent versions.</div>
+          </div>
+
+        </section>
+      </div>
+
+      <!-- v0.0.6 -->
+      <div id="detail-006" class="version-detail active">
+        <section class="mb-2xl">
+          <h2>v0.0.6 <span class="version-item__badge version-item__badge--draft">Draft</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">2,816 lines</span>
+            <span class="spec-stat">35 sections</span>
+            <span class="spec-stat">57 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            OTel-style decomposition with API-contract-first trait crates. Self-documenting repos with
+            STRAT/DRIV/MOTI/FEAT/SPEC document hierarchy. System-of-systems architecture.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.5.1</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>OTel-style observability decomposition</li>
+            <li>API-contract-first trait crate design</li>
+            <li>Expanded from 15 to 35 sections</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.5.1 -->
+      <div id="detail-0051" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.5.1 <span class="version-item__badge version-item__badge--warn">⚠ Experimental</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">2,525 lines</span>
+            <span class="spec-stat">15 sections</span>
+            <span class="spec-stat">45 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            System-of-systems restructure of v0.0.5: 8 bounded subsystems with clear API boundaries,
+            decomposed machine.json catalog, dedicated TDD and Kanban subsystems.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.5</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Restored TDD + RGB feedback clarity (corrupted in v0.0.5)</li>
+            <li>8 bounded subsystems with clear API contracts</li>
+            <li>Reduced from 3,785 to 2,525 lines (33% leaner)</li>
+            <li>Decomposed machine.json into subsystem catalogs</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.5 -->
+      <div id="detail-005" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.5 <span class="version-item__badge version-item__badge--warn">⚠ TDD Corrupted</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">3,785 lines</span>
+            <span class="spec-stat">25 sections</span>
+            <span class="spec-stat">89 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Integrated rewrite: one layer taxonomy, one kanban, one merge lifecycle, one exclusive-ownership
+            model, complete event catalog, TDD gate, nested parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.4</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Parallel execution additions expanded spec significantly</li>
+            <li>89 mermaid diagrams (peak complexity)</li>
+            <li><span class="text-red">⚠ TDD RED/GREEN cycle corrupted by parallel additions</span></li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.4 -->
+      <div id="detail-004" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.4 <span class="version-item__badge version-item__badge--warn">⚠ Experimental</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">2,328 lines</span>
+            <span class="spec-stat">20 sections</span>
+            <span class="spec-stat">63 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Integrated rewrite: unified layer taxonomy, kanban lifecycle, exclusive-ownership model,
+            complete event catalog, TDD gate, nested parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.3</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Expanded from 2,062 to 2,328 lines</li>
+            <li>Added 4 additional diagrams (59 → 63)</li>
+            <li>Refined kanban and merge lifecycle integration</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.3 -->
+      <div id="detail-003" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.3 <span class="version-item__badge version-item__badge--warn">⚠ Experimental</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">2,062 lines</span>
+            <span class="spec-stat">20 sections</span>
+            <span class="spec-stat">59 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Integrated rewrite: one layer taxonomy, one kanban, one merge lifecycle, one exclusive-ownership
+            model, complete event catalog, TDD gate, nested parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Changes from v0.0.2</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Major expansion from 1,017 to 2,062 lines (2× growth)</li>
+            <li>Added 8 new sections (12 → 20)</li>
+            <li>Diagrams increased from 38 to 59</li>
+            <li>Introduced kanban lifecycle and exclusive-ownership model</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.2 -->
+      <div id="detail-002" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.2 <span class="version-item__badge version-item__badge--baseline">✅ Baseline</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">1,017 lines</span>
+            <span class="spec-stat">12 sections</span>
+            <span class="spec-stat">38 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Authoritative baseline specification. Defines a fully implementable software engine for
+            managing the complete software development lifecycle as an event-sourced, deterministic
+            state machine with guards, breakers, and parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Key Sections</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>§2 Artifact Hierarchy with RGB feedback paths</li>
+            <li>§3 Anti-Fixation Guards</li>
+            <li>§4 Emergency Breakers</li>
+            <li>§5 Engine Core state machine</li>
+            <li>§6 Star Topology for parallel execution</li>
+            <li>§7 Harvesting and knowledge extraction</li>
+          </ul>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Changes from v0.0.1</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Added Kanban integration and merge-point semantics</li>
+            <li>TDD RED/GREEN/BLUE cycle corrections</li>
+            <li>Expanded from 915 to 1,017 lines</li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- v0.0.1 -->
+      <div id="detail-001" class="version-detail">
+        <section class="mb-2xl">
+          <h2>v0.0.1 <span class="version-item__badge version-item__badge--superseded">Superseded</span></h2>
+          <div style="margin-bottom: var(--space-sm);">
+            <span class="spec-stat">915 lines</span>
+            <span class="spec-stat">12 sections</span>
+            <span class="spec-stat">38 diagrams</span>
+          </div>
+          <p class="text-muted" style="font-size: 0.82rem;">
+            Original engine specification. Defines a fully implementable software engine for managing
+            the complete software development lifecycle as an event-sourced, deterministic state machine
+            with guards, breakers, and parallel execution.
+          </p>
+          <h4 style="font-size: 0.82rem; color: var(--text-secondary);">Foundation</h4>
+          <ul style="font-size: 0.82rem; color: var(--text-muted);">
+            <li>Event-sourced state machine architecture</li>
+            <li>Anti-fixation guards and emergency breakers</li>
+            <li>Star topology for parallel execution</li>
+            <li>Harvesting and knowledge extraction</li>
+            <li>RGB feedback paths (RED/GREEN/BLUE)</li>
+          </ul>
+        </section>
+      </div>
+
+    </div>
+
+    <aside class="page-sidebar">
+            <div class="page-sidebar__heading">TECHNICAL · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="core-specifications.html">Core Specifications</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html" class="active">Change Log</a></li>
+      </ul>
+      <div class="page-sidebar__heading" style="margin-top: var(--space-md);">On This Page</div>
+      <ul class="version-list">
+        <li class="version-item version-item--changelog" onclick="showVersion('changelog', this)">
+          📋 Change Log
+        </li>
+        <li class="version-item active" onclick="showVersion('006', this)">
+          <span class="version-item__ver">v0.0.6</span> <span class="version-item__badge version-item__badge--draft">Draft</span>
+          <div class="version-item__tip">
+            <div class="version-item__tip-stats">2,816 lines · 35 §§ · 57 diagrams</div>
+            <div class="version-item__tip-desc">OTel-style decomposition with API-contract-first trait crates. Self-documenting repos.</div>
+          </div>
+        </li>
+        <li class="version-item" onclick="showVersion('0051', this)">
+          <span class="version-item__ver">v0.0.5.1</span> <span class="version-item__badge version-item__badge--warn">⚠</span>
+          <div class="version-item__tip">
+            <div class="version-item__tip-stats">2,525 lines · 15 §§ · 45 diagrams</div>
+            <div class="version-item__tip-desc">Restored TDD+RGB clarity. 8 bounded subsystems with clear API boundaries.</div>
+          </div>
+        </li>
+        <li class="version-item" onclick="showVersion('005', this)">
+          <span class="version-item__ver">v0.0.5</span> <span class="version-item__badge version-item__badge--warn">⚠ TDD</span>
+          <div class="version-item__tip">
+            <div class="version-item__tip-stats">3,785 lines · 25 §§ · 89 diagrams</div>
+            <div class="version-item__tip-desc">Parallel additions. Peak complexity. TDD cycle corrupted.</div>
+          </div>
+        </li>
+        <li class="version-item" onclick="showVersion('004', this)">
+          <span class="version-item__ver">v0.0.4</span> <span class="version-item__badge version-item__badge--warn">⚠</span>
+          <div class="version-item__tip">
+            <div class="version-item__tip-stats">2,328 lines · 20 §§ · 63 diagrams</div>
+            <div class="version-item__tip-desc">Integrated rewrite: unified taxonomy, kanban, ownership model.</div>
+          </div>
+        </li>
+        <li class="version-item" onclick="showVersion('003', this)">
+          <span class="version-item__ver">v0.0.3</span> <span class="version-item__badge version-item__badge--warn">⚠</span>
+          <div class="version-item__tip">
+            <div class="version-item__tip-stats">2,062 lines · 20 §§ · 59 diagrams</div>
+            <div class="version-item__tip-desc">Kanban + ownership model. Major 2× expansion from baseline.</div>
+          </div>
+        </li>
+        <li class="version-item" onclick="showVersion('002', this)">
+          <span class="version-item__ver">v0.0.2</span> <span class="version-item__badge version-item__badge--baseline">✅</span>
+          <div class="version-item__tip">
+            <div class="version-item__tip-stats">1,017 lines · 12 §§ · 38 diagrams</div>
+            <div class="version-item__tip-desc">Authoritative baseline. Event-sourced state machine with guards and breakers.</div>
+          </div>
+        </li>
+        <li class="version-item" onclick="showVersion('001', this)">
+          <span class="version-item__ver">v0.0.1</span> <span class="version-item__badge version-item__badge--superseded">Old</span>
+          <div class="version-item__tip">
+            <div class="version-item__tip-stats">915 lines · 12 §§ · 38 diagrams</div>
+            <div class="version-item__tip-desc">Original engine specification. Foundation for all subsequent versions.</div>
+          </div>
+        </li>
+      </ul>
+    </aside>
+  </div>
+
+  <script>
+  function showVersion(id, el) {
+    document.querySelectorAll('.version-detail').forEach(function(d) { d.classList.remove('active'); });
+    document.querySelectorAll('.version-item').forEach(function(v) { v.classList.remove('active'); });
+    document.getElementById('detail-' + id).classList.add('active');
+    el.classList.add('active');
+  }
+  </script>
+
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

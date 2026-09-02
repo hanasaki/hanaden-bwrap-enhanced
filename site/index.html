@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V-Universe — Rootless Namespace-Isolated Sandbox | Hanaden</title>
+  <meta name="description" content="V-Universe by Hanaden. Rootless, namespace-isolated, zero-side-effect sandbox for AI agents, developers, and desktop applications.">
+  <link rel="stylesheet" href="shared/style.css">
+  <style>
+    .matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; max-width: 650px; margin: 0 auto; }
+    .matrix__cell {
+      display: block; padding: var(--space-md); border-radius: var(--radius-md);
+      background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-subtle);
+      text-decoration: none; transition: all var(--transition-fast);
+    }
+    .matrix__cell:hover { border-color: var(--accent-green); background: rgba(15, 23, 42, 0.9); transform: translateY(-2px); }
+    .matrix__cell h3 { margin: 0 0 0.2rem 0; font-size: 0.85rem; }
+    .matrix__cell p { color: var(--text-muted); font-size: 0.72rem; margin: 0 0 0.4rem 0; line-height: 1.35; }
+    .matrix__tags { display: flex; flex-wrap: wrap; gap: 3px; }
+    .matrix__tag { font-size: 0.62rem; padding: 1px 5px; border-radius: 3px; background: rgba(59, 245, 169, 0.06); color: var(--text-dim); }
+    .matrix__label { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.3rem; }
+    .matrix__label--biz { color: var(--accent-green); }
+    .matrix__label--tech { color: var(--accent-cyan); }
+    @media (max-width: 600px) { .matrix { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="business/project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="business/project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="index.html" class="nav__site-nav" style="border-bottom-color: var(--accent-green); color: var(--text-bright);">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="business/project-core/index.html" class="nav__mode-btn">Business</a>
+        <a href="technical/project-core/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="hero hero--full">
+    <div class="hero__bg">
+      <img src="shared/img/vuniverse-hero.svg" alt="" loading="eager" style="opacity: 0.6;">
+    </div>
+
+    <div class="hero__content" style="animation: fadeInUp 0.8s ease forwards; max-width: 750px; width: 100%;">
+
+      <!-- Branding -->
+      <div style="text-align: center; margin-bottom: var(--space-sm);">
+        <div style="margin: 0 auto 4px; width: 48px; height: 36px;">
+          <img src="shared/img/vuniverse-logo.svg" alt="V-Universe logo" width="48" height="36" style="opacity: 0.9;">
+        </div>
+        <h1 class="hero__title"><span class="gradient">V-Universe</span></h1>
+        <p style="font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--accent-green); margin-bottom: 0.2rem;">
+          Rootless &middot; Namespace-Isolated &middot; Inescapable
+        </p>
+        <p style="color: var(--text-muted); font-size: 0.72rem; max-width: 380px; margin: 0 auto; line-height: 1.4;">
+          Kernel-enforced containment. Zero root. Zero daemons. Zero side effects.
+        </p>
+      </div>
+
+      <!-- 2×2 Matrix -->
+      <div class="matrix" style="animation: fadeIn 1s ease 0.3s forwards; opacity: 0;">
+
+        <!-- Business × Product -->
+        <a href="business/project-core/index.html" class="matrix__cell" id="cell-biz-proj">
+          <div class="matrix__label matrix__label--biz">Business · Product</div>
+          <h3>📊 For Decision Makers</h3>
+          <p>Security posture, licensing, features, and business drivers for rootless containment.</p>
+        </a>
+
+        <!-- Business × SDLC -->
+        <a href="business/project-sdlc/index.html" class="matrix__cell" id="cell-biz-sdlc">
+          <div class="matrix__label matrix__label--biz">Business · SDLC</div>
+          <h3>📋 Development Process</h3>
+          <p>How structured lifecycle management delivers quality, reduces risk, and accelerates delivery.</p>
+        </a>
+
+        <!-- Technical × Product -->
+        <a href="technical/project-core/index.html" class="matrix__cell" id="cell-tech-proj">
+          <div class="matrix__label matrix__label--tech">Technical · Product</div>
+          <h3>⌘ For Engineers</h3>
+          <p>Architecture, CLI reference, security model, test harness, and release history.</p>
+        </a>
+
+        <!-- Technical × SDLC -->
+        <a href="technical/project-sdlc/index.html" class="matrix__cell" id="cell-tech-sdlc">
+          <div class="matrix__label matrix__label--tech">Technical · SDLC</div>
+          <h3>🔧 Engine Specification</h3>
+          <p>Deterministic orchestrator engine: TDD guards, emergency breakers, star topology, RGB feedback.</p>
+        </a>
+
+      </div>
+
+      <div style="display: flex; gap: 1.2rem; justify-content: center; margin-top: var(--space-md); animation: fadeIn 1.2s ease 0.5s forwards; opacity: 0;">
+        <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);"><span style="color: var(--accent-green); font-weight: 700;">875</span> tests</span>
+        <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);"><span style="color: var(--accent-green); font-weight: 700;">42</span> features</span>
+        <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);"><span style="color: var(--accent-green); font-weight: 700;">0</span> root</span>
+        <span style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);"><span style="color: var(--accent-purple); font-weight: 700;">1</span> script</span>
+      </div>
+    </div>
+  </main>
+
+  <script src="shared/mermaid.min.js"></script>
+  <script src="shared/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Drivers — V-Universe | Hanaden</title>
+  <meta name="description" content="Why organizations adopt V-Universe: the business drivers behind rootless, namespace-isolated containment for AI agents and developer workflows.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../../technical/project-core/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Why V-Universe</div>
+        <h1>The Business Case for <span class="gradient">Containment</span></h1>
+        <p>Understanding the forces driving adoption of rootless sandboxing in modern organizations.</p>
+      </div>
+
+      <section id="risk" class="mb-2xl">
+        <h2>Risk Reduction</h2>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--red" style="display: inline-flex;">⚠️</div>
+            <h4>Uncontained AI Agents</h4>
+            <p>LLM-driven coding assistants execute arbitrary shell commands with full user privileges. A single hallucinated <code>rm -rf</code> or credential exfiltration can compromise an entire development environment.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--green" style="display: inline-flex;">🛡</div>
+            <h4>Kernel-Enforced Boundaries</h4>
+            <p>V-Universe eliminates this risk class entirely. Namespace isolation ensures agents can only see and modify what you explicitly allow — enforced by the Linux kernel, not application-level checks.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="cost" class="mb-2xl">
+        <h2>Cost Efficiency</h2>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💰</div>
+            <h4 style="font-size: 0.9rem;">Zero Infrastructure</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">No Docker daemon, no VM hypervisor, no container registry. One bash script replaces an entire container stack.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚡</div>
+            <h4 style="font-size: 0.9rem;">Sub-Second Startup</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">No image pulls, no layer caching, no build steps. Sandbox is ready in milliseconds, not minutes.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔧</div>
+            <h4 style="font-size: 0.9rem;">Zero Maintenance</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">No daemon to update, no images to patch, no registries to manage. The host OS is the runtime.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="compliance" class="mb-2xl">
+        <h2>Compliance &amp; Governance</h2>
+        <p>Organizations operating under regulatory frameworks need demonstrable containment boundaries. V-Universe provides:</p>
+        <ul class="feature-list">
+          <li><strong>Audit trail:</strong> Every sandbox invocation is deterministic and reproducible — same flags, same boundaries</li>
+          <li><strong>Least privilege:</strong> Processes run with minimal access by default; additional mounts are explicit and visible</li>
+          <li><strong>No root escalation:</strong> User namespaces mean even <code>UID 0</code> inside the sandbox maps to your unprivileged user outside</li>
+          <li><strong>Supply chain isolation:</strong> Downloaded dependencies execute in containment, unable to reach credentials or sensitive files</li>
+        </ul>
+      </section>
+
+      <section id="adoption" class="mb-2xl">
+        <h2>Adoption Drivers</h2>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green">AI Agent Proliferation</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Every development team now uses AI coding assistants. Each assistant runs with developer privileges. The attack surface grows with every new tool adopted.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple">Developer Velocity</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Developers need containment that doesn't slow them down. Docker adds friction. VMs add overhead. V-Universe adds neither — it's transparent to the workflow.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-cyan">Multi-Tenancy</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Shared development servers need per-user isolation. V-Universe provides it without root access, kernel modules, or administrative privileges.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-red">Incident Prevention</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Every credential leak, accidental deletion, or rogue process that V-Universe prevents is an incident that never needs investigation, remediation, or disclosure.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">BUSINESS · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html" class="active">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html">Licensing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

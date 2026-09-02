@@ -1,26 +1,36 @@
 <!-- (c) 2026-* Frederick Bloom -- README.md -- Hanaden AI -->
 
-# Hanaden `bwrap-enhanced`
+# V-Universe by Hanaden
 
 **Rootless, Namespace-Isolated Virtual Filesystem (VFS) Sandbox & Desktop Containerizer**
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Dual-License: Commercial](https://img.shields.io/badge/Dual--License-Commercial-orange.svg)](PROJECT_HOME/docs/legal/FrederickBloom/LICENSE-COMMERCIAL.md)
-[![TDD Specs: 45/45 Passed](https://img.shields.io/badge/TDD%20Specs-45%2F45%20Passed-brightgreen.svg)](PROJECT_HOME/src/test/hanaden-bwrap-enhanced/)
+[![TDD Suites: 53](https://img.shields.io/badge/TDD%20Suites-53-brightgreen.svg)](PROJECT_HOME/src/test/hanaden-bwrap-enhanced/)
 [![Zero Side Effects](https://img.shields.io/badge/Security-Zero%20Side%20Effects-success.svg)](CONSTITUTION.md)
 
 ---
 
-## Why `bwrap-enhanced`?
+## What is V-Universe?
 
-Autonomous AI coding agents, background language servers, and developer scripts execute arbitrary commands, download packages, and write files directly on host machines. Running untrusted or automated workloads directly with full user privileges creates severe risks of host file contamination, credential theft, and accidental system mutation.
+V-Universe creates an **inescapable virtual universe** -- a rootless, namespace-isolated
+sandbox that lets autonomous AI coding agents, background language servers, and developer
+scripts run with full apparent capabilities while being completely confined by the Linux
+kernel. No root. No daemons. No host mutation.
 
-`bwrap-enhanced` creates an **inescapable virtual universe (vuniverse)** governed by **The Immutable Principle**:
+The underlying engine is `bwrap-enhanced.sh` -- a Bash wrapper around
+[Bubblewrap](https://github.com/containers/bubblewrap) that constructs a purpose-built
+Virtual Filesystem (VFS) for each sandbox process. The host filesystem is never directly
+accessible.
+
+V-Universe is governed by **The Immutable Principle**:
+
 1. **External Construction:** The jailer designs and provisions the jail before execution.
 2. **External Enforcement:** The sandbox and kernel guards enforce the boundaries from the outside.
 3. **Zero Self-Policing:** Never trust or enable a prisoner to build their own cell, alter their confines, or enforce rules upon themselves.
 
 ### Key Pillars
+
 * **Zero Root / Zero Daemons:** Leverages unprivileged Linux user namespaces via Bubblewrap.
 * **Zero Side Effects:** Never creates host directories or mutates host files during startup; fails fast on misconfiguration.
 * **Controlled Egress:** Locks root (`/`) read-only and confines filesystem persistence strictly to a dedicated user home write-hole.
@@ -30,7 +40,7 @@ Autonomous AI coding agents, background language servers, and developer scripts 
 
 ## Architecture & VFS Topology
 
-`bwrap-enhanced` pivots the root filesystem, provisions volatile `tmpfs` layers for scratch storage, and exposes an isolated read-write egress channel.
+V-Universe pivots the root filesystem, provisions volatile `tmpfs` layers for scratch storage, and exposes an isolated read-write egress channel.
 
 ```mermaid
 flowchart LR
@@ -43,7 +53,7 @@ flowchart LR
         H_Egress["EPHEMERAL_HOME/sandbox-user/"]
     end
 
-    subgraph VFS["Vuniverse (Sandbox VFS Boundary)"]
+    subgraph VFS["V-Universe (Sandbox VFS Boundary)"]
         V_Root["/ (Immutable Read-Only Root)"]
         V_Bin["/usr, /bin, /lib (RO Bind)"]
         V_Etc["/etc (Sanitized: profile.d Shadowed)"]
@@ -72,18 +82,18 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     participant Host as Host Environment (Jailer)
-    participant Bwrap as bwrap-enhanced.sh
-    participant VFS as Virtual VFS (Sandbox)
+    participant Engine as bwrap-enhanced.sh
+    participant VFS as V-Universe (Sandbox VFS)
     participant Proc as Workload Process (Prisoner)
 
-    Host->>Bwrap: Invoke with flags & target command
-    Bwrap->>Bwrap: Validate host paths exist (Zero-Side-Effects check)
-    Bwrap->>Bwrap: Build synthetic /etc/passwd, /etc/group, /etc/profile FDs
-    Bwrap->>VFS: Unshare namespaces (user, pid, ipc, uts, cgroup, net)
-    Bwrap->>VFS: Bind / read-only, mount tmpfs on /tmp & /homes
-    Bwrap->>VFS: Bind host egress dir to /home/[USER] (RW)
-    Bwrap->>VFS: Selectively bind Wayland / X11 / Audio sockets (if opted in)
-    Bwrap->>Proc: Exec target command as PID 1 foreground hold loop
+    Host->>Engine: Invoke with flags & target command
+    Engine->>Engine: Validate host paths exist (Zero-Side-Effects check)
+    Engine->>Engine: Build synthetic /etc/passwd, /etc/group, /etc/profile FDs
+    Engine->>VFS: Unshare namespaces (user, pid, ipc, uts, cgroup, net)
+    Engine->>VFS: Bind / read-only, mount tmpfs on /tmp & /homes
+    Engine->>VFS: Bind host egress dir to /home/[USER] (RW)
+    Engine->>VFS: Selectively bind Wayland / X11 / Audio sockets (if opted in)
+    Engine->>Proc: Exec target command as PID 1 foreground hold loop
     Proc->>VFS: Read toolchains & write to /home/[USER]
     Proc->>Host: Process terminates -> volatile tmpfs evaporates immediately
 ```
@@ -97,7 +107,7 @@ sequenceDiagram
 * **Shell Environment Sanitization:** Suppresses host `/etc/profile.d` scripts and sanitizes environment variables via `--clear-env`.
 * **Toolchain Passthrough:** Integrated `--mise-enable` support for seamless Mise/Cargo/Python development toolchains.
 * **Foreground-Hold Engine:** Uses a non-polling bash built-in `/proc` watcher to keep GUI child processes and background daemons alive until complete.
-* **Deterministic TDD:** Validated by 45 executable specification tests across 10 feature areas.
+* **Deterministic TDD:** Validated by 53 executable specification test suites across 10 feature areas.
 
 ---
 
@@ -111,7 +121,7 @@ sequenceDiagram
   --clear-env \
   --host-real-root / \
   --host-real-home-parent /tmp/my-sandbox/home \
-  -- /bin/bash -c 'echo "Inside sandbox: HOME=$HOME, USER=$USER"'
+  -- /bin/bash -c 'echo "Inside V-Universe: HOME=$HOME, USER=$USER"'
 
 # 2. Interactive development shell with Mise toolchain
 ./PROJECT_HOME/boot/bwrap-enhanced.sh \
@@ -152,6 +162,9 @@ sequenceDiagram
 
 ## Security & Threat Model
 
+The security model is codified in [`CONSTITUTION.md`](CONSTITUTION.md) -- a binding governance
+document. All code changes must comply with the Constitution or be rejected.
+
 ### Security Tiers
 
 | Tier | Configuration | Trust Level | Use Case |
@@ -164,40 +177,68 @@ sequenceDiagram
 
 ---
 
+## Documentation Site
+
+The V-Universe documentation site is a static, file:// browsable HTML/CSS/JS site
+with no build step, no server, and no framework dependencies. Browse it locally:
+
+```
+site/index.html
+```
+
+The site is organized into a 2x2 quadrant architecture:
+
+| | Product (V-Universe Core) | SDLC (Development Lifecycle) |
+| :--- | :--- | :--- |
+| **Business** | About, Features, Pricing, Security, Drivers | Drivers, Architecture, Standards, Quality |
+| **Technical** | Architecture, CLI Reference, Security Model, Test Harness | Architecture, Core Specifications, Standards, Quality |
+
+30 pages total. All content is real (no stubs). All paths are relative (fully relocatable).
+
+---
+
 ## Project Structure
 
 ```
 hanaden-bwrap-enhanced/
-├── LICENSE                                    # Custom Dual License (AGPL-3.0 + Commercial)
-├── NOTICE                                     # Canonical attribution and moral rights notice
-├── CONSTITUTION.md                            # Project invariants and security governance
-├── README.md                                  # Enterprise overview & quickstart (this file)
-└── PROJECT_HOME/                              # Virtual filesystem jail root
-    ├── boot/
-    │   ├── bwrap-enhanced.sh                  # Sandbox engine wrapper
-    │   └── specs/                             # Specification tree
-    ├── docs/
-    │   ├── legal/                             # Commercial license, CLA, and third-party terms
-    │   │   ├── FrederickBloom/                # CLA.md & LICENSE-COMMERCIAL.md
-    │   │   └── third-party/                   # AGPL-3.0.txt
-    │   └── architecture-design-features-specs/# SDLC strategy, feature, and spec hierarchy
-    └── src/
-        ├── main/hanaden-bwrap-enhanced/       # Source of truth implementation
-        └── test/hanaden-bwrap-enhanced/       # 45 TDD executable specification tests
-            ├── shared/                        # Assertion library & environment setup
-            └── run_phase1.sh                  # Test execution runner
+|-- LICENSE                                    # AGPL-3.0-only (with Section 7 terms)
+|-- NOTICE                                     # Canonical attribution and moral rights
+|-- CONSTITUTION.md                            # Security governance (The Immutable Principle)
+|-- CHANGELOG.md                               # Keep-a-Changelog format
+|-- VERSION                                    # Current version
+|-- README.md                                  # This file
+|-- site/                                      # V-Universe documentation site (30 HTML pages)
+|   |-- index.html                             # Landing page
+|   |-- shared/                                # DRY: nav.js, style.css, mermaid.min.js, fonts
+|   |-- business/                              # Business quadrant (product-core + project-sdlc)
+|   `-- technical/                             # Technical quadrant (project-core + project-sdlc)
+`-- PROJECT_HOME/                              # Virtual filesystem jail root
+    |-- boot/
+    |   `-- bwrap-enhanced.sh                  # Sandbox engine (source of truth)
+    |-- docs/
+    |   |-- legal/                             # Commercial license, CLA, third-party terms
+    |   `-- architecture-design-features-specs/# SDLC strategy and specification hierarchy
+    |-- generic-sdlc-and-engine-readonly/      # SDLC Engine Spec v0.0.1 through v0.0.6
+    `-- src/
+        |-- main/hanaden-bwrap-enhanced/       # Source of truth implementation
+        `-- test/hanaden-bwrap-enhanced/        # TDD executable specification test suites
+            `-- suites/                        # 53 test suites across 10 feature areas
 ```
 
 ---
 
 ## Verification & Testing
 
-The test suite mirrors the SDLC architecture hierarchy:
+The test harness is a complete pipeline: `.bats` files through JUnit XML, JSONL event
+streams, JaCoCo coverage, and a self-contained HTML SPA report.
 
 ```bash
-# Execute full Phase 1 specification suite
+# Execute full specification suite
 ./PROJECT_HOME/src/test/hanaden-bwrap-enhanced/run_phase1.sh
 ```
+
+See [Test Harness Documentation](site/technical/project-core/test-harness.html) for the
+full pipeline architecture, JSONL event schema, and report generator stack.
 
 ---
 
@@ -205,7 +246,10 @@ The test suite mirrors the SDLC architecture hierarchy:
 
 Copyright (c) 2026-* **Frederick Bloom**. All rights reserved.
 
-Licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0-only)** with Section 7 Additional Terms (Perpetual Attribution, Moral Rights, Prohibition on AI Training, and Mandatory CLA).
+Licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0-only)** with
+Section 7 Additional Terms (Perpetual Attribution, Moral Rights, Prohibition on
+AI Training, and Mandatory CLA).
 
-Commercial, proprietary, and SaaS deployment licenses are available.  
-For licensing inquiries and commercial terms: **devlabs@hanaden.com** | [Commercial Licensing Guide](PROJECT_HOME/docs/legal/FrederickBloom/LICENSE-COMMERCIAL.md)
+Commercial, proprietary, and SaaS deployment licenses are available.
+For licensing inquiries and commercial terms: **devlabs@hanaden.com** |
+[Commercial Licensing Guide](PROJECT_HOME/docs/legal/FrederickBloom/LICENSE-COMMERCIAL.md)

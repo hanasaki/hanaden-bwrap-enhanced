@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quality Assurance — V-Universe | Hanaden</title>
+  <meta name="description" content="How V-Universe ensures reliability and correctness through comprehensive TDD, automated test harness, and deterministic verification.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../../technical/project-core/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Quality Assurance</div>
+        <h1>Tested to <span class="gradient">Exhaustion</span></h1>
+        <p>875+ automated tests. Every feature verified. Every edge case covered. Every release deterministic.</p>
+      </div>
+
+      <section id="philosophy" class="mb-2xl">
+        <h2>Testing Philosophy</h2>
+        <p>V-Universe is developed under strict Test-Driven Development discipline. No feature ships without failing tests first — and no test is written to rubber-stamp existing code.</p>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-green);">875+</div>
+            <h4 style="font-size: 0.9rem;">Automated Tests</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Covering every feature, flag, edge case, and error path.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-purple);">100%</div>
+            <h4 style="font-size: 0.9rem;">Feature Coverage</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Every documented capability has corresponding test verification.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-cyan);">0</div>
+            <h4 style="font-size: 0.9rem;">Known Regressions</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">TDD discipline ensures regressions are caught before merge.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="harness" class="mb-2xl">
+        <h2>Test Harness</h2>
+        <p>A purpose-built test harness orchestrates the entire test suite with:</p>
+        <ul class="feature-list">
+          <li><strong>Parallel execution:</strong> Tests run concurrently for fast feedback</li>
+          <li><strong>Deterministic ordering:</strong> Reproducible results regardless of execution environment</li>
+          <li><strong>HTML reporting:</strong> Rich, browsable test reports with pass/fail/skip breakdowns</li>
+          <li><strong>Category organization:</strong> Tests grouped by feature area — namespace, mount, identity, CLI, error handling</li>
+          <li><strong>Regression detection:</strong> Automatic comparison against previous runs</li>
+        </ul>
+      </section>
+
+      <section id="anti-theater" class="mb-2xl">
+        <h2>Anti-Completion Theater</h2>
+        <p>Tests are only valuable if they're honest. Every test must pass three integrity checks:</p>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-red" style="font-size: 0.9rem;">Sabotage Test</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">If you removed the requirement, would the test still pass? If yes — the test is fake.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green" style="font-size: 0.9rem;">Mutation Test</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">If you introduced a deliberate bug, would the test catch it? If no — the test is fake.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple" style="font-size: 0.9rem;">Stranger Test</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Could someone who didn't write the spec produce the same test? If no — it tests words, not behavior.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="confidence" class="mb-2xl">
+        <h2>What This Means for You</h2>
+        <div class="callout callout--green">
+          <p><strong>Every release is verified.</strong> You're not deploying hope — you're deploying software that has been systematically proven to do what it claims. The test harness is the proof.</p>
+        </div>
+        <p>For technical details on the test harness implementation, see <a href="../../technical/project-core/test-harness.html">Technical → Quality</a>.</p>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">BUSINESS · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html">Licensing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="quality.html" class="active">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

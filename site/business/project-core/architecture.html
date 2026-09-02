@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Architecture — V-Universe | Hanaden</title>
+  <meta name="description" content="Business-level architecture overview of V-Universe: how rootless containment works from a stakeholder perspective.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../../technical/project-core/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Architecture Overview</div>
+        <h1>How V-Universe <span class="gradient">Works</span></h1>
+        <p>A stakeholder-level view of the containment architecture — no kernel internals required.</p>
+      </div>
+
+      <section id="model" class="mb-2xl">
+        <h2>The Containment Model</h2>
+        <p>V-Universe creates an isolated virtual filesystem — a "universe" — where contained processes live. From inside, the process sees a complete Linux environment. From outside, the process cannot reach anything it shouldn't.</p>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏗</div>
+            <h4 class="text-green" style="font-size: 0.9rem;">Build the Jail</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">The sandbox is designed and provisioned <em>before</em> the process starts. The process never participates in its own containment.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔒</div>
+            <h4 class="text-purple" style="font-size: 0.9rem;">Lock the Door</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">The Linux kernel enforces boundaries. Not application code, not config files, not runtime checks — the kernel itself.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🚀</div>
+            <h4 class="text-cyan" style="font-size: 0.9rem;">Run Inside</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">The process runs normally. It has access to tools, libraries, and a workspace. It just can't escape its universe.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="layers" class="mb-2xl">
+        <h2>Security Layers</h2>
+        <p>Defense in depth — multiple independent layers ensure that no single failure compromises containment:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Mechanism</th><th>What It Protects</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge--green">Mount</span></td><td>Namespace isolation</td><td>Filesystem visibility — process only sees allowed paths</td></tr>
+              <tr><td><span class="badge badge--purple">User</span></td><td>UID/GID mapping</td><td>Privilege escalation — root inside maps to unprivileged outside</td></tr>
+              <tr><td><span class="badge badge--red">PID</span></td><td>Process namespace</td><td>Process visibility — contained processes can't see host processes</td></tr>
+              <tr><td><span class="badge badge--cyan">Network</span></td><td>Optional network namespace</td><td>Network access — can be fully isolated or selectively allowed</td></tr>
+              <tr><td><span class="badge badge--green">Seccomp</span></td><td>System call filtering</td><td>Kernel surface — restricts which system calls the process can make</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="vfs" class="mb-2xl">
+        <h2>Virtual Filesystem</h2>
+        <p>The contained process sees a carefully constructed filesystem:</p>
+        <ul class="feature-list">
+          <li><strong>Read-only system:</strong> <code>/usr</code>, <code>/lib</code>, <code>/bin</code> — bind-mounted from host, read-only</li>
+          <li><strong>Private temp:</strong> <code>/tmp</code>, <code>/var/tmp</code>, <code>/dev/shm</code> — private <code>tmpfs</code>, not shared with host</li>
+          <li><strong>Controlled workspace:</strong> Only explicitly listed directories are writable</li>
+          <li><strong>Synthetic identity:</strong> <code>/etc/passwd</code> and <code>/etc/group</code> injected via memory file descriptors</li>
+          <li><strong>No host leakage:</strong> <code>/proc</code>, <code>/sys</code> filtered; no access to host device files</li>
+        </ul>
+      </section>
+
+      <section id="deployment" class="mb-2xl">
+        <h2>Deployment Model</h2>
+        <div class="callout callout--green">
+          <p><strong>Single script, zero dependencies.</strong> V-Universe is one bash script that wraps <code>bwrap</code> (bubblewrap). No Docker daemon, no container runtime, no Kubernetes. It deploys by copying a file.</p>
+        </div>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4>What You Need</h4>
+            <ul class="feature-list">
+              <li>Linux kernel 3.8+ (user namespaces)</li>
+              <li><code>bwrap</code> binary (bubblewrap)</li>
+              <li>Standard coreutils</li>
+            </ul>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4>What You Don't Need</h4>
+            <ul class="feature-list">
+              <li>Root access</li>
+              <li>Daemons or services</li>
+              <li>Container images or registries</li>
+              <li>Kernel modules</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">BUSINESS · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html" class="active">Architecture</a></li>
+        <li><a href="features.html">Features</a></li>
+        <li><a href="security.html">Security</a></li>
+        <li><a href="pricing.html">Licensing</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

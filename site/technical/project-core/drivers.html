@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Technical Drivers — V-Universe | Hanaden</title>
+  <meta name="description" content="Technical drivers behind V-Universe design decisions: why rootless, why bubblewrap, why single-script, why zero side effects.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Technical Drivers</div>
+        <h1>Why We Built It <span class="gradient">This Way</span></h1>
+        <p>The technical constraints and design drivers that shaped V-Universe's architecture.</p>
+      </div>
+
+      <section id="rootless" class="mb-2xl">
+        <h2>Driver: Rootless by Requirement</h2>
+        <p>The fundamental constraint: containment must work without root privileges. This eliminates Docker, LXC, and traditional chroot. What remains:</p>
+        <ul class="feature-list">
+          <li><strong>User namespaces (Linux 3.8+):</strong> Unprivileged processes can create isolated namespaces</li>
+          <li><strong>Bubblewrap (bwrap):</strong> Minimal, audited, setuid-free sandbox tool designed for exactly this use case</li>
+          <li><strong>No kernel modules:</strong> Everything uses stock kernel capabilities available on any modern Linux</li>
+        </ul>
+        <div class="callout callout--green">
+          <p><strong>Design decision:</strong> We chose bubblewrap over other sandboxing tools because it's the only one that provides full mount/PID/user namespace isolation without requiring root, a daemon, or kernel modules.</p>
+        </div>
+      </section>
+
+      <section id="single-script" class="mb-2xl">
+        <h2>Driver: Single Script Deployment</h2>
+        <p>Containment tools with complex installation procedures create adoption barriers. Design constraints:</p>
+        <ul class="feature-list">
+          <li><strong>One file:</strong> The entire sandbox is one bash script. Copy it, run it, done.</li>
+          <li><strong>No compilation:</strong> Bash + coreutils. Nothing to build, link, or compile.</li>
+          <li><strong>No package manager:</strong> No <code>pip install</code>, no <code>npm install</code>, no <code>apt-get</code>. Just a file.</li>
+          <li><strong>No configuration files:</strong> All configuration via CLI flags and environment variables.</li>
+        </ul>
+      </section>
+
+      <section id="zero-fx" class="mb-2xl">
+        <h2>Driver: Zero Side Effects</h2>
+        <p>The sandbox must not leave traces on the host filesystem. This is both a security requirement and an operational one:</p>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-green">What Zero Means</h4>
+            <ul class="feature-list">
+              <li>No temp files during setup</li>
+              <li>No PID files</li>
+              <li>No lock files</li>
+              <li>No log files on host</li>
+              <li>Identity via memory file descriptors</li>
+            </ul>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <h4 class="text-purple">Why It Matters</h4>
+            <ul class="feature-list">
+              <li>Concurrent sandboxes don't collide</li>
+              <li>Crash leaves no orphaned state</li>
+              <li>No cleanup required after execution</li>
+              <li>No TOCTOU race conditions</li>
+              <li>Deterministic from first invocation</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="determinism" class="mb-2xl">
+        <h2>Driver: Deterministic Behavior</h2>
+        <p>Same inputs must produce same outputs. Every invocation of V-Universe with identical flags creates an identical sandbox:</p>
+        <ul class="feature-list">
+          <li><strong>No hidden state:</strong> No config files, caches, or databases influence behavior</li>
+          <li><strong>Fail-fast:</strong> Invalid configuration fails immediately with clear error, not silently</li>
+          <li><strong>Idempotent:</strong> Running the same command twice produces the same result</li>
+          <li><strong>Testable:</strong> Determinism enables comprehensive automated testing — 875+ tests verify this</li>
+        </ul>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html" class="active">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI Reference</a></li>
+        <li><a href="security-model.html">Security</a></li>
+        <li><a href="test-harness.html">Quality</a></li>
+        <li><a href="releases.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

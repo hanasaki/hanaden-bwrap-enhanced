@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDLC Business Drivers — V-Universe | Hanaden</title>
+  <meta name="description" content="Why structured lifecycle management matters: the business drivers behind adopting a deterministic SDLC engine.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="../project-core/index.html" class="nav__mode-btn">Product</a>
+        <a href="index.html" class="nav__mode-btn active">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Business</a>
+        <a href="../../technical/project-sdlc/index.html" class="nav__mode-btn">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Why Structured SDLC</div>
+        <h1>The Cost of <span class="gradient">Ad-Hoc Development</span></h1>
+        <p>Understanding why disciplined lifecycle management is a business imperative, not just an engineering preference.</p>
+      </div>
+
+      <section id="chaos" class="mb-2xl">
+        <h2>The Problem: Development Without Structure</h2>
+        <div class="grid grid-2" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--red" style="display: inline-flex;">🔥</div>
+            <h4>Requirements Drift</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Without traceability, features diverge from business needs. Teams build the wrong thing with high confidence.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--red" style="display: inline-flex;">🔄</div>
+            <h4>Rework Cycles</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Bugs found in production cost 10-100× more to fix than bugs caught during development. Ad-hoc testing misses entire failure classes.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--red" style="display: inline-flex;">📉</div>
+            <h4>Knowledge Loss</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">When process lives in people's heads, team changes mean capability loss. Tribal knowledge doesn't scale.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md);">
+            <div class="card__icon card__icon--red" style="display: inline-flex;">🎭</div>
+            <h4>Completion Theater</h4>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Teams report "done" based on activity metrics, not quality outcomes. Passing tests that can't fail aren't testing anything.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="value" class="mb-2xl">
+        <h2>The Value: Deterministic Quality</h2>
+        <p>A structured SDLC engine replaces hope with engineering guarantees:</p>
+        <ul class="feature-list">
+          <li><strong>Traceability:</strong> Every line of code traces to a spec, every spec to a feature, every feature to a business driver</li>
+          <li><strong>Self-correction:</strong> When tests find problems, feedback escalates to the right level — not just code fixes, but requirement and strategy corrections</li>
+          <li><strong>Reproducibility:</strong> Same inputs produce same outputs. Builds are deterministic. Tests are deterministic. Releases are deterministic.</li>
+          <li><strong>Anti-fixation:</strong> Automated guards prevent tunnel vision, stale assumptions, and cargo-cult practices at every layer</li>
+        </ul>
+      </section>
+
+      <section id="roi" class="mb-2xl">
+        <h2>Return on Investment</h2>
+        <div class="grid grid-3" style="gap: 0.75rem;">
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📉</div>
+            <h4 style="font-size: 0.9rem;">Fewer Defects</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">TDD catches bugs before they reach production. Anti-fixation guards catch design flaws before they become architecture.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⏱</div>
+            <h4 style="font-size: 0.9rem;">Faster Delivery</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Parallel orchestration with WIP limits means work flows, not floods. No bottlenecks, no blocking dependencies.</p>
+          </div>
+          <div class="card" style="padding: var(--space-md); text-align: center;">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔍</div>
+            <h4 style="font-size: 0.9rem;">Full Visibility</h4>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Event-sourced state means complete audit trail. Know what changed, when, why, and who approved it.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">BUSINESS · SDLC</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html" class="active">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="standards.html">Standards</a></li>
+        <li><a href="quality.html">Quality</a></li>
+        <li><a href="versions.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>

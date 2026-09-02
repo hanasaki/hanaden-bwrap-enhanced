@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!-- (c) 2026-* Frederick Bloom — Hanaden -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Model — V-Universe | Hanaden</title>
+  <meta name="description" content="V-Universe security model: Constitutional articles, invariants, threat model, security tiers, and the Immutable Principle. Full technical specification.">
+  <link rel="stylesheet" href="../../shared/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../../index.html" class="nav__brand"><div class="nav__brand-icon">V</div>V-Universe</a>
+      <div class="nav__mode-switch">
+        <a href="index.html" class="nav__mode-btn active">Product</a>
+        <a href="../project-sdlc/index.html" class="nav__mode-btn">SDLC</a>
+      </div>
+      <a href="../../index.html" class="nav__site-nav">Site Navigation</a>
+      <div class="nav__mode-switch">
+        <a href="../../business/project-core/index.html" class="nav__mode-btn">Business</a>
+        <a href="index.html" class="nav__mode-btn active">Technical</a>
+      </div>
+      <button class="nav__hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-layout">
+    <div class="page-layout__main">
+
+      <div class="section-header" style="margin-bottom: var(--space-xl);">
+        <div class="section-header__eyebrow">Security Model</div>
+        <h1>The <span class="gradient">Constitution</span></h1>
+        <p>The security model is codified in <code>CONSTITUTION.md</code> — a binding governance document
+        that defines invariants, articles, and enforcement rules. Every code change must satisfy
+        the Constitution or be rejected.</p>
+      </div>
+
+      <!-- Article II — The Immutable Principle -->
+      <section id="immutable" class="mb-2xl">
+<h2 class="mb-lg">Article II — The Immutable Principle</h2>
+
+      <div class="grid grid-3" style="gap: 1.5rem; margin-bottom: var(--space-2xl);">
+        <div class="card" style="border-top: 3px solid var(--accent-green);">
+          <h4 class="text-green font-mono">§1 External Construction</h4>
+          <p class="text-muted" style="font-size: 0.9rem;">The jailer designs and provisions the jail before execution.
+          All sandbox parameters are resolved and validated before <code>exec bwrap</code> is called.</p>
+        </div>
+        <div class="card" style="border-top: 3px solid var(--accent-purple);">
+          <h4 class="text-purple font-mono">§2 External Enforcement</h4>
+          <p class="text-muted" style="font-size: 0.9rem;">The Linux kernel enforces the mount namespace boundary.
+          No application-level checks. No honor-system restrictions.
+          The kernel is the guard — not the code.</p>
+        </div>
+        <div class="card" style="border-top: 3px solid var(--accent-red);">
+          <h4 class="text-red font-mono">§3 Zero Self-Policing</h4>
+          <p class="text-muted" style="font-size: 0.9rem;">Never trust or enable a prisoner to build their own cell,
+          alter their confines, or enforce rules upon themselves.
+          The sandbox config is invisible to the contained process.</p>
+        </div>
+      </div>
+      </section>
+
+      <!-- Security Invariants -->
+      <section id="invariants" class="mb-2xl">
+<h2 class="mb-lg">Security Invariants</h2>
+      <p class="mb-xl">These invariants MUST hold at all times. Each is verified by executable specifications.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Invariant</th><th>Mechanism</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="text-green">SI-01</code></td>
+              <td>Host root filesystem is never writable from inside the sandbox</td>
+              <td><code>--ro-bind</code> for all host mounts</td>
+            </tr>
+            <tr>
+              <td><code class="text-green">SI-02</code></td>
+              <td>Sandbox startup produces zero host filesystem artifacts</td>
+              <td>FD-injected identity, no temp files</td>
+            </tr>
+            <tr>
+              <td><code class="text-green">SI-03</code></td>
+              <td>Network is denied unless explicitly opted in via <code>--net-passthrough</code></td>
+              <td><code>--unshare-net</code> (default)</td>
+            </tr>
+            <tr>
+              <td><code class="text-green">SI-04</code></td>
+              <td>Environment is clean unless explicitly opted in via <code>--env-passthrough</code></td>
+              <td><code>--clearenv</code> (default)</td>
+            </tr>
+            <tr>
+              <td><code class="text-green">SI-05</code></td>
+              <td>D-Bus is never implicitly passed through</td>
+              <td><code>--dbus-passthrough</code> must be explicit; never implied by other flags</td>
+            </tr>
+            <tr>
+              <td><code class="text-green">SI-06</code></td>
+              <td>Sandbox identity is synthetic — never matches host user</td>
+              <td><code>/dev/fd/N</code> bind for <code>/etc/passwd</code> and <code>/etc/group</code></td>
+            </tr>
+            <tr>
+              <td><code class="text-green">SI-07</code></td>
+              <td>All <code>tmpfs</code> mounts evaporate when sandbox exits</td>
+              <td>Kernel-managed <code>tmpfs</code> lifecycle</td>
+            </tr>
+            <tr>
+              <td><code class="text-green">SI-08</code></td>
+              <td>Misconfiguration causes loud failure, never silent degradation</td>
+              <td>Fail-fast validation before <code>exec bwrap</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </section>
+
+      <!-- Threat Model -->
+      <section id="threats" class="mb-2xl">
+<h2 class="mb-lg">Threat Model</h2>
+
+      <div class="table-wrap mb-2xl">
+        <table>
+          <thead>
+            <tr><th>Threat</th><th>Attack Vector</th><th>Mitigation</th><th>Invariant</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Credential exfiltration</td>
+              <td>Read <code>~/.ssh/</code>, <code>~/.aws/</code></td>
+              <td>Path not mounted → invisible</td>
+              <td><code>SI-01</code></td>
+            </tr>
+            <tr>
+              <td>Host filesystem modification</td>
+              <td>Write to host <code>/etc</code>, <code>/usr</code></td>
+              <td>Read-only bind mounts</td>
+              <td><code>SI-01</code></td>
+            </tr>
+            <tr>
+              <td>Startup artifact persistence</td>
+              <td>Temp file left on host after crash</td>
+              <td>FD-injected identity, no disk writes</td>
+              <td><code>SI-02</code></td>
+            </tr>
+            <tr>
+              <td>Network exfiltration</td>
+              <td>Curl/wget to external server</td>
+              <td><code>--unshare-net</code> by default</td>
+              <td><code>SI-03</code></td>
+            </tr>
+            <tr>
+              <td>Environment harvesting</td>
+              <td>Read <code>$AWS_SECRET_KEY</code> etc.</td>
+              <td><code>--clearenv</code> by default</td>
+              <td><code>SI-04</code></td>
+            </tr>
+            <tr>
+              <td>D-Bus lateral movement</td>
+              <td>Send messages to host services</td>
+              <td>D-Bus never implied, always explicit</td>
+              <td><code>SI-05</code></td>
+            </tr>
+            <tr>
+              <td>Identity spoofing</td>
+              <td>Process claims to be host user</td>
+              <td>Synthetic <code>/etc/passwd</code> via FD</td>
+              <td><code>SI-06</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout--green">
+        <p><strong>Key insight:</strong> The mount namespace IS the security boundary. If a file or socket
+        isn't mounted into the namespace, it doesn't exist from the perspective of any process inside.
+        This is not "access denied" — it's "path does not exist." There is no error message to
+        reverse-engineer, no permission boundary to probe.</p>
+      </div>
+      </section>
+
+      <!-- Security Tiers (Technical) -->
+      <section id="tier-map" class="mb-2xl">
+<h2 class="mb-lg">Security Tier Mapping</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>net</th>
+              <th>env</th>
+              <th>wayland</th>
+              <th>x11</th>
+              <th>audio</th>
+              <th>a11y</th>
+              <th>dbus</th>
+              <th>gnome/kde</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge--green">0</span></td>
+              <td>✗</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--green">1</span></td>
+              <td>✗</td><td>✗</td><td class="text-green">✓</td><td class="text-green">✓</td><td class="text-green">✓</td><td>✗</td><td>✗</td><td>✗</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--purple">2</span></td>
+              <td>✗</td><td>✗</td><td class="text-green">✓</td><td class="text-green">✓</td><td class="text-green">✓</td><td class="text-purple">✓</td><td>✗</td><td>✗</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--amber">3</span></td>
+              <td>✗</td><td>✗</td><td class="text-green">✓</td><td class="text-green">✓</td><td class="text-green">✓</td><td class="text-purple">✓</td><td class="text-red">✓</td><td>✗</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge--red">4</span></td>
+              <td>✗</td><td>✗</td><td class="text-green">✓</td><td class="text-green">✓</td><td class="text-green">✓</td><td class="text-purple">✓</td><td class="text-red">✓</td><td class="text-red">✓</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-muted mt-lg" style="font-size: 0.85rem;">
+        <strong>Note:</strong> Network (<code>--net-passthrough</code>) and environment (<code>--env-passthrough</code>)
+        are orthogonal to the tier system. They can be combined with any tier but are denied by default at all levels.
+      </p>
+      </section>
+
+    </div>
+
+    <aside class="page-sidebar">
+      <div class="page-sidebar__heading">TECHNICAL · PRODUCT</div>
+      <ul class="page-sidebar__links page-sidebar__nav">
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="drivers.html">Drivers</a></li>
+        <li><a href="architecture.html">Architecture</a></li>
+        <li><a href="cli-reference.html">CLI Reference</a></li>
+        <li><a href="security-model.html" class="active">Security</a></li>
+        <li><a href="test-harness.html">Quality</a></li>
+        <li><a href="releases.html">Change Log</a></li>
+      </ul>
+    </aside>
+  </div>
+  <script src="../../shared/mermaid.min.js"></script>
+  <script src="../../shared/nav.js"></script>
+</body>
+</html>
