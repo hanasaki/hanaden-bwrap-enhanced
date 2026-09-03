@@ -5,27 +5,36 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
-## [v0.4.0-beta] - 2026-09-02
+## [v0.4.1] - 2026-09-03
 
 ### Added
-- CLI subcommand dispatcher: `provision`, `fsck`, `start` (full); `stop`, `ls` (stubs)
-- Test harness: 875 assertions across 53 `.bats` files and 42 feature suites
-- JSONL event pipeline with JUnit XML, JaCoCo XML, and merged HTML dashboard
-- `--local-bin-passthrough [ro|rw]` graded passthrough flag
-- Documentation site (30 pages) under `site/` — browsable locally via `file://`
-- Compliance audit: embedded JSON schemas, tooling banner across all harness output
+- Release docs: `docs/releases/v[semver]-[origin|release].md` for all versions
+- 176 BATS test suites across 43 feature suites
+- Test harness runner with auto-discovery
+- Library files: shell converters, Python report generators, JSON schemas
+- 305 architecture/design/feature/spec documents
+- 174 workstream kanban structure files
+- 75 generic SDLC engine specifications
 
 ### Changed
-- All passthrough flags renamed to `--*-passthrough` pattern:
-  `--net-passthrough`, `--env-passthrough`, `--wayland-passthrough`,
-  `--x11-passthrough`, `--audio-passthrough`, `--a11y-passthrough`,
-  `--dbus-passthrough`, `--gnome-passthrough`, `--kde-passthrough`,
-  `--mise-passthrough`
-- `bwrap-enhanced.sh`: fsck hardening with logging at `caller:line` granularity
+- CLI subcommand dispatcher: provision, fsck, start (impl); stop, ls (stubs)
+- All passthrough flags: --NOUN-passthrough convention
+- mise.toml: project-scoped toolchain
+- .gitignore: add **/target/ and /.worktrees/
+- Frederick-Bloom-license.md: restructured, inline CLA
+- CONTRIBUTING.md: CLA link -> Frederick-Bloom-license.md
+- generic-sldc -> generic-sdlc (typo fix)
+- Third-party legal refs -> third-party-ref-readonly/
+- boot/bwrap-enhanced.sh remains at v0.2.1 (pinned)
 
 ### Fixed
-- Deleted 43 fake/redundant test specs; fixed 83 tests to use `start` subcommand correctly
-- Removed all test mocks and fabricated dependencies — 232/232 GREEN
+- Removed LICENSE-COMMERCIAL.md badge (never existed)
+- Fixed PROJECT_HOME/README.md: ../LICENSE -> ../LICENSE.md
+- Removed broken CLA.md link
+- Cleaned all non-ASCII from shell/bats files
+
+### Removed
+- 49 legacy .sh test files + 3 support files
 
 ## [v0.2.1] - 2026-08-25
 
