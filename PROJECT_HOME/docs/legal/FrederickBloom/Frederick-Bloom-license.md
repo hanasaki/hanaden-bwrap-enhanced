@@ -88,7 +88,7 @@ learning system.
   to FBLOOM.
 - Unsigned contributions are not accepted.
 
-CLA: PROJECT_HOME/docs/legal/FrederickBloom/CLA.md
+CLA terms are defined in the Contributions section above.
 
 ---
 
