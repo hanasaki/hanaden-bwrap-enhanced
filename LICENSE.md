@@ -1,6 +1,6 @@
 <!-- (c) 2026-* Frederick Bloom -- LICENSE.md -- Hanaden AI -->
 
-**HANADEN PROJECT — CUSTOM DUAL LICENSE & GOVERNANCE FRAMEWORK**
+**HANADEN PROJECT -- CUSTOM DUAL LICENSE & GOVERNANCE FRAMEWORK**
 
 | | |
 |:---|:---|
@@ -12,8 +12,7 @@
 
 ---
 
-
-## Section 1 — Open Source Base License (Reciprocal Copyleft)
+## Section 1 -- Open Source Base License (Reciprocal Copyleft)
 
 This software, its source code, specifications, architectures, test suites,
 and related artifacts are licensed under the GNU Affero General Public
@@ -24,20 +23,20 @@ The authoritative text of the AGPL-3.0 is located in the repository at:
 or online at: https://www.gnu.org/licenses/agpl-3.0.txt
 
 Under the AGPL-3.0, any person or organization that runs, modifies, links,
-builds upon, or distributes this software — including over a computer network
-as a remote, cloud, or software-as-a-service (SaaS) offering — MUST make the
+builds upon, or distributes this software -- including over a computer network
+as a remote, cloud, or software-as-a-service (SaaS) offering -- MUST make the
 complete corresponding source code of the entire derived work freely and
 publicly available under the exact same AGPL-3.0 license terms to all users
 interacting with it.
 
 ---
 
-## Section 2 — Additional Terms (AGPL-3.0 Section 7 Permitted Additions)
+## Section 2 -- Additional Terms (AGPL-3.0 Section 7 Permitted Additions)
 
 The following additional terms and requirements apply to all use, copying,
 modification, and distribution of this software and all derivative works:
 
-**2.1 Attribution — Preserved in Perpetuity**  
+**2.1 Attribution -- Preserved in Perpetuity**  
 All copies, forks, modifications, distributions, user interfaces, documentation,
 and runtime splash/boot banners MUST prominently preserve and display the
 following attribution:
@@ -76,7 +75,7 @@ See: `PROJECT_HOME/docs/legal/FrederickBloom/CLA.md`
 
 ---
 
-## Section 3 — Commercial & Proprietary Dual Licensing
+## Section 3 -- Commercial & Proprietary Dual Licensing
 
 Any use, deployment, or distribution that falls outside the strict copyleft
 terms of the AGPL-3.0 requires an executed, written Commercial License Agreement
@@ -94,58 +93,14 @@ A commercial license is required for:
 
 ---
 
-## Section 4 — Warranty Disclaimer
+## Section 4 -- Warranty, Liability, Indemnification & Governing Law
 
-THIS SOFTWARE IS PROVIDED BY FREDERICK BLOOM "AS IS", WITHOUT WARRANTY OF ANY
-KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
+All warranty disclaimers, liability limitations, indemnification terms, and
+governing law provisions are set out in plain language at:
 
-THE ENTIRE RISK AS TO THE QUALITY, PERFORMANCE, COMPLIANCE, AND EFFECTIVENESS
-OF THIS SOFTWARE LIES WITH YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE OR CAUSE
-SYSTEM INTERRUPTION, YOU ASSUME THE FULL COST OF ALL REPAIRS, SERVICING, OR
-REMEDIATION.
+[`PROJECT_HOME/docs/legal/FrederickBloom/Frederick-Bloom-license.md`](PROJECT_HOME/docs/legal/FrederickBloom/Frederick-Bloom-license.md)
 
----
-
-## Section 5 — Limitation of Liability
-
-IN NO EVENT SHALL FREDERICK BLOOM, THE AUTHOR, OR ANY COPYRIGHT HOLDER BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, LOSS OF DATA, LOSS OF
-PROFITS, BUSINESS INTERRUPTION, LOSS OF REPUTATION, OR PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES), HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-WHETHER IN CONTRACT, STRICT LIABILITY, TORT (INCLUDING NEGLIGENCE), OR
-OTHERWISE, ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-OF THE POSSIBILITY OF SUCH DAMAGE.
-
----
-
-## Section 6 — Indemnification
-
-BY ACCESSING, DOWNLOADING, COMPILING, RUNNING, MODIFYING, OR DISTRIBUTING THIS
-SOFTWARE, YOU HEREBY AGREE TO INDEMNIFY, DEFEND, AND HOLD HARMLESS FREDERICK
-BLOOM, HIS AFFILIATES, SUCCESSORS, ASSIGNS, AND AGENTS FROM AND AGAINST ANY AND
-ALL CLAIMS, LIABILITIES, LOSSES, DEMANDS, LAWSUITS, JUDGMENTS, DAMAGES, COSTS,
-AND EXPENSES (INCLUDING REASONABLE ATTORNEYS' FEES AND LEGAL COSTS) ARISING OUT
-OF OR IN ANY WAY CONNECTED WITH:
-
-- (a) YOUR USE OF, MISUSE OF, OR INABILITY TO USE THIS SOFTWARE
-- (b) YOUR VIOLATION OF ANY TERM OR CONDITION OF THIS LICENSE
-- (c) YOUR VIOLATION OF ANY APPLICABLE STATUTE, REGULATION, OR LAW
-- (d) YOUR INFRINGEMENT OR MISAPPROPRIATION OF ANY THIRD-PARTY INTELLECTUAL
-  PROPERTY, PRIVACY, OR CONTRACTUAL RIGHT
-- (e) ANY MODIFICATION, COMPILATION, DEPLOYMENT, OR DISTRIBUTION OF THIS
-  SOFTWARE MADE BY YOU OR ON YOUR BEHALF
-
----
-
-## Section 7 — Governing Law & Dispute Resolution
-
-This License Agreement and all disputes arising out of or related to this
-software shall be governed by and construed in accordance with applicable
-copyright and contract laws. Any legal controversy or claim shall be resolved
-through good-faith negotiation, or through binding arbitration or courts of
-competent jurisdiction at the sole election of Frederick Bloom.
+That document governs. This reference does not limit or supersede it.
 
 ---
 

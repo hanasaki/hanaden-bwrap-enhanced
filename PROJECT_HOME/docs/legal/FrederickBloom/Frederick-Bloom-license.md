@@ -1,66 +1,141 @@
 <!-- (c) 2026-* Frederick Bloom -- Frederick-Bloom-license.md -->
 
-# License — Frederick Bloom
+# License - Frederick Bloom (FBLOOM)
 
-**Copyright (c) 2026-present Frederick Bloom. All rights reserved.**
+SPDX-License-Identifier: AGPL-3.0-only
+Copyright (c) 2026-* Frederick Bloom, herein FBLOOM. All rights reserved.
 
----
+## License Tracks
 
-## Open Source License
-
-This software is released under the **GNU Affero General Public License v3.0 (AGPL-3.0-only)**.
-
-Full license text: `AGPL-3.0.txt`  
-Canonical text: <https://www.gnu.org/licenses/agpl-3.0.html>
+- AGPL-3.0-only - copyleft, reciprocal (see Base License)
+- FBLOOM Commercial License - by written agreement (see Commercial Use)
 
 ---
 
-## Disclaimer of Liability
+## Parties
 
-The author, Frederick Bloom, bears zero legal or financial liability of any kind arising
-from use, misuse, inability to use, or consequences of use of this software.
+This Agreement is effective upon first access or use of this work.
 
----
+- **FBLOOM**: Frederick Bloom - author, rights holder, and licensor.
+- **User**: Any person, organization, or legal agent other than FBLOOM who
+  accesses, views, uses, forks, distributes, or otherwise interacts with
+  this work or any concept arising from it.
 
-## Intents (partial list)
-
-- Ensure that all who benefit from this work — including cloud operators — return
-  improvements to the commons rather than privatizing them
-- Prevent any party from building a closed, proprietary product on top of this work
-  without explicit permission from the author
-- Preserve the author's right to be the sole commercial licensor
-- Create a clear legal boundary: open collaboration is welcome; hidden commercial
-  extraction is not
-- Protect against hostile forks that rebrand or absorb this work into proprietary systems
-- Ensure contributors cannot later claim independent commercial rights over their
-  contributions (enforced via CLA with copyright assignment)
+In consideration of access to this work, User agrees to all terms herein.
 
 ---
 
-## Absolute Commercial Licensing Requirement
+## Intent
 
-> **A separate commercial license from Frederick Bloom is required before any commercial
-> use of this software begins — without exception.**
+All rights reserved. Use is prohibited except as explicitly stated below.
 
-**This requirement applies to any person, organization, or legal entity that:**
-
-- is commercial in nature, operates for profit, or is funded with the intent to generate
-  revenue or other commercial consideration
-- includes, embeds, links to, or derives any portion of this software in a product or service
-  that generates or is intended to generate revenue, directly or indirectly
-- uses this software within the internal operations of any for-profit entity, or to support,
-  deliver, or enhance any product or service from which revenue is derived
-- distributes this software — in source, compiled, binary, or any other form, modified or
-  unmodified — as part of a commercial product or service
-- uses this software or any derivative in AI or machine-learning training, inference,
-  fine-tuning, benchmarking, or dataset generation for commercial purposes
-
-AGPL-3.0 compliance does not satisfy this requirement. The obligation is unconditional and
-independent of open-source license terms. The mere inclusion of this software — whether as
-raw source code, compiled binaries, libraries, containers, or any derivative form — in a
-commercial context requires a separately negotiated agreement.
+- **Protect authorship.** All content authored by FBLOOM is his intellectual
+  property - not relinquished by any use or distribution of this work.
+  FBLOOM's intellectual property remains FBLOOM's.
+- **Reciprocal use only.** AGPL-3.0 use is permitted - copyleft, not
+  permissive.
+- **Establish prior art.** This public disclosure creates a dated record of
+  FBLOOM's innovations, preventing patent claims by others on the same concepts.
+- **Commercial use is a separate track.** Use outside AGPL-3.0 terms requires
+  a written commercial license from FBLOOM.
+- **Unified copyright.** Contributions consolidate under FBLOOM via CLA for
+  coherent stewardship.
 
 ---
 
-**Contact:** devlabs@hanaden.com  
-**Subject:** `Commercial License Inquiry — [Organization Name]`
+## Base License - AGPL-3.0-only
+
+AGPL-3.0-only, with additional terms below governing in all contexts.
+
+- Full text: PROJECT_HOME/docs/legal/third-party-ref-readonly/AGPL-3.0.txt
+- Canonical: https://www.gnu.org/licenses/agpl-3.0.txt
+
+Distribution or network serving requires making the complete corresponding
+source publicly available under the same AGPL-3.0 terms.
+
+The AGPL-3.0 does not limit or supersede the additional terms below.
+
+---
+
+## Additional Terms (AGPL-3.0 Section 7 Permitted Additions)
+
+### Attribution
+
+All copies, forks, modifications, distributions, and user-facing surfaces must
+prominently preserve and display:
+
+    Copyright (c) 2026-* FBLOOM. All rights reserved.
+    Author: Frederick Bloom <devlabs@hanaden.com>
+
+No entity may strip, obscure, redact, or relocate this notice.
+
+### Author Credit Rights
+
+FBLOOM asserts authorship and integrity rights under all applicable jurisdictions.
+His name must remain attached to this work and all descendants in perpetuity.
+
+### AI and Machine Learning
+
+Prohibited without explicit written commercial authorization from FBLOOM:
+use of this work - or any derivative, concrete or abstract - for training,
+fine-tuning, evaluating, benchmarking, or distilling any AI or machine
+learning system.
+
+### Contributions
+
+- Require prior execution of the Contributor License Agreement (CLA).
+- By executing the CLA, contributors assign all copyright and patent rights
+  to FBLOOM.
+- Unsigned contributions are not accepted.
+
+CLA: PROJECT_HOME/docs/legal/FrederickBloom/CLA.md
+
+---
+
+## Intellectual Property
+
+All content authored by FBLOOM is his intellectual property. Contributions
+accepted under the CLA are assigned to FBLOOM by express written agreement.
+
+---
+
+## No Liability - No Recourse
+
+This work is provided as-is. You use it at your own risk.
+
+By accessing, viewing, forking, using, discussing, or understanding - or
+misunderstanding - any content or concept in or arising from this work, you
+waive all recourse against FBLOOM and his affiliates, successors, and assigns.
+FBLOOM is immune from any claim arising from this work. Any harm carries no
+right of action.
+
+---
+
+## Commercial Use
+
+A written commercial license from FBLOOM is required before any commercial use
+begins - without exception.
+
+- **Non-commercial AGPL use**: Start freely under AGPL-3.0 - no license needed.
+- **Transitioning to commercial**: Contact FBLOOM early to negotiate terms
+  before commercial use begins.
+- **Commercial use**: Requires a written license from FBLOOM without exception.
+
+Commercial use includes but is not limited to: for-profit deployment, closed
+distribution, SaaS or hosted services, internal enterprise use, OEM or
+white-label redistribution, and AI or machine learning applications - whether
+using code, specifications, architecture, or concepts, concrete or abstract,
+in whole or in part.
+
+AGPL-3.0 compliance does not satisfy this requirement.
+
+Inquiries: devlabs@hanaden.com | Subject: Commercial License Inquiry - [Org]
+
+---
+
+## Governing Terms
+
+- This document governs: copyright, commercial use, contributor rights.
+- AGPL-3.0 governs: distribution, modification, network use.
+- Disputes: good-faith negotiation or binding arbitration at sole election
+  of FBLOOM.

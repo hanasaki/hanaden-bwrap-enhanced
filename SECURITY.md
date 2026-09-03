@@ -2,8 +2,8 @@
 
 # Security Policy
 
-> **No Commitments.** No commitments, obligations, or legal contracts — express or
-> implied — arise from this document or from any interaction with this project,
+> **No Commitments.** No commitments, obligations, or legal contracts -- express or
+> implied -- arise from this document or from any interaction with this project,
 > including but not limited to: responding to, reviewing, investigating, or addressing
 > security disclosures, reports, bugs, or any other communication. No process,
 > response, timeline, action, or outcome of any kind is guaranteed. All maintainer
@@ -13,7 +13,7 @@
 
 ## Security Architecture
 
-The security model is codified in [`CONSTITUTION.md`](CONSTITUTION.md) — the internal
+The security model is codified in [`CONSTITUTION.md`](CONSTITUTION.md) -- the internal
 governance document that defines invariants, articles, and enforcement rules.
 
 Full technical specification:
