@@ -12,6 +12,14 @@
 
 ---
 
+## Scope & Moderation
+
+These expectations apply to all project spaces, including repositories, issue trackers,
+pull requests, and related communications.
+
+Maintainers reserve the right to remove comments, lock discussions, reject contributions,
+or restrict participant access at their sole discretion.
+
 ## Conduct Expectations
 
 This project aspires to a professional, respectful environment. The following
@@ -21,7 +29,7 @@ guarantees of enforcement or outcome.
 **Expected behavior:**
 - Professional, respectful communication
 - Constructive engagement with differing viewpoints
-- Focus on technical substance
+- Focus on software engineering technical quality and practicality
 
 **Discouraged behavior:**
 - Harassment, trolling, or personal attacks
