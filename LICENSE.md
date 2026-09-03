@@ -19,7 +19,7 @@ and related artifacts are licensed under the GNU Affero General Public
 License v3.0 (AGPL-3.0-only).
 
 The authoritative text of the AGPL-3.0 is located in the repository at:
-`PROJECT_HOME/docs/legal/third-party/opensource/AGPL-3.0.txt`
+`PROJECT_HOME/docs/legal/third-party-ref-readonly/opensource/AGPL-3.0.txt`
 or online at: https://www.gnu.org/licenses/agpl-3.0.txt
 
 Under the AGPL-3.0, any person or organization that runs, modifies, links,
