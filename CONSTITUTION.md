@@ -4,7 +4,7 @@
 
 * **Author:** Frederick Bloom <devlabs@hanaden.com>
 * **Effective Date:** 2026-08-21
-* **Version:** `0.4.0-beta`
+* **Version:** `0.4.1`
 * **Project Name:** `hanaden-bwrap-enhanced`
 * **Project Name Short:** `Hanaden.BwrapEnhanced`
 * **Copyright:** (c) 2026-* **Frederick Bloom**. All rights reserved.

@@ -13,7 +13,7 @@ This directory is the **virtual filesystem jail root** for the `bwrap-enhanced` 
 For high-level project documentation, architecture, and governance, refer to the root documents:
 * **Project Overview & Quickstart:** [`../README.md`](../README.md)
 * **Project Invariants & Constitution:** [`../CONSTITUTION.md`](../CONSTITUTION.md)
-* **Custom Dual License:** [`../LICENSE`](../LICENSE)
+* **Custom Dual License:** [`../LICENSE.md`](../LICENSE.md)
 * **Legal & Commercial Licensing:** [`docs/legal/`](docs/legal/)
 
 ---

@@ -6,7 +6,6 @@
 
 [![Version: 0.4.0-beta](https://img.shields.io/badge/Version-0.4.0--beta-blue.svg)](CHANGELOG.md)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE.md)
-[![Dual-License: Commercial](https://img.shields.io/badge/Dual--License-Commercial-orange.svg)](PROJECT_HOME/docs/legal/FrederickBloom/LICENSE-COMMERCIAL.md)
 [![TDD: 875 assertions · 53 suites](https://img.shields.io/badge/TDD-875%20assertions%20·%2053%20suites-brightgreen.svg)](PROJECT_HOME/src/test/hanaden-bwrap-enhanced/)
 [![Zero Side Effects](https://img.shields.io/badge/Security-Zero%20Side%20Effects-success.svg)](CONSTITUTION.md)
 

@@ -5,7 +5,7 @@
 ## License
 
 All contributions are governed by the project [`LICENSE.md`](LICENSE.md) and require
-prior execution of the [`CLA`](PROJECT_HOME/docs/legal/FrederickBloom/CLA.md).
+prior execution of the [`Frederick-Bloom-license.md`](PROJECT_HOME/docs/legal/FrederickBloom/Frederick-Bloom-license.md) (Contributions section).
 
 ## Branch Workflow
 
