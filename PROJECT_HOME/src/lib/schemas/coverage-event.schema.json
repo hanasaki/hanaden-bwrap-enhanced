@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hanaden.ai/schemas/coverage-event/0.1.0",
+  "title": "Hanaden Coverage Event (JaCoCo-compatible)",
+  "description": "A single JSONL record representing a coverage measurement. Maps to JaCoCo's package→class→method→counter hierarchy via timing-as-coverage.",
+  "type": "object",
+  "required": [
+    "type", "trace_id",
+    "feat", "spec",
+    "methods_covered", "methods_total",
+    "lines_covered", "lines_total"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "coverage_record"
+    },
+    "trace_id": {
+      "type": "string",
+      "description": "32-char hex trace ID linking to the same run",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "feat": {
+      "type": "string",
+      "description": "Feature/suite name → maps to JaCoCo <package>"
+    },
+    "spec": {
+      "type": "string",
+      "description": "Spec/class name → maps to JaCoCo <class>"
+    },
+    "methods_covered": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of test methods that PASSED (maps to METHOD counter covered)"
+    },
+    "methods_total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total test methods in this class (maps to METHOD counter total)"
+    },
+    "lines_covered": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of assertion lines in passing tests (maps to LINE counter covered)"
+    },
+    "lines_total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sum of all assertion lines (maps to LINE counter total)"
+    }
+  },
+  "additionalProperties": false
+}
