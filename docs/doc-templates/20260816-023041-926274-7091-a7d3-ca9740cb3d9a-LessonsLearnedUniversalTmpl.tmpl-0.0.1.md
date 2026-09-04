@@ -701,7 +701,7 @@ YYYYMMDD-HHMMSS-uuuuuu-7xxx-Nxxx-xxxxxxxxxxxx-<Slug>[-<NNN>].<class>[-<semver>].
 | `xxxxxxxxxxxx` | 12 | Hex | 12 random hex digits | CSPRNG |
 | `<Slug>` | 1–191 | PascalCase | No hyphens/spaces; target ≤ 30 chars | Task description |
 | `[-<NNN>]` | 4 (opt) | Numeric | 3-digit zero-padded run counter 001–999 | Context |
-| `.<class>` | 2–6 | Lowercase | `plan` `run` `delivery` `timeline` `design` `spec` `lesson` `secbul` `feat` `fsm` `decis` `wi` `bug` `audit` `suite` `tmpl` `config` | Context |
+| `.<class>` | 2–6 | Lowercase | `analys` `arch` `audit` `bstorm` `bug` `config` `decis` `deliv` `design` `driv` `feat` `fsm` `incid` `kanban` `lesson` `method` `moti` `oview` `plan` `report` `run` `sdlc` `secbul` `spec` `strat` `sys` `system` `tline` `tmpl` `tst` `tstsu` `wi` | Context |
 | `[-<semver>]` | opt | SemVer | e.g. `0.0.3`, `1.0.0-alpha` | Context |
 | `.<ext>` | 1–4 | Lowercase | `md` `yaml` `json` `sh` etc. | Context |
 
