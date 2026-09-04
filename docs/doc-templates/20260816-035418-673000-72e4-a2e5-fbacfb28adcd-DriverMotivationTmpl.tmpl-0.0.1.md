@@ -1,6 +1,6 @@
-<!-- (c) 2026-* Frederick Bloom -- 20260816-035418-673000-72e4-a2e5-fbacfb28adcd-DriverMotivationTmpl.tmpl-0.0.1.md -- Hanaden AI Loader -->
+<!-- (c) 2026-* Frederick Bloom -->
 ---
-tmpl-id:      20260816-035418-673000-72e4-a2e5-fbacfb28adcd-DriverMotivationTmpl
+doc-id:      20260816-035418-673000-72e4-a2e5-fbacfb28adcd-DriverMotivationTmpl
 version:      0.0.1
 status:       ACTIVE
 category:     TEMPLATE

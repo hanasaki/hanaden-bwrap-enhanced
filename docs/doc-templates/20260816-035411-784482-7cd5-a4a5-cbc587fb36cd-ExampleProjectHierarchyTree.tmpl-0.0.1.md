@@ -1,4 +1,16 @@
-<!-- (c) 2026-* Frederick Bloom -- 20260816-035411-784482-7cd5-a4a5-cbc587fb36cd-ExampleProjectHierarchyTree.tmpl-0.0.1.md -- Hanaden AI -->
+<!-- (c) 2026-* Frederick Bloom -->
+---
+doc-id:      20260816-035411-784482-7cd5-a4a5-cbc587fb36cd-ExampleProjectHierarchyTree
+version:     0.0.1
+status:      ACTIVE
+category:    REFERENCE
+description: >
+  Reference example of the canonical hierarchical decomposition model used
+  across Hanaden projects. Illustrates how corporate missions, strategic drivers,
+  features, architectures, and specifications nest together.
+copyright:   (c) 2026-* Frederick Bloom
+---
+
 # Example Project Hierarchy Tree
 
 > A reference example of the canonical hierarchical decomposition model used across HANADEN projects.

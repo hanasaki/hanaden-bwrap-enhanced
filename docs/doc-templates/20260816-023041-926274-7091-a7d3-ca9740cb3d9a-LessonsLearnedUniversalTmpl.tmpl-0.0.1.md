@@ -1,4 +1,15 @@
 <!-- (c) 2026-* Frederick Bloom -->
+---
+doc-id:      20260816-023041-926274-7091-a7d3-ca9740cb3d9a-LessonsLearnedUniversalTmpl
+version:     0.0.1
+status:      ACTIVE
+category:    TEMPLATE
+scope:       generic -- all software, AI, and hybrid human+AI projects
+description: >
+  Universal lessons-learned template using IMRAD + NASA ADLR framework.
+  Applicable to humans and AI agents across all project types.
+copyright:   (c) 2026-* Frederick Bloom
+---
 
 # Lessons Learned — Universal Template
 
