@@ -903,8 +903,31 @@ exec_sandbox() {
     shift 16
     local target_cmd=("$@")
 
-    # --- Build bwrap argv (minimum viable) ---
+    # --- Build bwrap argv ---
     local -a argv=()
+
+    # ========================================================================
+    # STREAM C1: Namespace & process control
+    # ========================================================================
+    argv+=( --unshare-user )
+    argv+=( --unshare-pid )
+    argv+=( --unshare-ipc )
+    argv+=( --unshare-uts )
+    argv+=( --unshare-cgroup )
+    argv+=( --hostname "sandbox-vfs" )
+    argv+=( --as-pid-1 )
+    argv+=( --die-with-parent )
+
+    # STREAM C2: Network -- default deny
+    if [[ "$net" != "true" ]]; then
+        argv+=( --unshare-net )
+    else
+        echo "[SYS-LOG] WARNING: Network isolation disabled (--net-passthrough enabled)." >&2
+    fi
+
+    # ========================================================================
+    # PRE-LOCK: All mounts that create directories (root must be RW)
+    # ========================================================================
 
     # Step 1: RW root -- the virtual root becomes /
     argv+=( --bind "$root" / )
@@ -913,45 +936,266 @@ exec_sandbox() {
     argv+=( --ro-bind /usr /usr )
     argv+=( --symlink usr/bin /bin )
     argv+=( --symlink usr/lib /lib )
-    # lib64 may not exist on all architectures; use symlink anyway (bwrap handles it)
     argv+=( --symlink usr/lib64 /lib64 )
 
-    # Step 4: Kernel filesystems
+    # ========================================================================
+    # STREAM A1-A4: /etc skeleton + selective RO-binds
+    # ========================================================================
+    argv+=( --dir /etc )
+    # DNS resolution (glibc getaddrinfo)
+    argv+=( --ro-bind-try /etc/resolv.conf /etc/resolv.conf )
+    argv+=( --ro-bind-try /etc/nsswitch.conf /etc/nsswitch.conf )
+    argv+=( --ro-bind-try /etc/hosts /etc/hosts )
+    argv+=( --ro-bind-try /etc/host.conf /etc/host.conf )
+    argv+=( --ro-bind-try /etc/services /etc/services )
+    argv+=( --ro-bind-try /etc/protocols /etc/protocols )
+    # TLS certificates (CA trust store)
+    argv+=( --ro-bind-try /etc/ssl /etc/ssl )
+    argv+=( --ro-bind-try /etc/pki /etc/pki )
+    # Fonts, machine-id, dynamic linker cache
+    argv+=( --ro-bind-try /etc/fonts /etc/fonts )
+    argv+=( --ro-bind-try /etc/machine-id /etc/machine-id )
+    argv+=( --ro-bind-try /etc/ld.so.cache /etc/ld.so.cache )
+    # Desktop environment configs
+    argv+=( --ro-bind-try /etc/alternatives /etc/alternatives )
+    argv+=( --ro-bind-try /etc/xdg /etc/xdg )
+    argv+=( --ro-bind-try /etc/gtk-3.0 /etc/gtk-3.0 )
+    argv+=( --ro-bind-try /etc/gtk-4.0 /etc/gtk-4.0 )
+    argv+=( --ro-bind-try /etc/dconf /etc/dconf )
+    argv+=( --ro-bind-try /etc/dbus-1 /etc/dbus-1 )
+    argv+=( --ro-bind-try /etc/X11 /etc/X11 )
+    argv+=( --ro-bind-try /etc/mime.types /etc/mime.types )
+    # Browser policies
+    argv+=( --ro-bind-try /etc/firefox-esr /etc/firefox-esr )
+    argv+=( --ro-bind-try /etc/chromium /etc/chromium )
+    argv+=( --ro-bind-try /etc/chromium.d /etc/chromium.d )
+    argv+=( --ro-bind-try /etc/opt/chrome /etc/opt/chrome )
+    # Enterprise auth
+    argv+=( --ro-bind-try /etc/gss /etc/gss )
+    argv+=( --ro-bind-try /etc/krb5.conf /etc/krb5.conf )
+
+    # ========================================================================
+    # STREAM A6: Shared data
+    # ========================================================================
+    argv+=( --dir /usr/share )
+    argv+=( --ro-bind-try /usr/share /usr/share )
+    argv+=( --dir /var/cache )
+    argv+=( --ro-bind-try /var/cache/fontconfig /var/cache/fontconfig )
+
+    # ========================================================================
+    # STREAM B1-B3: Device + ephemeral tmpfs
+    # ========================================================================
     argv+=( --proc /proc )
-    argv+=( --dev /dev )
-
-    # Step 5: Writable tmpfs
+    argv+=( --dev-bind /dev /dev )
+    argv+=( --tmpfs /dev/shm )
     argv+=( --tmpfs /tmp )
+    # X11 socket passthrough (bind back into fresh /tmp)
+    argv+=( --ro-bind-try /tmp/.X11-unix /tmp/.X11-unix )
+    # D-Bus system bus (low-risk -- no portal file picker)
+    argv+=( --bind-try /run/dbus /run/dbus )
+    # /run/user tmpfs -- foundation for all socket passthroughs
+    argv+=( --tmpfs "/run/user/$(id -u)" )
 
-    # Namespace isolation (individual flags for passthrough control later)
-    argv+=( --unshare-pid )
-    argv+=( --unshare-ipc )
-    argv+=( --unshare-uts )
-    argv+=( --unshare-cgroup )
+    # ========================================================================
+    # HOME: overlay + user directory
+    # ========================================================================
+    argv+=( --tmpfs /home )
+    argv+=( --dir "/home/${user}" )
+    argv+=( --bind "${home_parent}/${user}" "/home/${user}" )
 
-    # Network: default deny (passthrough flag will conditionally remove this later)
-    if [[ "$net" != "true" ]]; then
-        argv+=( --unshare-net )
+    # ========================================================================
+    # STREAM A5: Identity injection (FD 9/10/11)
+    # ========================================================================
+    # Generate synthetic /etc/passwd for virtual user
+    local _uid; _uid="$(id -u)"
+    local _gid; _gid="$(id -g)"
+    local _passwd_content="${user}:x:${_uid}:${_gid}:${user}:/home/${user}:/bin/bash"
+    local _group_content="${user}:x:${_gid}:"
+    local _profile_content="# Minimal sandbox profile
+export PATH=/usr/bin:/bin
+export HOME=/home/${user}"
+
+    # Inject via file descriptors -- bwrap reads from FD and creates read-only mounts
+    argv+=( --ro-bind-data 9 /etc/passwd )
+    argv+=( --ro-bind-data 10 /etc/group )
+    argv+=( --ro-bind-data 11 /etc/profile )
+    # Suppress host profile.d scripts (PATH contamination)
+    argv+=( --tmpfs /etc/profile.d )
+
+    # ========================================================================
+    # STREAM A7: Chrome /opt
+    # ========================================================================
+    argv+=( --dir /opt )
+    argv+=( --ro-bind /opt/google /opt/google )
+
+    # ========================================================================
+    # STREAM F1: Mise passthrough (PRE-LOCK mounts)
+    # ========================================================================
+    if [[ "$mise" != "off" ]]; then
+        local _MISE_BIN
+        _MISE_BIN="${MISE_BIN:-$(command -v mise 2>/dev/null || echo "$HOME/.local/bin/mise")}"
+        local _MISE_DATA="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
+        local _MISE_CFG="${MISE_CONFIG_DIR:-$HOME/.config/mise}"
+        local _MISE_CACHE="${MISE_CACHE_DIR:-$HOME/.cache/mise}"
+
+        # FATAL: mise binary and data dir MUST exist (exit 1 = user-correctable error)
+        if [[ ! -f "$_MISE_BIN" ]]; then
+            echo "[FATAL] --mise-passthrough: mise binary not found at $_MISE_BIN" >&2
+            exit 1
+        fi
+        if [[ ! -d "$_MISE_DATA" ]]; then
+            echo "[FATAL] --mise-passthrough: MISE_DATA_DIR not found at $_MISE_DATA" >&2
+            exit 1
+        fi
+
+        # Warnings for optional dirs (non-fatal)
+        [[ ! -d "$_MISE_CFG" ]]   && _warn "$t" "start: --mise-passthrough: config dir not found at $_MISE_CFG (skipping)"
+        [[ ! -d "$_MISE_CACHE" ]] && _warn "$t" "start: --mise-passthrough: cache dir not found at $_MISE_CACHE (skipping)"
+
+        # RO (default) or RW bind based on qualifier
+        local _MISE_BIND="--ro-bind"
+        [[ "$mise" == "rw" ]] && _MISE_BIND="--bind"
+
+        # mise binary (always RO)
+        argv+=( --ro-bind "$_MISE_BIN" "$_MISE_BIN" )
+        # mise data dir (installs, shims, plugins)
+        argv+=( $_MISE_BIND "$_MISE_DATA" "$_MISE_DATA" )
+        # Optional dirs
+        [[ -d "$_MISE_CFG" ]]   && argv+=( --ro-bind-try "$_MISE_CFG" "$_MISE_CFG" )
+        [[ -d "$_MISE_CACHE" ]] && argv+=( --ro-bind-try "$_MISE_CACHE" "$_MISE_CACHE" )
     fi
 
-    # Cleanup: kill sandbox if parent dies
-    argv+=( --die-with-parent )
+    # ========================================================================
+    # STREAM F2: Local-bin passthrough (PRE-LOCK mounts)
+    # ========================================================================
+    if [[ "$local_bin" != "off" ]]; then
+        local _LOCAL_BIN="$HOME/.local/bin"
+        if [[ ! -d "$_LOCAL_BIN" ]]; then
+            echo "[FATAL] --local-bin-passthrough: directory not found at $_LOCAL_BIN" >&2
+            exit 1
+        fi
+        if [[ "$local_bin" == "rw" ]]; then
+            argv+=( --bind "$_LOCAL_BIN" "$_LOCAL_BIN" )
+        else
+            argv+=( --ro-bind "$_LOCAL_BIN" "$_LOCAL_BIN" )
+        fi
+    fi
 
-    # Environment: default is wipe everything (jail inherits NOTHING).
-    # --env-passthrough overrides: inherit host env (no --clearenv).
+    # ========================================================================
+    # STREAM C3: Environment variables
+    # ========================================================================
     if [[ "$env_pt" != "true" ]]; then
         argv+=( --clearenv )
         argv+=( --setenv HOME "/home/${user}" )
         argv+=( --setenv USER "${user}" )
         argv+=( --setenv PATH "/usr/bin:/bin" )
+        argv+=( --setenv XDG_DATA_HOME "/home/${user}/.local/share" )
+        argv+=( --setenv XDG_STATE_HOME "/home/${user}/.local/state" )
+        argv+=( --setenv XDG_DATA_DIRS "${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" )
+        argv+=( --setenv MOZ_NO_REMOTE 1 )
     fi
 
+    # ========================================================================
+    # KEYSTONE: Lock root read-only + re-apply home RW write-hole
+    # ========================================================================
+    argv+=( --remount-ro / )
+    argv+=( --bind "${home_parent}/${user}" "/home/${user}" )
+    argv+=( --chdir "/home/${user}" )
+
+    # ========================================================================
+    # POST-LOCK: Socket passthroughs into /run/user tmpfs
+    # ========================================================================
+    local _RU="/run/user/$(id -u)"
+
+    # STREAM D1: X11 passthrough
+    if [[ "$x11" == "true" ]]; then
+        argv+=( --setenv DISPLAY "${DISPLAY:-}" )
+        if [[ -n "${XAUTHORITY:-}" && -f "${XAUTHORITY:-}" ]]; then
+            argv+=( --ro-bind "$XAUTHORITY" "/home/${user}/.Xauthority" )
+            argv+=( --setenv XAUTHORITY "/home/${user}/.Xauthority" )
+        else
+            argv+=( --setenv XAUTHORITY "${XAUTHORITY:-}" )
+        fi
+    fi
+
+    # STREAM D2: Wayland passthrough
+    if [[ "$wayland" == "true" ]]; then
+        argv+=( --ro-bind-try "$_RU/wayland-0"     "$_RU/wayland-0" )
+        argv+=( --ro-bind-try "$_RU/wayland-0.lock" "$_RU/wayland-0.lock" )
+        argv+=( --setenv WAYLAND_DISPLAY "${WAYLAND_DISPLAY:-}" )
+    fi
+
+    # STREAM E1: Audio passthrough (PipeWire + PulseAudio)
+    if [[ "$audio" == "true" ]]; then
+        argv+=( --bind-try "$_RU/pipewire-0"              "$_RU/pipewire-0" )
+        argv+=( --bind-try "$_RU/pipewire-0.lock"          "$_RU/pipewire-0.lock" )
+        argv+=( --bind-try "$_RU/pipewire-0-manager"       "$_RU/pipewire-0-manager" )
+        argv+=( --bind-try "$_RU/pipewire-0-manager.lock"  "$_RU/pipewire-0-manager.lock" )
+        argv+=( --dir "$_RU/pulse" )
+        argv+=( --bind-try "$_RU/pulse/native" "$_RU/pulse/native" )
+        argv+=( --bind-try "$_RU/pulse/pid"    "$_RU/pulse/pid" )
+    fi
+
+    # STREAM E2: A11y passthrough (AT-SPI accessibility bus)
+    if [[ "$a11y" == "true" ]]; then
+        argv+=( --dir "$_RU/at-spi" )
+        argv+=( --ro-bind-try "$_RU/at-spi/bus_1" "$_RU/at-spi/bus_1" )
+    fi
+
+    # STREAM E3: D-Bus session bus passthrough (SECURITY: portal escape risk)
+    if [[ "$dbus" == "true" ]]; then
+        echo "[SYS-LOG] WARNING: D-Bus session bus enabled -- portal file picker can see host FS." >&2
+        argv+=( --bind-try "$_RU/bus"     "$_RU/bus" )
+        argv+=( --dir "$_RU/dbus-1" )
+        argv+=( --bind-try "$_RU/dbus-1"  "$_RU/dbus-1" )
+    fi
+
+    # STREAM E4: GNOME passthrough (gvfs, dconf, keyring, gcr)
+    if [[ "$gnome" == "true" ]]; then
+        argv+=( --bind-try "$_RU/gvfs"    "$_RU/gvfs" )
+        argv+=( --bind-try "$_RU/gvfsd"   "$_RU/gvfsd" )
+        argv+=( --bind-try "$_RU/doc"     "$_RU/doc" )
+        argv+=( --dir "$_RU/dconf" )
+        argv+=( --bind-try "$_RU/dconf"   "$_RU/dconf" )
+        argv+=( --dir "$_RU/keyring" )
+        argv+=( --bind-try "$_RU/keyring" "$_RU/keyring" )
+        argv+=( --dir "$_RU/gcr" )
+        argv+=( --bind-try "$_RU/gcr"     "$_RU/gcr" )
+    fi
+
+    # STREAM E5: KDE passthrough (kwallet, KSMserver, drkonqi)
+    if [[ "$kde" == "true" ]]; then
+        argv+=( --bind-try "$_RU/kwallet5.socket"           "$_RU/kwallet5.socket" )
+        argv+=( --ro-bind-try "$_RU/KSMserver__1"           "$_RU/KSMserver__1" )
+        argv+=( --bind-try "$_RU/drkonqi-coredump-launcher" "$_RU/drkonqi-coredump-launcher" )
+    fi
+
+    # STREAM F1 (cont): Mise PATH injection (post-lock env)
+    if [[ "$mise" != "off" ]]; then
+        local _MISE_BIN_POST
+        _MISE_BIN_POST="${MISE_BIN:-$(command -v mise 2>/dev/null || echo "$HOME/.local/bin/mise")}"
+        local _MISE_DATA_POST="${MISE_DATA_DIR:-$HOME/.local/share/mise}"
+        local _MISE_CFG_POST="${MISE_CONFIG_DIR:-$HOME/.config/mise}"
+        argv+=( --setenv PATH "$_MISE_DATA_POST/shims:$(dirname "$_MISE_BIN_POST"):/usr/bin:/bin" )
+        argv+=( --setenv MISE_DATA_DIR "$_MISE_DATA_POST" )
+        argv+=( --setenv MISE_CONFIG_DIR "$_MISE_CFG_POST" )
+    fi
+
+    # ========================================================================
     # Command separator and target
+    # ========================================================================
     argv+=( -- "${target_cmd[@]}" )
 
-    # --- Mode dispatch ---
+    # ========================================================================
+    # Mode dispatch
+    # ========================================================================
     if [[ "$dry_run" == "true" ]]; then
-        _info "$t" "[DRY RUN] bwrap ${argv[*]}"
+        # Print one-arg-per-line so tests can grep -n for ordering
+        echo "[DRY RUN] bwrap" >&2
+        local _a
+        for _a in "${argv[@]}"; do
+            echo "  $_a" >&2
+        done
         exit 0
     fi
     if [[ "$validate" == "true" ]]; then
@@ -960,8 +1204,12 @@ exec_sandbox() {
     fi
 
     # Normal mode: exec bwrap (replaces this shell)
+    # FD injection: pipe synthetic content to bwrap on FDs 9, 10, 11
     _debug "$t" "start: exec bwrap ${argv[*]}"
-    exec bwrap "${argv[@]}"
+    exec bwrap "${argv[@]}" \
+        9<<< "$_passwd_content" \
+        10<<< "$_group_content" \
+        11<<< "$_profile_content"
 }
 
 cmd_start() {
@@ -1064,7 +1312,8 @@ cmd_start() {
                 shift; target_cmd=("$@"); break ;;
             *)
                 _error "$log_level" "start: unknown option: $1"
-                _info  "$log_level" "Run: ${_SCRIPT_NAME} start --help"
+                printf '[DIAG] Unknown flag "%s" is not recognized.\n' "$1" >&2
+                printf '[HINT] Run: %s start --help\n' "$_SCRIPT_NAME" >&2
                 exit 1 ;;
         esac
     done
@@ -1213,7 +1462,8 @@ main() {
         ls)        cmd_ls        "$@" ;;
         *)
             printf '[ERROR] Unknown subcommand: %s\n' "$subcmd" >&2
-            printf '[INFO]  Run: %s --help\n' "$_SCRIPT_NAME" >&2
+            printf '[DIAG] "%s" is not a recognized subcommand.\n' "$subcmd" >&2
+            printf '[HINT] Run: %s --help\n' "$_SCRIPT_NAME" >&2
             exit 1 ;;
     esac
 }

@@ -1,0 +1,50 @@
+# ASCII only. All lines. No exceptions.
+# <type>(<scope>): <verb> <object> -- system-level, specific, 74 chars max
+# All lines wrap tat 74 chars max
+# e.g. feat(auth): add JWT refresh token rotation
+# scope: noun -- component, module, layer, or subsystem
+
+# *** REQUIRED BLANK LINE
+# ---- MANDATORY: UUIDv7 Identifier Reference -------------------------
+# MUST Every commit, without exception, must fist comment line with
+# UUIDv7 custom format YYYYMMDD-HHMMSS-uuuuuu-7xxx-Nxxx-xxxxxxxxxxxx  = Ref: rfc:9562#s6.2-method3-sub-ms-clock-precision):
+#   uuuuuu = microseconds = (same UUIDV7 value) expressed as  Standard UUIDv7 (RFC 9562 Section 6.2):
+#   unix_ts_ms(48) | ver=0111(4) | rand_a(12) | var=10(2) | rand_b(62)
+# *** REQUIRED BLANK LINE
+#   Timestamp: real OS run date -u +%Y%m%d-%H%M%S-%6N (from realtimne OS clock value read, no fabrication)
+#
+# Narrative max 210 chars
+# WHY: root cause, constraint, or technical gap this change addresses.
+# WHAT: concrete changes -- components, interfaces, or behaviors modified.
+# IMPACTED COMPONENTS
+#   - <component>: <what changed>
+#   - <component>: <what changed>
+
+# BREAKING CHANGE: <what breaks, why, and migration path>
+
+# Closes: #<n>                      -- auto-close issue on merge
+# Ref: <type>:<id-or-path>          -- traceability, repeatable
+# e.g. Ref: bug:456
+#      Ref: feat:oauth-flow
+#      Ref: spec:auth-api-v2
+#      Ref: doc:docs/architecture/system-design.md
+
+# ---------------------------------------------------------------------
+#
+# Signed-off-by: Name <email>
+# Co-authored-by: Name <email>
+# Reviewed-by: Name <email>
+
+# ---- Type Reference -------------------------------------------------
+#   feat:     New feature                  (MINOR version bump)
+#   fix:      Bug fix                      (PATCH version bump)
+#   docs:     Documentation only
+#   style:    Formatting, whitespace, semicolons (no logic change)
+#   refactor: Code restructure, no bug fix or feature
+#   perf:     Performance improvement
+#   test:     Add or correct tests
+#   build:    Build tools, deps, bundle config
+#   ci:       CI workflow changes (Actions, CircleCI, etc.)
+#   chore:    Housekeeping, no source or test change
+#   revert:   Revert a prior commit
+# ---------------------------------------------------------------------

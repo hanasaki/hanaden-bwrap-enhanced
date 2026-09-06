@@ -1,38 +1,126 @@
-audit*/
-
-# OS
+# -- OS ----------------------------------------------------------------------
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+*~
 *.swp
 *.swo
-*~
-
-# Temp
-/tmp/
+*.bak
 *.tmp
-*.log
 
-# Python
+# -- IDEs --------------------------------------------------------------------
+# JetBrains (IntelliJ, CLion, GoLand, RustRover, PyCharm, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+cmake-build-*/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+.loadpath
+.factorypath
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# Sublime
+*.sublime-workspace
+*.sublime-project
+
+# -- Python -------------------------------------------------------------------
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 .venv/
+venv/
+env/
+ENV/
+*.egg-info/
+.installed.cfg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
 
-# Editors
-.idea/
-.vscode/
-*.sublime-*
+# -- Java / Maven / Gradle ---------------------------------------------------
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+target/
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
 
-# Build artifacts
+# -- Go ----------------------------------------------------------------------
+/bin/
+/pkg/
+*.test
+*.prof
+vendor/
+
+# -- Rust / Cargo -------------------------------------------------------------
+/target/
+Cargo.lock
+**/*.rs.bk
+
+# -- Zig ----------------------------------------------------------------------
+zig-cache/
+zig-out/
+.zig-cache/
+
+# -- C / C++ ------------------------------------------------------------------
 *.o
-*.so
+*.obj
 *.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.d
+*.dSYM/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
 
-# Ephemeral sandbox homes (never commit)
-/ephemeral/
+# -- Node / JS ----------------------------------------------------------------
+node_modules/
 
-# Build output root (test reports, JUnit XML, TAP, kcov coverage, timing logs)
-**/target/
+# -- Terraform / K8s / Docker -------------------------------------------------
+.terraform/
+*.tfstate
+*.tfstate.*
+.vagrant/
+.kube/
+*.local.yaml
+*.local.yml
 
-# Git worktrees (never commit)
-/.worktrees/
+# -- Logs & Misc --------------------------------------------------------------
+*.log
+/tmp/
+*.tmp
+
+# -- Worktrees (AgentWorktreeOrchestration ss4.2)
+.worktrees/
