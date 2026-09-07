@@ -18,7 +18,8 @@
     "search.exclude": {
       "**/node_modules": true,
       "**/target": true,
-      "**/.git": true
+      "**/.git": true,
+      "**/../*": true
     },
     // File watcher: watch inside workspace root
     "files.watcherExclude": {
@@ -38,7 +39,10 @@
     "projectName": "${workspaceFolderBasename}",
     "editor.formatOnSave": true,
     "files.trimTrailingWhitespace": true,
-    "terminal.integrated.shell.linux": "/bin/bash"
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "files.exclude": {
+      "**/../*": true
+    }
   },
   "extensions": {
     "variables": {
