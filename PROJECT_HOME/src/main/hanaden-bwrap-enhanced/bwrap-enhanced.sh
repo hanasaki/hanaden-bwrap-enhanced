@@ -73,7 +73,7 @@ set -euo pipefail
 # ==============================================================================
 
 readonly _SCRIPT_NAME="$(basename "$0")"
-readonly _SCRIPT_VERSION="0.4.0"
+readonly _SCRIPT_VERSION="0.4.1"
 
 # Log-level numeric values -- FATAL(100) < ERROR(200) < WARN(300) < INFO(400) < DEBUG(500) < TRACE(600)
 # All log output goes to stderr. Default level: INFO(400).
@@ -222,6 +222,20 @@ _parse_graded() {
 # ==============================================================================
 # VERSION
 # ==============================================================================
+
+# _emit_banner -- print Linux-quality version line to stderr.
+# Called once at the top of main(). Suppressed when --log-level
+# is FATAL (100) to honor the "no output" contract.
+_emit_banner() {
+    # Quick pre-scan: if caller passed FATAL, stay silent
+    local arg
+    for arg in "$@"; do
+        [[ "$arg" == "FATAL" || "$arg" == "100" ]] && return 0
+    done
+    printf '%s v%s (%s) -- Bubblewrap Sandbox Launcher\n' \
+        "$_SCRIPT_NAME" "$_SCRIPT_VERSION" \
+        "$(date -u +%Y-%m-%d)" >&2
+}
 
 _print_version() {
     printf '%s v%s\n' "$_SCRIPT_NAME" "$_SCRIPT_VERSION"
@@ -1441,6 +1455,8 @@ cmd_ls() {
 # ==============================================================================
 
 main() {
+    _emit_banner "$@"
+
     # Pre-subcommand: --help / --version only
     case "${1:-}" in
         --help|-h)    usage_top;       exit 0 ;;
