@@ -19,5 +19,5 @@ setup() {
 @test "DISP-VER-003: --version prints version string" {
     run bash "$SCRIPT" --version
     [ "$status" -eq 0 ]
-    [[ "$output" == *"v0.4.0"* ]]
+    [[ "$output" == *"v0.4.1"* ]]
 }

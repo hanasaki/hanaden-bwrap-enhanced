@@ -27,7 +27,7 @@ teardown() { rm -rf "$WORK"; }
 @test "LOG-STDERR-001: --version output on stdout contains version string" {
     local stdout_out
     stdout_out="$(bash "$SCRIPT" --version 2>/dev/null)"
-    [[ "$stdout_out" == *"v0.4.0"* ]]
+    [[ "$stdout_out" == *"v0.4.1"* ]]
 }
 
 @test "LOG-STDERR-002: --version produces no [INFO] on stdout" {

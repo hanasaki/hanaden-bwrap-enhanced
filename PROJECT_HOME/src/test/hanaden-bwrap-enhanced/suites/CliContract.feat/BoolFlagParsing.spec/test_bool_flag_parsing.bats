@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # (c) 2026-* Frederick Bloom -- test_bool_flag_parsing.bats -- Hanaden AI
-# SPEC: BoolFlagParsing -- boolean passthrough flags: bare / explicit true / false=error / wrong-qualifier=error
+# SPEC: BoolFlagParsing -- boolean passthrough flags: bare / explicit true / false=legal / wrong-qualifier=error
 # All tests operate on `start` which owns all boolean passthrough flags.
 
 setup() {
@@ -20,10 +20,9 @@ setup() {
     run bash "$SCRIPT" start --net-passthrough true --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-NET-003: --net-passthrough false rejected exit 1" {
+@test "BOOL-NET-003: --net-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --net-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
 @test "BOOL-NET-004: --net-passthrough ro rejected exit 1" {
     run bash "$SCRIPT" start --net-passthrough ro --dry-run
@@ -42,10 +41,9 @@ setup() {
     run bash "$SCRIPT" start --env-passthrough true --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-ENV-003: --env-passthrough false rejected exit 1" {
+@test "BOOL-ENV-003: --env-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --env-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -59,10 +57,9 @@ setup() {
     run bash "$SCRIPT" start --x11-passthrough true --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-X11-003: --x11-passthrough false rejected exit 1" {
+@test "BOOL-X11-003: --x11-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --x11-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -76,10 +73,9 @@ setup() {
     run bash "$SCRIPT" start --wayland-passthrough true --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-WAY-003: --wayland-passthrough false rejected exit 1" {
+@test "BOOL-WAY-003: --wayland-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --wayland-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -89,10 +85,9 @@ setup() {
     run bash "$SCRIPT" start --gnome-passthrough --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-GNO-002: --gnome-passthrough false rejected exit 1" {
+@test "BOOL-GNO-002: --gnome-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --gnome-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -102,10 +97,9 @@ setup() {
     run bash "$SCRIPT" start --kde-passthrough --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-KDE-002: --kde-passthrough false rejected exit 1" {
+@test "BOOL-KDE-002: --kde-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --kde-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -115,10 +109,9 @@ setup() {
     run bash "$SCRIPT" start --audio-passthrough --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-AUD-002: --audio-passthrough false rejected exit 1" {
+@test "BOOL-AUD-002: --audio-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --audio-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -128,10 +121,9 @@ setup() {
     run bash "$SCRIPT" start --a11y-passthrough --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-A11-002: --a11y-passthrough false rejected exit 1" {
+@test "BOOL-A11-002: --a11y-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --a11y-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -141,8 +133,7 @@ setup() {
     run bash "$SCRIPT" start --dbus-passthrough --dry-run
     [ "$status" -eq 0 ]
 }
-@test "BOOL-DBU-002: --dbus-passthrough false rejected exit 1" {
+@test "BOOL-DBU-002: --dbus-passthrough false silently accepted exit 0" {
     run bash "$SCRIPT" start --dbus-passthrough false --dry-run
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }

@@ -25,7 +25,7 @@ setup() {
 @test "HLP-LIST-003: --help shows version string" {
     run bash "$SCRIPT" --help
     [ "$status" -eq 0 ]
-    [[ "$output" == *"v0.4.0"* ]]
+    [[ "$output" == *"v0.4.1"* ]]
 }
 
 @test "HLP-LIST-004: --help shows all passthrough flags (start section of one-liner)" {

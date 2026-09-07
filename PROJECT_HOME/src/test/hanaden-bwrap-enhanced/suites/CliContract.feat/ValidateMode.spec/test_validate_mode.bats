@@ -33,8 +33,7 @@ setup() {
     run bash "$SCRIPT" start --validate
     [ "$status" -eq 0 ]
 }
-@test "VAL-005: start --validate flag errors still caught before validate check" {
+@test "VAL-005: start --validate with false flag silently accepted" {
     run bash "$SCRIPT" start --net-passthrough false --validate
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"[ERROR]"* ]]
+    [ "$status" -eq 0 ]
 }
