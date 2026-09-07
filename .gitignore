@@ -19,13 +19,13 @@ ehthumbs.db
 cmake-build-*/
 
 # VSCode
-.vscode/
-*.code-workspace
+#.vscode/
+#*.code-workspace
 
 # Eclipse
 .classpath
 .project
-.settings/
+#.settings/
 .metadata/
 .loadpath
 .factorypath
@@ -65,7 +65,7 @@ build/
 *.war
 *.ear
 *.nar
-target/
+**/target/
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
