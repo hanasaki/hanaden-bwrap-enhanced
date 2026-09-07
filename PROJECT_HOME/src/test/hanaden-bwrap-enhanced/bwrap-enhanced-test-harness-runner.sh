@@ -494,7 +494,7 @@ HELPEOF
 }
 
 cmd_run() {
-    local log_level=$_LL_INFOParalle
+    local log_level=$_LL_INFO
     local feat_pat="*" spec_pat="*" bats_filter="" bats_fmt="pretty" dry_run=false timed=false
     local _log_set="" _feat_set="" _spec_set="" _filter_set="" _fmt_set="" _dry_set="" _timed_set="" _jobs_set=""
 
