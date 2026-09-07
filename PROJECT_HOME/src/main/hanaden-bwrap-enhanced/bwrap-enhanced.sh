@@ -145,12 +145,9 @@ _resolve_log_level() {
 # Caller passes threshold as first argument (LOG_LEVEL local var).
 # ==============================================================================
 
-_err_bool_false() {
-    local t="$1" flag="$2"
-    _error "$t" "flag=${flag} reason='false' is implicit -- omit the flag for false"
-    _info  "$t" "Remove \"${flag} false\"; absence means false"
-    exit 1
-}
+# _err_bool_false -- REMOVED in 0.4.1
+# Strategy spec L100/L247: "--flag false is LEGAL". false is the
+# default; passing it explicitly is a silent no-op, not an error.
 
 _err_wrong_qualifier_bool() {
     local t="$1" flag="$2" val="$3"
@@ -202,7 +199,7 @@ _parse_bool() {
     [[ "$cur" != "false" ]] && _err_duplicate "$t" "$flag"
     case "$next" in
         true)    printf 'true:2' ;;
-        false)   _err_bool_false "$t" "$flag" ;;
+        false)   printf 'false:2' ;;  # legal no-op per strategy L100
         ro|rw)   _err_wrong_qualifier_bool "$t" "$flag" "$next" ;;
         *)       printf 'true:1' ;;   # bare flag = true
     esac
@@ -216,7 +213,7 @@ _parse_graded() {
     case "$next" in
         ro)      printf 'ro:2' ;;
         rw)      printf 'rw:2' ;;
-        false)   _err_bool_false "$t" "$flag" ;;
+        false)   printf 'off:2' ;;    # legal no-op per strategy L100
         true)    _err_wrong_qualifier_graded "$t" "$flag" "$next" ;;
         *)       printf 'ro:1' ;;    # bare flag = ro (most restrictive)
     esac
