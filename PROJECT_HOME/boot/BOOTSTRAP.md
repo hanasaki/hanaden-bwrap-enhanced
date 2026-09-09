@@ -50,7 +50,7 @@ copyright: (c) 2026 Hanaden - Frederick Bloom
 * A human readable identifier string with standard UUIDv7 prefix.
 #### Format:
 ```
-YYYYMMDD-HHMMSS-uuuuuu-7xxx-Nxxx-xxxxxxxxxxxx-<slug>[-<NNN>].<class>[-<semver>].<ext>
+YYYYMMDD-HHMMSS-uuuuuu-7xxx-Nxxx-xxxxxxxxxxxx-<slug>[-<NNN>][.<optional-class-prefix>].<class>[-<semver>].<ext>
 ```
 * `YYYYMMDD-HHMMSS-uuuuuu-7xxx-Nxxx-xxxxxxxxxxxx` is the Hanaden.Hybrid.UUIDv7.Extension prefix -- a superset of standard UUIDv7. All standard UUIDv7 fields are present; the `uuuuuu` microsecond field is a Hanaden extension-only addition.
 * **Timestamp Generation (MUST):** AI MUST obtain `YYYYMMDD-HHMMSS-uuuuuu` from OS clock at file creation time. Preferred: `date -u +%Y%m%d-%H%M%S-%6N`. Fallback: second-level precision with `000000` microseconds when sub-second OS clock is unavailable. No Fabrication rule (below) applies.
@@ -65,6 +65,7 @@ YYYYMMDD-HHMMSS-uuuuuu-7xxx-Nxxx-xxxxxxxxxxxx-<slug>[-<NNN>].<class>[-<semver>].
 | `xxxxxxxxxxxx` | Random Payload | Standard UUIDv7 -- 12 random hex digits |
 | `<slug>` | Human readable description (<= 187 chars) | Required: Hanaden extension -- CamelCase; no hyphens, no spaces; attempt slug.length <= 30 chars; actual max_slug = 249 - 62 (fixed overhead) = 187 chars |
 | `[-<NNN>]` | Sequence counter | Optional: Hanaden extension -- 3-digit zero-padded (001-999); for N-of-kind ordering (e.g., run attempts 001, 002, 003 per plan); placed between slug and class |
+| `[.<optional-class-prefix>]` | Class qualifier | Optional: Hanaden extension -- dot-separated token between slug and class; qualifies class without replacing it; chars + 1 (dot) count against max slug length. See Extension Prefixes below. |
 | `.<class>` | Class descriptor (2-6 chars) | Required: Hanaden extension -- lowercase, 2-6 chars, no hyphens. See class glossary below. |
 | `-<semver>` | Semver | Optional: Hanaden extension -- hyphen-separated from class; semver format (ex: MAJOR.MINOR.PATCH, 1.2.3, 1.2.3-alpha, 1.2.3-beta, 1.2.3-rc) |
 | `.<ext>` | File extension | Required: Hanaden extension -- lowercase; ex: `md`, `yaml`, `json`, `sh` |
