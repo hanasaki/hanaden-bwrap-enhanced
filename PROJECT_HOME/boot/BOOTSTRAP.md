@@ -78,6 +78,7 @@ YYYYMMDD-HHMMSS-uuuuuu-7xxx-Nxxx-xxxxxxxxxxxx-<slug>[-<NNN>].<class>[-<semver>].
 | `audit` | audit |
 | `bstorm` | brainstorm |
 | `bug` | bug report |
+| `collab` | collaboration document |
 | `config` | configuration |
 | `decis` | decision record |
 | `deliv` | delivery |
@@ -105,6 +106,24 @@ YYYYMMDD-HHMMSS-uuuuuu-7xxx-Nxxx-xxxxxxxxxxxx-<slug>[-<NNN>].<class>[-<semver>].
 | `tst` | test |
 | `tstsu` | test suite |
 | `wi` | work item |
+
+#### Extension Prefixes
+
+An **extension prefix** is an optional dot-separated token inserted between the slug and the class. It qualifies the class without replacing it. Extension prefixes reduce the max slug length by their character count + 1 (the dot).
+
+```
+Standard:       {uuid}-{slug}.<class>.<ext>
+With prefix:    {uuid}-{slug}.<prefix>.<class>.<ext>
+```
+
+| Prefix | Chars added | Max slug | Description |
+|--------|-------------|----------|-------------|
+| `ai-hitl` | 8 (+1 dot = 9) | 178 | AI-HITL collaboration protocol -- document uses structured Q/A markers for human-in-the-loop AI collaboration. Composable with any class. |
+
+Examples:
+- `{uuid}-CliRevision.ai-hitl.collab.md` -- AI-HITL collaboration document
+- `{uuid}-BannerSpec.ai-hitl.spec.md` -- AI-HITL co-authored specification
+- `{uuid}-DebugPlan.ai-hitl.plan.md` -- AI-HITL co-authored plan
 
 #### Bidirectional conversion between HANADEN.Hybrid.UUIDv7 and standard UUIDv7:
 > [!IMPORTANT]
