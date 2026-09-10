@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 # (c) 2026-* Frederick Bloom -- test_graded_flag_parsing.bats -- Hanaden AI
-# SPEC: GradedFlagParsing -- graded flags: bare=ro / ro / rw / true=error / false=legal / duplicate=error
+# SPEC: GradedFlagParsing -- graded flags: bare=ro / ro / rw / true=error / false=error / duplicate=error
 
 setup() {
     _test_dir="$(cd "$(dirname "${BATS_TEST_FILENAME}")" && pwd)"
@@ -28,9 +28,10 @@ setup() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"[ERROR]"* ]]
 }
-@test "GRAD-MISE-005: --mise-passthrough false silently accepted exit 0" {
+@test "GRAD-MISE-005: --mise-passthrough false rejected exit 1" {
     run bash "$SCRIPT" start --mise-passthrough false --dry-run
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"[ERROR]"* ]]
 }
 @test "GRAD-MISE-006: --mise-passthrough duplicate rejected exit 1" {
     run bash "$SCRIPT" start --mise-passthrough ro --mise-passthrough rw --dry-run
@@ -58,9 +59,10 @@ setup() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"[ERROR]"* ]]
 }
-@test "GRAD-BIN-005: --local-bin-passthrough false silently accepted exit 0" {
+@test "GRAD-BIN-005: --local-bin-passthrough false rejected exit 1" {
     run bash "$SCRIPT" start --local-bin-passthrough false --dry-run
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"[ERROR]"* ]]
 }
 @test "GRAD-BIN-006: --local-bin-passthrough duplicate rejected exit 1" {
     run bash "$SCRIPT" start --local-bin-passthrough ro --local-bin-passthrough ro --dry-run

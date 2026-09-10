@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# (c) 2026-* Frederick Bloom -- commit-msg hook -- Hanaden AI
+# -------------------------------------------------------------------
+# PURPOSE: Auto-convert non-ASCII characters to ASCII equivalents
+#          in git commit messages. Rewrites in-place, never rejects.
+#
+# INSTALL: From repo root:
+#   git config core.hooksPath PROJECT_HOME/hooks
+#
+# WHAT IT DOES:
+#   - Reads the commit message file
+#   - Replaces known non-ASCII chars with ASCII equivalents
+#   - Strips any remaining non-ASCII bytes
+#   - Writes back the cleaned message
+# -------------------------------------------------------------------
+set -euo pipefail
+
+COMMIT_MSG_FILE="$1"
+
+# --- Known substitutions ---
+sed -i '
+s/→/->/g
+s/←/<-/g
+s/↔/<->/g
+s/↑/^/g
+s/↓/v/g
+s/⇄/<>/g
+s/§/ss/g
+s/—/--/g
+s/–/-/g
+s/©/(c)/g
+s/·/*/g
+s/…/.../g
+s/≥/>=/g
+s/≤/<=/g
+s/≠/!=/g
+s/×/x/g
+s/±/+\/-/g
+s/•/*/g
+' "$COMMIT_MSG_FILE"
+
+# --- Curly quotes to straight ---
+sed -i "
+s/\xe2\x80\x9c/\"/g
+s/\xe2\x80\x9d/\"/g
+s/\xe2\x80\x98/'/g
+s/\xe2\x80\x99/'/g
+" "$COMMIT_MSG_FILE"
+
+# --- Strip any remaining non-ASCII (nuclear fallback) ---
+LC_ALL=C sed -i 's/[^\x09\x0a\x0d\x20-\x7e]//g' "$COMMIT_MSG_FILE"
+
+exit 0
