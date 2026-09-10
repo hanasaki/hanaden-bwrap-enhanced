@@ -5,6 +5,16 @@
 All notable changes to this project will be documented in this file.
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [v0.4.1-beta] - 2026-09-09
+
+### Changed
+- AI-HITL collab docs renamed to NextStateEvolve naming convention:
+  - Folder: CliRevision.ai-hitl.collab-0.0.2 -> NextStateEvolveTo041.ai-hitl.collab-0.0.2
+  - Doc 1: CliRevision -> NextStateEvolveCli (Evolution Spec -- full SDLC hierarchy for CLI)
+  - Doc 2: TestHarnessGapAnalysis -> NextStateEvolveBashTestHarnessGeneric (Analysis-Driven Plan)
+  - Doc 3: NextStateEvolveExec (Execution Controller -- pending creation)
+- Established 3-doc structure: evolution spec + analysis-driven plan + execution controller
+
 ## [v0.4.1] - 2026-09-03
 
 ### Added
